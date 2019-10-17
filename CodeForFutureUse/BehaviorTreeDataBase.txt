@@ -1,0 +1,146 @@
+
+
+#include <vector>
+#include <set>
+#include <unordered_map>
+#include <string>
+// purpose of class is to have an object that keeps track of:
+// *which agent goes to what tree
+// 
+
+// link agent to tree
+// shift agent to new tree if necessary
+// keep a list of tasks that need to be done
+// link agent to behavior id of its coresponding tree
+
+
+// multiple agents per tree
+// need to get tree from agent
+// need to set an agent to a tree
+// need some area to store all the actual trees
+// need a list of tasks to iterate over
+// need a list of agents
+// need to get list of Agents that use a specific tree
+
+
+class BehaviorTreeDataBase
+{
+  typedef std::string TreeName;
+  typedef std::string AgentName;
+  
+  // table of agents to trees
+  std::unordered_map<AgentPtr, BehaviorTreePtr> agentsToTree;
+  
+  // table of trees to any agent that uses them
+  std::unordered_map<BehaviorTreePtr, std::set<AgentPtr>> treeToAgents;
+  
+  // the list of trees by name
+  std::unordered_map<TreeName, BehaviorTreePtr> trees;
+  
+  // list of tasks to iterate over
+  std::set<TaskPtr> tasks;
+  
+  
+  TaskPtr CreateTask(AgentPtr, BehaviorTreePtr);
+  
+  public:
+  
+  
+  
+  
+  // NOTE: Agents should only be assigned to 1 tree at any moment in
+  // time.
+  
+    // remove agent from specific tree
+    void UnassignAgentFromTree(AgentPtr);
+    
+    // add tree to database
+    void AddTree(BehaviorTreePtr, const std::string&);
+    
+    // assign an agent to a tree, note that if agent is
+    // already assigned to a tree he will be removed
+    // from the old one and assigned to the new one
+    void AssignAgentToTree(AgentPtr, const std::string&);
+    
+    // get corresponding tree from a particular agent
+    BehaviorTreePtr GetTreeFromAgent(AgentPtr);
+    
+    // get tree from name
+    BehaviorTreePtr GetTree(const std::string&);
+    
+    // get all trees
+    std::unordered_map<TreeName, BehaviorTreePtr> GetAllTrees();
+    
+    std::vector<TaskPtr> GetTasks(){return tasks;}
+  
+};
+
+void UnassignAgentFromTree(AgentPtr agent)
+{
+  auto tree = GetTreeFromAgent(agent);
+  agentsToTree.erase(agent); // remove agent's link to tree
+  treeToAgents[tree].erase(agent); // remove tree's link to agent
+  
+  // make sure agent's corresponding task is deleted
+  std::erase_if(tasks, [](TaskPtr task){ return task->GetAgent() == agent; });
+}
+
+void AssignAgentToTree(AgentPtr newAgent, const std::string& treeName)
+{
+  agentsToTree[agent] = GetTree(treeName);
+  treeToAgents[GetTree(treeName)].insert(newAgent);
+}
+
+
+TaskPtr CreateTask(AgentPtr agent, BehaviorTreePtr tree)
+{
+  TaskPtr task = std::make_shared<Task>();
+  // set agent
+  task->SetAgent(agent); 
+  // make sure it is in starting phase
+  task->Push_Phase(BehaviorPhase::Progressing); 
+  // set child index as first child
+  task->PushChildIndex(0);
+  
+  // give it tree root
+  auto root = tree->GetRoot();
+  task->SetCurrentBehavior(root);
+  root->TakeTask(task);
+  
+  return task;
+}
+
+
+
+
+std::unordered_map<TreeName, BehaviorTreePtr> GetAllTrees()
+{
+  return trees;
+}
+
+void AddTree(BehaviorTreePtr tree, const std::string& treeName)
+{
+  trees[treeName] = tree;
+}
+
+BehaviorTreePtr GetTreeFromAgent(AgentPtr agent)
+{
+  // if agent is assigned to a tree
+  if(agentsToTree.find(agent) != agentsToTree.end())
+  {
+    return agentsToTree[agent];
+  }
+  
+  // agent is unassigned
+  return nullptr;
+}
+
+
+
+
+
+
+
+
+
+
