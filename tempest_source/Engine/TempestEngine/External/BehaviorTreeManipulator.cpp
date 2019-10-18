@@ -10,7 +10,7 @@
 #include "BehaviorTreeManager.hpp"
 #include "SystemManager.hpp"
 
-BehaviorTreeManipulator::BehaviorTreeManipulator(systemManager * manager_) : m_system_manager(manager_)
+BehaviorTreeManipulator::BehaviorTreeManipulator(systemManagerInterface * manager_) : m_system_manager(manager_)
 {}
 
 void BehaviorTreeManipulator::AddAgentToTree(const std::string & treeName, std::shared_ptr<Agent> agent)
@@ -20,17 +20,14 @@ void BehaviorTreeManipulator::AddAgentToTree(const std::string & treeName, std::
     btManager->linkAgentComponentToTree(agent, treeName);
 }
 
-
-void BehaviorTreeManipulator::testTree(const std::string & treeName) const
+int BehaviorTreeManipulator::getActiveNodeID(std::shared_ptr<Agent> agent) const
 {
-    auto BTManager = m_system_manager->getSystem<BehaviorTreeManager>();
-    BTManager->ActivateTree(treeName);
-}
+    if (agent)
+    {
+        // get behavior tree manager system
+        auto BTManager = m_system_manager->getSystem<BehaviorTreeManager>();
+        return BTManager->getCurrentNodeID(agent);
+    }
 
-int BehaviorTreeManipulator::getActiveNodeID() const
-{
-    // get behavior tree manager system
-    auto BTManager = m_system_manager->getSystem<BehaviorTreeManager>();
-
-    return BTManager->getCurrentNodeID();
+    return -1;
 }

@@ -7,6 +7,7 @@
 \brief      This node fully processes its child exactly N times aka N SUCCESSes.
 *****************************************************************************************/
 #include "RepeatUntilN.hpp"
+#ifndef TESTING_NODES
 
 //void RepeatUntilN::updateFromTypeRT(typeRT & data)
 //{
@@ -80,3 +81,4 @@ void RepeatUntilN::Update(float dt)
     child->tick(dt);
     
 }
+#endif

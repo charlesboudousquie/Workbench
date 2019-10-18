@@ -9,6 +9,8 @@
 #pragma once
 #include "Composite.hpp"
 
+#ifndef TESTING_NODES
+
 class Selector : public Composite
 {
 public:
@@ -21,3 +23,4 @@ protected:
     void Init() override;
     void Update(float) override;
 };
+#endif

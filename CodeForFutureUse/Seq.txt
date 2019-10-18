@@ -1,13 +1,13 @@
 
 
-void Behavior::TakeTask
+void NonLeafBehavior::TakeTask
 {
   t->currentNode = this;
   t->parent = this->parent;
   t->child = this->GetChild();
 }
 
-void Behavior::GiveToChild(Task* t)
+void NonLeafBehavior::GiveToChild(Task* t, Behavior* child)
 {
   // when task is given to child it is assumed that child
   // is receiving it for the first time so obviously it is
@@ -16,6 +16,9 @@ void Behavior::GiveToChild(Task* t)
   t->PushChildIndex(0);
   GetCurrentChild()->TakeTask(t);
 }
+
+
+
 
 void Behavior::GiveToParent(Task * t)
 {

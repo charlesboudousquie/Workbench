@@ -8,12 +8,13 @@
 *****************************************************************************************/
 #pragma once
 #include "Decorator.hpp"
+#ifndef TESTING_NODES
 
 class Inverter : public Decorator
 {
   public:
 
-      void handleResult(BehaviorResult) override;
+      //void handleResult(BehaviorResult) override;
 
       static typeRT onRender();
 
@@ -23,3 +24,4 @@ class Inverter : public Decorator
 
 
 
+#endif

@@ -7,6 +7,7 @@
 \brief      This node returns true regardless of result of child.
 *****************************************************************************************/
 #include "ReturnTrue.hpp"
+#ifndef TESTING_NODES
 
 void ReturnTrue::handleResult(BehaviorResult)
 {
@@ -33,3 +34,4 @@ void ReturnTrue::Update(float dt)
   child->tick(dt);
 }
 
+#endif

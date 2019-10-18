@@ -20,7 +20,5 @@ public:
   virtual std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> getNodeDefinitions() = 0;
 
   virtual typeRT createRenderedNode(const std::pair<std::string, std::string> & p_node_type) = 0;
-  virtual int getActiveNodeID() const = 0;
 
-  virtual void testTree(const std::string& treeName) const = 0;
 };

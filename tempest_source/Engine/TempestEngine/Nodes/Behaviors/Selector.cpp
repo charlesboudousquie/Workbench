@@ -7,6 +7,7 @@
 \brief      This node returns true if one child succeeds, False if none succeed.
 *****************************************************************************************/
 #include "Selector.hpp"
+#ifndef TESTING_NODES
 
 void Selector::Update(float dt)
 {
@@ -47,3 +48,5 @@ void Selector::Init()
     // are also set as ready
     Composite::Init();
 }
+
+#endif

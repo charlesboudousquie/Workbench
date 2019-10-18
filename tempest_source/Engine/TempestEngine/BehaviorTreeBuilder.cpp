@@ -51,17 +51,17 @@ typedef int NodeID;
 BehaviorTreeBuilder::BehaviorTreeBuilder()
 {
     // leaves
-    nodeMap["Inverter"] = []() { return std::make_shared< Inverter>(); };
-    nodeMap["Repeater"] = []() {return std::make_shared< Repeater>(); };
-    nodeMap["RepeatUntilN"] = []() {return std::make_shared< RepeatUntilN>(); };
-    nodeMap["RepeatUntilFailure"] = []() {return std::make_shared< RepeatUntilFailure>(); };
-    nodeMap["RepeatUntilSuccess"] = []() {return std::make_shared< RepeatUntilSuccess>(); };
-    nodeMap["ReturnTrue"] = []() {return std::make_shared< ReturnTrue>(); };
+    //nodeMap["Inverter"] = []() { return std::make_shared< Inverter>(); };
+    //nodeMap["Repeater"] = []() {return std::make_shared< Repeater>(); };
+    //nodeMap["RepeatUntilN"] = []() {return std::make_shared< RepeatUntilN>(); };
+    //nodeMap["RepeatUntilFailure"] = []() {return std::make_shared< RepeatUntilFailure>(); };
+    //nodeMap["RepeatUntilSuccess"] = []() {return std::make_shared< RepeatUntilSuccess>(); };
+    //nodeMap["ReturnTrue"] = []() {return std::make_shared< ReturnTrue>(); };
     nodeMap["DefaultLeaf"] = []() {return std::make_shared<DefaultLeaf>(); };
-    nodeMap["Timer"] = []() {return std::make_shared<Timer>(); };
+    //nodeMap["Timer"] = []() {return std::make_shared<Timer>(); };
 
     // composites
-    nodeMap["Selector"] = []() {return std::make_shared< Selector>(); };
+    //nodeMap["Selector"] = []() {return std::make_shared< Selector>(); };
     nodeMap["Sequencer"] = []() {return std::make_shared< Sequencer>(); };
 
 }
@@ -106,13 +106,6 @@ std::shared_ptr<BehaviorTree> BehaviorTreeBuilder::CreateTree(const std::string 
             LinkNodes(nodeLinks, behaviors);
         }
 
-
-        // give tree pointer to each node, so the nodes can talk to it
-        for (auto behavior : behaviors)
-        {
-            behavior.second->setParentTree(tree);
-        }
-
         tree->SetName(fileName);
         tree->SetUpTree(behaviors.begin()->second, behaviors);
 
@@ -120,6 +113,7 @@ std::shared_ptr<BehaviorTree> BehaviorTreeBuilder::CreateTree(const std::string 
     else
     {
         std::cout << "ERROR tree" << fileName << "Cant be loaded";
+        return nullptr;
     }
     l_if_stream.close();
 
@@ -152,6 +146,10 @@ void CreateNodes(const rapidjson::Value & l_graph, std::map<int, std::vector<int
             if (node.HasMember("id"))
             {
                 id = node["id"].GetInt();
+            }
+            else
+            {
+                throw std::exception("MISSING ID for a node in behavior tree!");
             }
 
             // create Behavior based on name

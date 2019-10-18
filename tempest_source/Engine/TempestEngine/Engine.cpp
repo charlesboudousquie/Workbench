@@ -41,6 +41,7 @@
 #include "Rendering/CameraSystem.hpp"
 #include "BehaviorTreeManager.hpp"
 #include "DynamicWaypoints/DynamicWaypointGraph.hpp"
+#include "BehaviorTreeManipulator.hpp"
 
 #include "SystemManagement/SystemManagerSTA.hpp"
 #include "GameScripts/LightTestScript.hpp"
@@ -316,6 +317,19 @@ void engine::shutdown()
 	// delete m_gamepadInputAdapater;
 }
 
+std::weak_ptr<behaviorTreeManipulatorInterface> engine::getBehaviorManipulator()
+{
+    if (m_behavior_tree_manipulator_ptr == nullptr)
+    {
+        if (m_system_manager != nullptr)
+        {
+            m_behavior_tree_manipulator_ptr = std::make_shared<BehaviorTreeManipulator>(m_system_manager);
+        }
+    }
+
+    return m_behavior_tree_manipulator_ptr;
+}
+
 void engine::requestQuit()
 {
 	m_is_quit_requested = true;
@@ -327,7 +341,8 @@ std::weak_ptr<sceneManipulatorInterface> engine::getSceneManipulator()
 	{
 		if (m_system_manager != nullptr)
 		{
-			m_scene_manipulator_ptr = std::shared_ptr<sceneManipulatorInterface>(new sceneManipulator(this, m_system_manager, m_go_filter));
+            m_scene_manipulator_ptr = std::make_shared<sceneManipulator>(this, m_system_manager, m_go_filter);
+			//m_scene_manipulator_ptr = std::shared_ptr<sceneManipulatorInterface>(new sceneManipulator(this, m_system_manager, m_go_filter));
 		}
 	}
 
@@ -340,7 +355,8 @@ std::weak_ptr<bundleManipulatorInterface> engine::getBundleManipulator()
 	{
 		if (m_system_manager != nullptr)
 		{
-			m_bundle_manipulator_ptr = std::shared_ptr<bundleManipulatorInterface>(new bundleManipulator(m_system_manager));
+            //m_bundle_manipulator_ptr = std::shared_ptr<bundleManipulatorInterface>(new bundleManipulator(m_system_manager));
+            m_bundle_manipulator_ptr = std::make_shared<bundleManipulator>(m_system_manager);
 		}
 	}
 	return m_bundle_manipulator_ptr;
@@ -352,7 +368,8 @@ std::weak_ptr<persistenceManipulatorInterface> engine::getPersistenceManipulator
 	{
 		if (m_system_manager != nullptr)
 		{
-			m_persistence_manipulator_ptr = std::shared_ptr<persistenceManipulator>(new persistenceManipulator(m_system_manager));
+            //m_persistence_manipulator_ptr = std::shared_ptr<persistenceManipulator>(new persistenceManipulator(m_system_manager));
+            m_persistence_manipulator_ptr = std::make_shared<persistenceManipulator>(m_system_manager);
 		}
 	}
 	return m_persistence_manipulator_ptr;
@@ -362,7 +379,8 @@ std::weak_ptr<engineMetadataManipulatorInterface> engine::getEngineMetadataManip
 {
 	if (m_engine_metadata_manipulator_ptr == nullptr)
 	{
-		m_engine_metadata_manipulator_ptr = std::shared_ptr<engineMetadataManipulator>(new engineMetadataManipulator());
+        //m_engine_metadata_manipulator_ptr = std::shared_ptr<engineMetadataManipulator>(new engineMetadataManipulator());
+        m_engine_metadata_manipulator_ptr = std::make_shared<engineMetadataManipulator>();
 	}
 	return m_engine_metadata_manipulator_ptr;
 }
@@ -373,7 +391,8 @@ std::weak_ptr<cameraManipulatorInterface> engine::getCameraManipulator()
 	{
 		if (m_system_manager != nullptr)
 		{
-			m_camera_manipulator_ptr = std::shared_ptr<cameraManipulatorInterface>(new cameraManipulator(m_system_manager));
+            //m_camera_manipulator_ptr = std::shared_ptr<cameraManipulatorInterface>(new cameraManipulator(m_system_manager));
+            m_camera_manipulator_ptr = std::make_shared<cameraManipulator>(m_system_manager);
 		}
 	}
 	return m_camera_manipulator_ptr;
@@ -385,7 +404,8 @@ std::weak_ptr<assetManipulatorInterface> engine::getAssetManipulator()
     {
         if (m_system_manager != nullptr)
         {
-            m_asset_manipulator_ptr = std::shared_ptr<assetManipulatorInterface>(new assetManipulator());
+            //m_asset_manipulator_ptr = std::shared_ptr<assetManipulatorInterface>(new assetManipulator());
+            m_asset_manipulator_ptr = std::make_shared<assetManipulator>();
         }
     }
     return m_asset_manipulator_ptr;
@@ -397,7 +417,8 @@ std::weak_ptr<nodeManipulatorInterface> engine::getNodeManipulator()
   {
     if (m_system_manager != nullptr)
     {
-      m_node_manipulator_ptr = std::shared_ptr<nodeManipulatorInterface>(new nodeManipulator(this, m_system_manager));
+        //m_node_manipulator_ptr = std::shared_ptr<nodeManipulatorInterface>(new nodeManipulator(this, m_system_manager));
+        m_node_manipulator_ptr = std::make_shared<nodeManipulator>(this, m_system_manager);
     }
   }
 

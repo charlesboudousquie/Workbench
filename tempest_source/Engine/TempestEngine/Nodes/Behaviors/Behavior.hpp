@@ -9,8 +9,10 @@
 #pragma once
 
 #include "Nodes/Node.hpp"
+#include "BehaviorEnums.hpp"
+#include "BehaviorTask.hpp"
 
-#include "Nodes/TemplateNode.hpp"
+#define TESTING_NODES // used when just testing small amount of nodes
 
 class Behavior;
 class AgentEncapsulator;
@@ -18,16 +20,7 @@ class BehaviorTree;
 
 typedef std::shared_ptr<Behavior> BehaviorPtr;
 typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
-
-enum class BehaviorResult { SUCCESS = 0, RUNNING, FAILURE };
-
-enum class BehaviorPhase
-{
-    STARTING, // we can indeed enter the node
-    PROGRESSING, // node is in the middle of execution
-    WAITING, // node is inactive
-    DONE // node either succeeded or failed
-};
+typedef std::shared_ptr<BehaviorTask> BehaviorTaskPtr;
 
 class Behavior : public Node
 {
@@ -35,46 +28,41 @@ protected:
 
     // what node owns us
     BehaviorPtr parent;
-
-    // result from the tick operation
-    BehaviorResult result;
-
-    // phase we are currently in
-    BehaviorPhase phase;
+    BehaviorTreePtr parentTree;
 
     // by default it sets Phase to Progressing and Result to Running
-    virtual void Init();
+    virtual void Init() = 0;
     // does nothing by default
     virtual void Update(float dt) = 0;
     // does nothing by default
     virtual void Exit();
 
-    AgentEncapsulator* proxy;
+    // actual type of node
+    virtual BehaviorType GetType() = 0;
 
-    BehaviorTreePtr parentTree;
+    // shorthand to get task, it
+    // is essentially a helper function to get 
+    // task from parent tree
+    BehaviorTaskPtr GetTask();
+
+    // These 3 functions are meant to pass around a task within the 
+    // tree. The behaviors themselves should call TakeTask, GiveToChild, and GiveToParent
+    // As for the task proxy, it is assigned from outside and it is meant to
+    // merely switch out the task that is being passed around.
+    // So in short: the three functions below move a task through the tree,
+    // while the task proxy dictates who that task is.
+    void TakeTask(BehaviorTaskPtr);
+    void GiveToChild(BehaviorTaskPtr);
+    void GiveToParent(BehaviorTaskPtr);
+
 public:
+    Behavior();
 
     // set result status in typert
     void SetResultTypeRT(typeRT & p_data);
 
     // internal data of node
     typeRT data;
-
-public:
-
-    Behavior();
-
-    void setAgentProxy(AgentEncapsulator*);
-
-    // set phase of yourself, if you have child nodes
-    // then you probably want to override this
-    virtual void SetPhase(BehaviorPhase);
-    virtual void SetResult(BehaviorResult);
-    
-    // get current result of node
-    BehaviorResult getResult();
-
-    BehaviorPhase GetPhase();
 
     // get currently active child of said node
     virtual BehaviorPtr getCurrentChild() = 0;
@@ -88,16 +76,10 @@ public:
     // retrieve parent node, there should only be 1 parent
     BehaviorPtr getParent();
 
-    // allows node to talk to its parent tree
-    void setParentTree(BehaviorTreePtr);
-
-
     // based on what phase we are in, this will call Init, Update, or Exit.
-    // Result of those functions is returned.
     void tick(float dt);
 
-    // not sure what to do with this one
-    // ask ryan
+    // not sure what to do with this one ask ryan
     virtual std::pair<bool, std::string> validate() { return {}; }
 
     // Update node's data based on info given, by default does nothing
@@ -106,9 +88,4 @@ public:
     // decorator has 1 chid, composite have multiple, leaves have none
     virtual void addChild(BehaviorPtr) = 0;
 
-    // handle result of child
-    virtual void handleResult(BehaviorResult) = 0;
-
-    // tells whether or not the node is in the middle of an operation
-    bool progressing();
 };

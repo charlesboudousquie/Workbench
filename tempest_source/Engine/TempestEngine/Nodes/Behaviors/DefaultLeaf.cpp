@@ -15,6 +15,8 @@ typeRT DefaultLeaf::onRender()
 
 void DefaultLeaf::Update(float dt)
 {
-    this->result = BehaviorResult::SUCCESS;
-    this->phase = BehaviorPhase::DONE;
+    this->GetTask()->SetPhase(BehaviorPhase::DONE);
+    this->GetTask()->SetResult(BehaviorResult::SUCCESS);
+    /*this->result = BehaviorResult::SUCCESS;
+    this->phase = BehaviorPhase::DONE;*/
 }

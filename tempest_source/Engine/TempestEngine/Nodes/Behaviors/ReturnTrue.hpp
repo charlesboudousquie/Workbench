@@ -8,6 +8,7 @@
 *****************************************************************************************/
 #pragma once
 #include "Decorator.hpp"
+#ifndef TESTING_NODES
 
 class ReturnTrue : public Decorator
 {
@@ -19,3 +20,5 @@ public:
 
     void Update(float) override;
 };
+
+#endif

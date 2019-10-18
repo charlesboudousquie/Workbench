@@ -15,12 +15,13 @@ class Leaf : public Behavior
 {
 public:
 
+    BehaviorPtr getCurrentChild()override;
+
+    BehaviorType GetType() override;
+
+    virtual void Init() override;
+
     static typeRT leafOnRender();
-
-    void handleResult(BehaviorResult childResult) override;
-
-    // returns null since it has no active child
-    BehaviorPtr getCurrentChild() override;
 
     // returns empty vector since leaves have no child nodes
     std::vector<BehaviorPtr> GetChildren() override;
@@ -28,3 +29,4 @@ public:
     // no children should ever be added to leaf node
     void addChild(BehaviorPtr)override;
 };
+

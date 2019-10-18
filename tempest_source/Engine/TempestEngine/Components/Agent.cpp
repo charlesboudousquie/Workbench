@@ -34,7 +34,11 @@ void Agent::updateFromTypeRT(typeRT & p_type)
 {
     if (p_type.members().find("parentTree") != p_type.members().end())
     {
-        this->treeName = p_type.member("parentTree").getString();
+        auto name = p_type.member("parentTree").getString();
+        if (name.size() > 0)
+        {
+            this->treeName = p_type.member("parentTree").getString();
+        }
     }
     else
     {
@@ -49,16 +53,16 @@ std::string Agent::getQueryableType()
 
 std::string Agent::getQueryableID()
 {
-    if (!getGameObject().expired()) 
-    { 
-        return std::to_string(getGameObject().lock()->getID()); 
+    if (!getGameObject().expired())
+    {
+        return std::to_string(getGameObject().lock()->getID());
     }
     else { return "orphan agent component"; }
 }
 
 std::string Agent::getQueryableProperty(std::string p_name)
 {
-    toTypeRT().getString();
+    return toTypeRT().getString();
 
     ////convert this object to a typeRT
     //typeRT temp = toTypeRT();

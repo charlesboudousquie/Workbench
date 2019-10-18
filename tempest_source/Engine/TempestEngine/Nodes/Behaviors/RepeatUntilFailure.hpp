@@ -8,6 +8,7 @@
             it fails.
 *****************************************************************************************/
 #include "Decorator.hpp"
+#ifndef TESTING_NODES
 
 class RepeatUntilFailure : public Decorator
 {
@@ -20,3 +21,4 @@ public:
     void Update(float)override;
 };
 
+#endif

@@ -8,6 +8,8 @@
 *****************************************************************************************/
 #include "Decorator.hpp"
 
+#ifndef TESTING_NODES
+
 class RepeatUntilN : public Decorator
 {
 private:
@@ -22,3 +24,4 @@ public:
     void Init()override;
     void Update(float) override;
 };
+#endif

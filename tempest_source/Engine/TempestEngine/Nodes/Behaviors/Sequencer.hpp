@@ -13,8 +13,6 @@ class Sequencer : public Composite
 {
   public:
 
-      void handleResult(BehaviorResult childResult) override;
-
       static typeRT onRender();
 
       void Update(float)override;

@@ -17,11 +17,13 @@ public:
 
 protected:
 
+    BehaviorType GetType() override;
+
     BehaviorPtr getCurrentChild() override;
 
     static typeRT decoratorOnRender();
 
-    virtual void addChild(BehaviorPtr newChild);
+    virtual void addChild(BehaviorPtr newChild) override;
 
     void Init() override;
 

@@ -9,6 +9,8 @@
 *****************************************************************************************/
 #include "Decorator.hpp"
 
+#ifndef TESTING_NODES
+
 class RepeatUntilSuccess : public Decorator
 {
 public:
@@ -19,3 +21,5 @@ public:
 
     void Update(float)override;
 };
+
+#endif // !TESTING_NODES

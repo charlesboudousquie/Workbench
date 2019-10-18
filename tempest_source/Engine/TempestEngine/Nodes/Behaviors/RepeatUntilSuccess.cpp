@@ -8,6 +8,7 @@
             it succeeds.
 *****************************************************************************************/
 #include "RepeatUntilSuccess.hpp"
+#ifndef TESTING_NODES
 
 void RepeatUntilSuccess::handleResult(BehaviorResult)
 {
@@ -35,3 +36,4 @@ void RepeatUntilSuccess::Update(float dt)
 {
     child->tick(dt);
 }
+#endif TESTING_NODES

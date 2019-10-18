@@ -8,6 +8,7 @@
 *****************************************************************************************/
 #pragma once
 #include <string>
+#include <memory>
 
 class Agent;
 
@@ -16,6 +17,6 @@ class behaviorTreeManipulatorInterface
 
 public:
     virtual void AddAgentToTree(const std::string& treeName, std::shared_ptr<Agent> agent) = 0;
-    virtual int getActiveNodeID() const = 0;
+    virtual int getActiveNodeID(std::shared_ptr<Agent> agent) const = 0;
 
 };

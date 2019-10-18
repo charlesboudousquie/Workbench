@@ -41,18 +41,18 @@ static std::map<std::string, std::function<typeRT()>> renderTypes
 {"DefaultLeaf", DefaultLeaf::onRender},
 
 // composites
-{"Selector", Selector::onRender},
+//{"Selector", Selector::onRender},
 {"Sequencer", Sequencer::onRender},
 
 // decorators
-{"ReturnTrue", ReturnTrue::onRender},
-{"Inverter",Inverter::onRender},
-
-{"Repeater", Repeater::onRender},
-{"RepeatUntilFailure",RepeatUntilFailure::onRender},
-{"RepeatUntilN", RepeatUntilN::onRender},
-{"RepeatUntilSuccess", RepeatUntilSuccess::onRender},
-{"Timer", Timer::onRender},
+//{"ReturnTrue", ReturnTrue::onRender},
+//{"Inverter",Inverter::onRender},
+//
+//{"Repeater", Repeater::onRender},
+//{"RepeatUntilFailure",RepeatUntilFailure::onRender},
+//{"RepeatUntilN", RepeatUntilN::onRender},
+//{"RepeatUntilSuccess", RepeatUntilSuccess::onRender},
+//{"Timer", Timer::onRender},
 };
 
 

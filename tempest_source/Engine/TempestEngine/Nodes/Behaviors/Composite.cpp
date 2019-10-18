@@ -8,6 +8,17 @@
 *****************************************************************************************/
 #include "Composite.hpp"
 
+BehaviorType Composite::GetType()
+{
+    return BehaviorType::COMPOSITE;
+}
+
+BehaviorPtr Composite::getCurrentChild()
+{
+    auto task = GetTask();
+    return childNodes[task->GetChildIndex()];
+}
+
 typeRT Composite::compositeOnRender()
 {
     // final typert data to return
@@ -37,24 +48,14 @@ typeRT Composite::compositeOnRender()
     return l_data;
 }
 
-void Composite::SetPhaseOfChildren(BehaviorPhase phase_)
-{
-    for (auto child : childNodes)
-    {
-        child->SetPhase(phase_);
-    }
-}
-
 void Composite::Init()
 {
-    // set Phase of ourself as ready
-    Behavior::Init();
+    // start off by working with first child
+    BehaviorState state(this->getId(), 0, BehaviorPhase::STARTING);
+    GetTask()->Push_State(state);
 
-    // set Phase of children as ready to go
-    SetPhaseOfChildren(BehaviorPhase::STARTING);
-
-    // set current child as beginning point
-    currentChild = childNodes.begin();
+    // give task to child
+    this->GiveToChild(this->GetTask());
 }
 
 Composite::Composite()
@@ -63,11 +64,6 @@ Composite::Composite()
 std::vector<BehaviorPtr> Composite::GetChildren()
 {
     return childNodes;
-}
-
-BehaviorPtr Composite::getCurrentChild()
-{
-    return *currentChild;
 }
 
 void Composite::addChild(BehaviorPtr newChild)

@@ -9,6 +9,7 @@
 *****************************************************************************************/
 #pragma once
 #include "Decorator.hpp"
+#ifndef TESTING_NODES
 
 class Timer : public Decorator
 {
@@ -19,9 +20,10 @@ public:
 
     static typeRT onRender();
 
-    void handleResult(BehaviorResult) override;
+    //void handleResult(BehaviorResult) override;
 
     void Update(float) override;
     
 };
 
+#endif

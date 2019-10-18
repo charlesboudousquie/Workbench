@@ -9,12 +9,13 @@
             behavior tree.
 *****************************************************************************************/
 #include "Decorator.hpp"
+#ifndef TESTING_NODES
 
 class Repeater : public Decorator
 {
 public:
 
-    void handleResult(BehaviorResult)override;
+    //void handleResult(BehaviorResult)override;
 
     static typeRT onRender();
 
@@ -24,3 +25,4 @@ public:
 
 };
 
+#endif

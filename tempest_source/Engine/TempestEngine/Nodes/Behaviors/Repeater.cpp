@@ -1,4 +1,5 @@
 #include "Repeater.hpp"
+#ifndef TESTING_NODES
 
 void Repeater::handleResult(BehaviorResult)
 {
@@ -25,3 +26,4 @@ void Repeater::Update(float dt)
     // run child once
     child->tick(dt);
 }
+#endif

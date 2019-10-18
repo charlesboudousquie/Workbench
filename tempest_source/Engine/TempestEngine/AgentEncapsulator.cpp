@@ -6,15 +6,15 @@
 \par        Project: Boomerang
 \brief      This helper class keeps track of what agent it is pointing at.
 *****************************************************************************************/
-#include "AgentEncapsulator.hpp"
-#include "Agent.hpp"
-
-void AgentEncapsulator::Set(std::shared_ptr<Agent> agent_)
-{
-    agent = agent_;
-}
-
-std::shared_ptr<Agent> AgentEncapsulator::Get()
-{
-    return agent;
-}
+//#include "AgentEncapsulator.hpp"
+//#include "Agent.hpp"
+//
+//void AgentEncapsulator::Set(std::shared_ptr<Agent> agent_)
+//{
+//    agent = agent_;
+//}
+//
+//std::shared_ptr<Agent> AgentEncapsulator::Get()
+//{
+//    return agent;
+//}

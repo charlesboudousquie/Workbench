@@ -14,32 +14,29 @@
 
 class Composite : public Behavior
 {
-  protected:
+protected:
 
-      static typeRT compositeOnRender();
+    BehaviorType GetType() override;
 
-    // unique function to composites.
-    void SetPhaseOfChildren(BehaviorPhase);
+    BehaviorPtr getCurrentChild()override;
+
+    static typeRT compositeOnRender();
 
     void Init() override;
 
-  // TODO figure out how iterator will not be violated when adding or removing nodes from vector!!!
-  std::vector<BehaviorPtr>::iterator currentChild;
-  std::vector<BehaviorPtr> childNodes;
+    // TODO figure out how iterator will not be violated when adding or removing nodes from vector!!!
+    std::vector<BehaviorPtr> childNodes;
 
-  // NOTE: this class itself should never be constructed.
-  // subclasses like selector or sequencer should be constructed instead.
-  Composite();
-  public:
+    // NOTE: this class itself should never be constructed.
+    // subclasses like selector or sequencer should be constructed instead.
+    Composite();
+public:
 
-  std::vector<BehaviorPtr> GetChildren() override;
+    std::vector<BehaviorPtr> GetChildren() override;
 
-  BehaviorPtr getCurrentChild() override;
-
-
-  void addChild(BehaviorPtr);
-  void removeChild(BehaviorPtr);
-  void clearChildren();
+    void addChild(BehaviorPtr) override;
+    void removeChild(BehaviorPtr);
+    void clearChildren();
 };
 
 

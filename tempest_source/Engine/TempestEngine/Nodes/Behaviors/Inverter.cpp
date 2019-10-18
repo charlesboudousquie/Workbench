@@ -8,6 +8,7 @@
 \brief      This node inverts the result of its child node.
 *****************************************************************************************/
 #include "Inverter.hpp"
+#ifndef TESTING_NODES
 
 void Inverter::handleResult(BehaviorResult)
 {
@@ -47,3 +48,4 @@ void Inverter::Update(float dt)
     child->tick(dt);
 }
 
+#endif

@@ -8,19 +8,27 @@
 *****************************************************************************************/
 #include "Behavior.hpp"
 #include "BehaviorTree.hpp"
-#include "AgentEncapsulator.hpp"
+//#include "BehaviorTask.hpp"
 
-void Behavior::Init()
-{
-    // set Result to running
-    result = BehaviorResult::RUNNING;
-    // set Phase to Progressing
-    phase = BehaviorPhase::PROGRESSING;
-}
+//
+//void Behavior::Init()
+//{
+//    //// set Result to running
+//    //result = BehaviorResult::RUNNING;
+//    //// set Phase to Progressing
+//    //phase = BehaviorPhase::PROGRESSING;
+//}
 
 void Behavior::Exit()
 {
+    // when exiting a node, the state related to said node is removed, (except the result of that behavior)
+    GetTask()->Pop_State();
+}
 
+BehaviorTaskPtr Behavior::GetTask()
+{
+    // actual task is stored in tree so we get it from there
+    return this->parentTree->GetTask();
 }
 
 void Behavior::SetResultTypeRT(typeRT & p_data)
@@ -37,39 +45,12 @@ Behavior::Behavior()
     setIntputs(1);
 }
 
-void Behavior::setAgentProxy(AgentEncapsulator* proxy_)
-{
-    proxy = proxy_;
-}
-
-void Behavior::SetPhase(BehaviorPhase phase_)
-{
-    phase = phase_;
-}
-
-void Behavior::SetResult(BehaviorResult result_)
-{
-    result = result_;
-}
-
-BehaviorResult Behavior::getResult()
-{
-    return result;
-}
-
-BehaviorPhase Behavior::GetPhase()
-{
-    return this->phase;
-}
-
 void Behavior::tick(float dt)
 {
+    auto phase = GetTask()->GetPhase();
     // if just starting up then we need to initialize
     if (phase == BehaviorPhase::STARTING)
-    {
-        // make sure parent tree actually knows that this node is active
-        parentTree->SetCurrentNode(this->getId());
-        
+    {   
         // this pointer should act such that if subclasses
         // override init function then that function will be
         // called instead
@@ -102,12 +83,25 @@ BehaviorPtr Behavior::getParent()
     return parent;
 }
 
-void Behavior::setParentTree(BehaviorTreePtr parentTree_)
+void Behavior::TakeTask(BehaviorTaskPtr t)
 {
-    parentTree = parentTree_;
+  t->SetCurrentBehavior(this);
+  t->SetParentBehavior(this->parent.get());
+  t->SetChildBehavior(this->getCurrentChild().get());
 }
 
-bool Behavior::progressing()
+void Behavior::GiveToChild(BehaviorTaskPtr t)
 {
-    return this->phase == BehaviorPhase::PROGRESSING;
+    // give task pointer to child
+    getCurrentChild()->TakeTask(t);
 }
+
+void Behavior::GiveToParent(BehaviorTaskPtr t)
+{
+    // if parent exists then give task to them
+    if (parent)
+    {
+        parent->TakeTask(t);
+    }
+}
+

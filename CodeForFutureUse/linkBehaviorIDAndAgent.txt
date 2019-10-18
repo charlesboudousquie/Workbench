@@ -1,0 +1,19 @@
+
+
+
+
+
+
+
+
+
+
+
+
+Task is sent to parent or child.
+
+
+Task proxy acts as a front for the actual task.
+
+The task proxy inside the tree will be edited
+in order to change the task.

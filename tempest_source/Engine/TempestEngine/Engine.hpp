@@ -24,6 +24,7 @@
 #include "External/CameraManipulatorInterface.hpp"
 #include "External/AssetManipulatorInterface.hpp"
 #include "External/NodeManipulatorInterface.hpp"
+#include "External/BehaviorTreeManipulatorInterface.hpp"
 #include <Configuration.hpp>
 
 
@@ -137,6 +138,12 @@ public:
   *****************************************************************************************/
   std::weak_ptr<nodeManipulatorInterface> getNodeManipulator();
 
+  /*!***************************************************************************************
+  \brief  Retrieves the behavior tree manipulator instance from the engine.
+  \return behaviorTreeManipulatorInterface - pointer to the behavior tree manipulator instance.
+  *****************************************************************************************/
+  std::weak_ptr<behaviorTreeManipulatorInterface> getBehaviorManipulator();
+
 	/*!***************************************************************************************
 	\brief  Requests that the engine shutdown.  Effect is not immediate and not guaranteed.
 	*****************************************************************************************/
@@ -178,6 +185,7 @@ private:
 	std::shared_ptr<cameraManipulatorInterface> m_camera_manipulator_ptr; //!< pointer to the camera manipulator interface for external control
     std::shared_ptr<assetManipulatorInterface> m_asset_manipulator_ptr;
     std::shared_ptr<nodeManipulatorInterface> m_node_manipulator_ptr; //!< pointer to the node manipulator interface for external control
+    std::shared_ptr<behaviorTreeManipulatorInterface> m_behavior_tree_manipulator_ptr; //! pointer to behavior tree manipulator
 
 	externalWindowInterface * m_window_ptr = nullptr;
 	renderContextInterface * m_render_context_ptr = nullptr;

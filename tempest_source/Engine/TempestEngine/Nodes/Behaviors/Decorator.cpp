@@ -13,6 +13,11 @@ std::vector<BehaviorPtr> Decorator::GetChildren()
     return { child };
 }
 
+BehaviorType Decorator::GetType()
+{
+    return BehaviorType::DECORATOR;
+}
+
 BehaviorPtr Decorator::getCurrentChild()
 {
     return child;
@@ -62,11 +67,10 @@ void Decorator::Init()
 {
     assert(child != nullptr);
 
-    // we are progressing and running
-    Behavior::Init();
-
-    // child is not progressing BUT it will soon
-    child->SetPhase(BehaviorPhase::STARTING);
+    // start up node
+    auto task = GetTask();
+    BehaviorState state(this->getId(), 0, BehaviorPhase::STARTING);
+    task->Push_State(state);
 }
 
 

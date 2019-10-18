@@ -7,8 +7,11 @@
 \brief  This is the interface for the Manager that controls any behavior tree an agent may use.
 *****************************************************************************************/
 #include "BehaviorTreeManager.hpp"
+#include "BehaviorTreeDataBase.hpp"
 #include "BehaviorTreeBuilder.hpp"
 #include "BehaviorTree.hpp"
+#include "BehaviorTask.hpp"
+
 #include "Nodes/Behaviors/Behavior.hpp"
 #include "AgentEncapsulator.hpp"
 #include "Agent.hpp"
@@ -17,6 +20,7 @@
 BehaviorTreeManager::BehaviorTreeManager()
 {
     this->builder = std::make_shared<BehaviorTreeBuilder>();
+    this->dataBase = std::make_shared<BehaviorTreeDataBase>();
     this->builder->SetManager(this);
     shouldUpdate = false;
 }
@@ -30,42 +34,68 @@ void BehaviorTreeManager::onUpdate()
 {
     if (this->shouldUpdate)
     {
-        this->tree->Update(this->getDt());
+        auto tasks = dataBase->GetTasks();
+
+        //for each task
+        for (auto task : tasks)
+        {
+            // get tree
+            auto tree = task->GetTree();
+
+            // Tell Task Proxy to use this particular task
+            tree->SetTask(task);
+
+            // current behavior tick
+            task->GetCurrentBehavior()->tick(this->getDt());
+        }
     }
 }
 
-void BehaviorTreeManager::onInitialize()
-{
-}
+void BehaviorTreeManager::onInitialize() {}
 
-void BehaviorTreeManager::ActivateTree(const std::string & treeName)
-{
-    tree = this->builder->CreateTree(treeName);
-    shouldUpdate = true;
-}
+//void BehaviorTreeManager::ActivateTree()
+//{
+//
+//}
 
 void BehaviorTreeManager::linkAgentComponentToTree(std::shared_ptr<Agent> agent, const std::string & treeName)
 {
-    if (trees.find(treeName) != trees.end())
+    // if tree exists
+    if (dataBase->HasTree(treeName))
     {
-        // add agent to tree
-        this->trees[treeName]->AddAgent(agent);
+        this->dataBase->AssignAgentToTree(agent, treeName);
     }
+    //if tree does not exist then create it
     else
     {
-        std::cout << "ERROR could not add agent to tree " << treeName << std::endl;
+        BehaviorTreePtr tree = this->builder->CreateTree(treeName);
+
+        // if tree loading succeeded
+        if (tree != nullptr)
+        {
+            dataBase->AddTree(tree, treeName);
+        }
+        // otherwise it failed
+        else
+        {
+            std::cout << "Failed to create tree: " << treeName << std::endl;
+        }
     }
-    
 }
 
-int BehaviorTreeManager::getCurrentNodeID()
+int BehaviorTreeManager::getCurrentNodeID(AgentPtr agent)
 {
-    if (tree != nullptr && tree->GetActiveNode() != nullptr)
-    {
-        auto currentNode = tree->GetActiveNode();
-        return currentNode->getId();
-    }
-
-    return -1;
+    return dataBase->AgentGetActiveBehavior(agent)->getId();
 }
+
+//int BehaviorTreeManager::getCurrentNodeID()
+//{
+//    if (tree != nullptr && tree->GetActiveNode() != nullptr)
+//    {
+//        auto currentNode = tree->GetActiveNode();
+//        return currentNode->getId();
+//    }
+//
+//    return -1;
+//}
 

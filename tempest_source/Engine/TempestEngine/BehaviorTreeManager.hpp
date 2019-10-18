@@ -9,26 +9,21 @@
 #pragma once
 #include <SystemBase.hpp>
 
-//#include "Reflection.hpp"
-
 class Agent;
 class BehaviorTree;
 class BehaviorTreeBuilder;
+class BehaviorTreeDataBase;
 
 class BehaviorTreeManager final : public systemBase
 {
+    typedef std::shared_ptr<Agent> AgentPtr;
     typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
-
-    // all trees in use, should be unique
-    std::map<std::string, BehaviorTreePtr> trees;
-
-    //BehaviorTreePtr tree;
+    typedef std::shared_ptr<BehaviorTreeBuilder> BehaviorTreeBuilderPtr;
+    typedef std::shared_ptr<BehaviorTreeDataBase> BehaviorTreeDataBasePtr;
 
     // there should only be 1 tree builder
-    std::shared_ptr<BehaviorTreeBuilder> builder;
-
-    // list of all agents in existence
-    //std::vector<std::shared_ptr<Agent>> agents;
+    BehaviorTreeBuilderPtr builder;
+    BehaviorTreeDataBasePtr dataBase;
 
     bool shouldUpdate;
 
@@ -63,9 +58,9 @@ public:
     *****************************************************************************************/
     virtual void onInitialize()override;
 
-    void ActivateTree(const std::string& treeName);
+    // activate all trees within manager
+    void Activate();
     
-
     void Deactivate()
     {
         shouldUpdate = false;
@@ -75,8 +70,8 @@ public:
     *****************************************************************************************/
     void linkAgentComponentToTree(std::shared_ptr<Agent> agent, const std::string& treeName);
 
-    // 1 tree for now, gets its currently running node
-    int getCurrentNodeID();
+    // returns id of node that an agent is working on
+    int getCurrentNodeID(AgentPtr);
 
 };
 

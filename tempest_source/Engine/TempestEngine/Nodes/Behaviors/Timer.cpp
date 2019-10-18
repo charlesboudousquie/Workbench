@@ -8,6 +8,7 @@
             timer hits 0.
 *****************************************************************************************/
 #include "Timer.hpp"
+#ifndef TESTING_NODES
 
 typeRT Timer::onRender()
 {
@@ -35,3 +36,4 @@ void Timer::Update(float dt)
         child->tick(dt);
     }
 }
+#endif

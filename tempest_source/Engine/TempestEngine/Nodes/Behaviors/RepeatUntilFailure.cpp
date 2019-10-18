@@ -8,6 +8,7 @@
             it fails.
 *****************************************************************************************/
 #include "RepeatUntilFailure.hpp"
+#ifndef TESTING_NODES
 
 void RepeatUntilFailure::handleResult(BehaviorResult)
 {
@@ -39,3 +40,5 @@ void RepeatUntilFailure::Update(float dt)
   // run child behavior
   child->tick(dt);
 }
+
+#endif

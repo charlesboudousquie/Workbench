@@ -1,6 +1,22 @@
 #include "Leaf.hpp"
 
 
+BehaviorPtr Leaf::getCurrentChild()
+{
+    return nullptr;
+}
+
+BehaviorType Leaf::GetType()
+{
+    return BehaviorType::LEAF;
+}
+
+void Leaf::Init()
+{
+    BehaviorState state(this->getId(), -1, BehaviorPhase::STARTING);
+    GetTask()->Push_State(state);
+}
+
 typeRT Leaf::leafOnRender()
 {
     // final typert data to return
@@ -30,21 +46,9 @@ typeRT Leaf::leafOnRender()
     return l_data;
 }
 
-void Leaf::handleResult(BehaviorResult childResult)
-{
-    throw std::exception("Leaf nodes do no handle a child's result");
-
-}
-
-
-BehaviorPtr Leaf::getCurrentChild()
-{
-    return nullptr;
-}
-
 std::vector<BehaviorPtr> Leaf::GetChildren()
 {
-    return {};
+    throw std::exception("Leaf Node has no child nodes, who is calling this?");
 }
 
 void Leaf::addChild(BehaviorPtr)

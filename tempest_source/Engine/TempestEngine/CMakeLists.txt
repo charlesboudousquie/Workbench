@@ -131,10 +131,15 @@ add_library(TempestEngine STATIC
 
     # Behavior Tree Section
 
+    BehaviorEnums.hpp
     BehaviorTree.hpp BehaviorTree.cpp
     BehaviorTreeManager.hpp BehaviorTreeManager.cpp
     BehaviorTreeBuilder.hpp BehaviorTreeBuilder.cpp
-    AgentEncapsulator.hpp AgentEncapsulator.cpp
+    BehaviorTreeDataBase.hpp BehaviorTreeDataBase.cpp
+    BehaviorTask.hpp BehaviorTask.cpp
+    BehaviorTaskProxy.hpp BehaviorTaskProxy.cpp
+
+    #AgentEncapsulator.hpp AgentEncapsulator.cpp
 
     Nodes/Behaviors/Behavior.hpp Nodes/Behaviors/Behavior.cpp
 
