@@ -4,12 +4,13 @@
 \date       7/31/18
 \copyright  All content � 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
-\brief  
+\brief
 *****************************************************************************************/
 #include "SpawnerScript.h"
 #include "EnemyAIScript.h"
 #include "../Components/Renderer.hpp"
 #include "../Physics/PhysicsSystem.hpp"
+#include "GameObjectSerialization.hpp"
 
 spawnerScript::spawnerScript(typeRT p_data): scriptCPP(p_data)
 {

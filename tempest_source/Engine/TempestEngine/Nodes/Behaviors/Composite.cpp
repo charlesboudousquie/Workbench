@@ -45,17 +45,32 @@ typeRT Composite::compositeOnRender()
 
     l_data.insertMember(l_non_render_data);
 
+
+    // now for render data
+    typeRT l_render_data;
+    l_render_data.setTypeName("Node Render Data");
+    l_render_data.setVariableName("Node Render Data");
+
+    typeRT l_type_name("Type", (std::string)"Composite");
+    l_render_data.insertMember(l_type_name);
+    l_data.insertMember(l_render_data);
+
+
     return l_data;
 }
 
 void Composite::Init()
 {
-    // start off by working with first child
-    BehaviorState state(this->getId(), 0, BehaviorPhase::STARTING);
-    GetTask()->Push_State(state);
-
+    assert(!childNodes.empty());
+    // set our phase to progressing
+    GetTask()->SetPhase(BehaviorPhase::PROGRESSING);
     // give task to child
-    this->GiveToChild(this->GetTask());
+    Behavior::GiveToChild(GetTask());
+}
+
+void Composite::Exit()
+{
+    Behavior::Exit();
 }
 
 Composite::Composite()

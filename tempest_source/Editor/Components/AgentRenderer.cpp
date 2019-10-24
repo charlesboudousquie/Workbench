@@ -8,6 +8,8 @@
 *****************************************************************************************/
 #include "AgentRenderer.hpp"
 #include "../EngineController.hpp"
+#include "../NodeGraph/NGE_Watchdog.hpp"
+
 #include <EngineRunner.hpp>
 #include <Engine.hpp>
 
@@ -16,13 +18,13 @@
 Editor::agentRenderer::agentRenderer(editorWindow * p_parent_window)
     : componentRenderer(p_parent_window)
 {
-    
 }
 
 void Editor::agentRenderer::LoadTreeList()
 {
     auto assetList = getEngineController().getEngineRunner()->getEngine()->getAssetManipulator().lock()->assetList();
 
+    treeList.clear();
 
     // fill up tree list, by filtering out irrelevant files
     for (auto asset : assetList)
@@ -32,42 +34,35 @@ void Editor::agentRenderer::LoadTreeList()
         auto extensionPos = string.find(".bht");
         if (extensionPos != std::string::npos)
         {
-            treeList.push_back(string.c_str());
+            auto filename = std::filesystem::path(string).stem().string();
+            treeList.push_back(filename);
         }
     }
 }
 
-bool Editor::agentRenderer::onRender(typeRT & p_type_data)
+bool Editor::agentRenderer::onRender(typeRT & p_type_data, objID id)
 {
-    static bool firstTime = true;
-
-    if (firstTime == true)
-    {
-        LoadTreeList();
-        firstTime = false;
-    }
-
-    //static const char* currentTree = nullptr;
-
 
     // create imgui combo
     if (ImGui::BeginMenu("Trees"))
     {
+        // load trees from disk
+        LoadTreeList(); // should probably make this more efficient TODO
+
         for (auto tree : treeList)
         {
             // user chooses what tree they want
-            if (ImGui::MenuItem(tree))
+            if (ImGui::MenuItem(tree.c_str()))
             {
-                // set tree name
+                // mark object that changed to Node Graph Window knows about it
+                NGE_Watchdog::GetInstance().Alert(id);
+                // set tree name for type rt
                 p_type_data.member("parentTree").setString(tree);
             }
-
         }
 
         ImGui::EndMenu();
     }
-
-    
 
     return true;
 }

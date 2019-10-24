@@ -8,24 +8,33 @@
 *****************************************************************************************/
 #pragma once
 #include <SystemBase.hpp>
+#include <memory>
 
-class Agent;
 class BehaviorTree;
 class BehaviorTreeBuilder;
-class BehaviorTreeDataBase;
+//class BehaviorTreeDataBase;
+
+class gameObject;
+typedef std::shared_ptr<gameObject> GameObjectPtr;
 
 class BehaviorTreeManager final : public systemBase
 {
-    typedef std::shared_ptr<Agent> AgentPtr;
     typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
     typedef std::shared_ptr<BehaviorTreeBuilder> BehaviorTreeBuilderPtr;
-    typedef std::shared_ptr<BehaviorTreeDataBase> BehaviorTreeDataBasePtr;
+    //typedef std::shared_ptr<BehaviorTreeDataBase> BehaviorTreeDataBasePtr;
 
     // there should only be 1 tree builder
     BehaviorTreeBuilderPtr builder;
-    BehaviorTreeDataBasePtr dataBase;
+    //BehaviorTreeDataBasePtr dataBase;
 
-    bool shouldUpdate;
+    std::unordered_map<std::string, BehaviorTreePtr> trees;
+
+    // add any new actors that were recently created
+    // and remove any actors that have been removed from the scene
+    //void UpdateActors();
+
+    // gets tree if it exists otherwise returns nullptr
+    BehaviorTreePtr GetTree(const std::string&);
 
 public:
 
@@ -43,9 +52,9 @@ public:
     /*!*******************************************************************************
     \brief  Returns name of this system.
     *********************************************************************************/
-    static const std::string& getName() 
-    { 
-        static const std::string n("BehaviorTreeManager"); return n; 
+    static const std::string& getName()
+    {
+        static const std::string n("BehaviorTreeManager"); return n;
     }
 
     /*!***************************************************************************************
@@ -57,22 +66,15 @@ public:
     \brief  Tells treebuilder to build trees from disk
     *****************************************************************************************/
     virtual void onInitialize()override;
-
-    // activate all trees within manager
-    void Activate();
     
-    void Deactivate()
-    {
-        shouldUpdate = false;
-    }
-    /*!***************************************************************************************
-    \brief  An Agent component is assigned 1 tree, so they can be linked directly together
-    *****************************************************************************************/
-    void linkAgentComponentToTree(std::shared_ptr<Agent> agent, const std::string& treeName);
+    // returns all game objects that have an agent component
+    std::vector<std::shared_ptr<gameObject>> getAgentGameObjects();
 
     // returns id of node that an agent is working on
-    int getCurrentNodeID(AgentPtr);
+    int getCurrentNodeID(GameObjectPtr);
 
+    // remove actor from manager
+    //void RemoveActor(GameObjectPtr);
 };
 
 

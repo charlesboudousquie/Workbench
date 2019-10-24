@@ -25,6 +25,7 @@ std::vector<std::wstring> assetManager::m_assetNames;
 std::map<std::wstring, fileLoader*> assetManager::m_typeToLoader;
 fileLoader* assetManager::m_fallbackLoader;
 logger assetManager::log("AssetManager");
+std::string assetManager::m_asset_path;
 //
 // asset::asset(const std::wstring& p_fullName) : m_assetData(nullptr), m_references(0), m_fullPath(p_fullName)
 // {
@@ -172,10 +173,14 @@ void assetManager::init(const std::string & p_asset_path)
 	auto l_materialLoader = new materialLoader;
 	m_typeToLoader.emplace(L".mtl", l_materialLoader);
 
-    //auto l_behavior_treeLoader = new TreeLoader;
+    m_asset_path = p_asset_path;
 
 	loadAssetList(p_asset_path);
+}
 
+void assetManager::reload()
+{
+    loadAssetList(m_asset_path);
 }
 
 void assetManager::shutdown()

@@ -20,8 +20,14 @@
 //======== Getters & Setters ===========================================================//
 
 //======== Overrides ===================================================================//
-void waypointNode::updateFromTypeRT(typeRT& /*t*/)
+void waypointNode::updateFromTypeRT(typeRT& p_type)
 {
+	auto l_members = p_type.members();
+
+	if (l_members.find("debugName") != l_members.end())
+	{
+		debugName = p_type.member("debugName").getString();
+	}
 }
 
 typeRT waypointNode::toTypeRT() const
@@ -29,6 +35,8 @@ typeRT waypointNode::toTypeRT() const
 	typeRT l_result;
 	l_result.setTypeName(type().name());
 	l_result.setVariableName(type().name());
+
+	l_result.insertMember(typeRT("debugName", debugName));
 
 	return l_result;
 }

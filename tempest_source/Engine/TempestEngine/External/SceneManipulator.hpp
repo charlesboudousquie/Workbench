@@ -27,7 +27,7 @@ public:
 	sceneManipulator(engine * p_engine, systemManagerInterface * p_system_manager, gameObjectGatherer * p_game_object_gatherer);
 
     objID getParentID(objID p_object_id) override;
-    objID getSpaceIDForObject(objID p_object_id);
+    objID getSpaceIDForObject(objID p_object_id) override;
     objID getSpaceIDFromName(std::string name) override;
 	std::vector<objID> getSceneIDs() override;
     std::string getSceneName(objID p_scene_id) override;
@@ -47,7 +47,7 @@ public:
 
   std::shared_ptr<gameObject> addEmptyGameObject() override;
   std::shared_ptr<gameObject> addEmptyGameObject(objID p_parent_id) override;
-	objID addEmptyGameObject(objID p_parent_id, const std::string& p_name);
+	objID addEmptyGameObject(objID p_parent_id, const std::string& p_name) override;
 	void addRenderedGameObject(float p_x, float p_y, float p_z, std::string p_object_name, std::string p_texture) override;
 
 	void addGameObjectComponent(objID p_object_id, const std::string & p_component_type) override;
@@ -60,7 +60,7 @@ public:
 	void removeEditorCamera() override;
 
   void setButtonNeighbor(objID p_objectID, objID p_neighborID, int p_neighbor) override;
-  void removeButtonNeighbor(objID p_objectID, int p_neighbor) override;
+  objID removeButtonNeighbor(objID p_objectID, int p_neighbor) override;
   objID getObjectID(std::string p_objectName) override;
 
   void setCollisionLayer(objID p_object_id, unsigned int p_data, unsigned int p_type) override;
@@ -86,6 +86,7 @@ public:
   void dynamicWaypointGraphCreateSetPaths() override;
   void dynamicWaypointGraphStitchPaths() override;
   void dynamicWaypointGraphClear() override;
+  void dynamicWaypointGraphDeleteRandomNodeSet() override;
 
 private:
 	engine * m_engine;

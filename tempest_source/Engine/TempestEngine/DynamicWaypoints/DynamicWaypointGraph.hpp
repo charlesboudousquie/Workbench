@@ -10,17 +10,55 @@
 
 //======== 1st Party Includes ==========================================================//
 #include "../SystemBase.hpp"
-#include "WaypointNode.hpp" //nodeConnection, waypointNode - needed for valid/invalid connection lists
+#include "WaypointNode.hpp"
 #include "WaypointNodeSet.hpp"
 //======== 3rd Party Includes ==========================================================//
 #include <list>
 #include <Vector3.hpp>
-#include <IComponentRepository.hpp>
 //======== Types =======================================================================//
+/*!***************************************************************************************
+\par struct: nodeConnection
+\brief   A connection to another node
+*****************************************************************************************/
+struct nodeConnection
+{
+	/*!***************************************************************************************
+	\brief  constructor
+	\param firstNode_ - The first node in the connection
+	\param secondNode_ - The first node in the connection
+	\param onObjectParameter_ - If the connection is on an object parameter
+	\param isValid_ - If the path is being blocked or not
+	*****************************************************************************************/
+	nodeConnection(componentHandle<waypointNode> firstNode_, componentHandle<waypointNode> secondNode_, bool onObjectParameter_ = false, bool isValid_ = true) :
+		firstNode(firstNode_), secondNode(secondNode_), onObjectParameter(onObjectParameter_), isValid(isValid_)
+	{
+		name = firstNode->debugName + " to " + secondNode->debugName;
+	}
+
+	/*!***************************************************************************************
+	\brief  Compares a node connection with another based only on if the connected nodes match
+	\param other - The other connection to compare to
+	\return True if the first and second nodes match, false otherwise
+	*****************************************************************************************/
+	bool operator==(nodeConnection other) const;
+
+	std::string name;
+
+	//!<First node in the connection
+	componentHandle<waypointNode> firstNode;
+	//!<Second node in the connection
+	componentHandle<waypointNode> secondNode;
+	//!<If this object is on an object parameter, or an open path
+	bool onObjectParameter;
+	//!<If this connections is still valid (invalid means object is blocking it)
+	bool isValid;
+};
 //======== Defines =====================================================================//
 //======== Forward Declarations=========================================================//
 struct intersection;
 class vector2;
+class transform;
+class space;
 
 /*!***************************************************************************************
 \par class: DynamicWaypointGraph
@@ -33,7 +71,7 @@ class dynamicWaypointGraph : public systemBase
 		\brief  Name getter for this system
 		\return The name of this system
 		*****************************************************************************************/
-		const std::string& name() const { return "dynamicWaypointGraphSystem"; };
+		const std::string& name() const { static const std::string n("dynamicWaypointGraphSystem"); return n; };
 
 		/*!***************************************************************************************
 		\brief  Static name getter for this system
@@ -44,18 +82,28 @@ class dynamicWaypointGraph : public systemBase
 		/*!***************************************************************************************
 		\brief  Handles stitching the waypoint graph back together when a node set is deleted
 		*****************************************************************************************/
-		void handleNodeSetDeletion();
+		void handleNodeSetDeletion(componentHandle<waypointNodeSet> set);
 
 		/*!***************************************************************************************
 		\brief  Handles connecting a set of new nodes into the current graph
 		*****************************************************************************************/
 		void handleNodeSetCreation(componentHandle<waypointNodeSet> newSet);
 
+		/*!***************************************************************************************
+		\brief  Obtains a path from the start to end using the waypoint graph
+		\param startPosition - The start of the path
+		\param endPosition - The end of the path
+		\return Returns the optimal path to be followed from start to end
+		*****************************************************************************************/
+		std::list<vector3> getPath(std::shared_ptr<gameObject> startObject, std::shared_ptr<gameObject> endObject);
+
 		//TEST FUNCTIONS - will be rewritten/reworked later
 		void createLevelPath();
 		void createNodeSetPaths();
 		void stitchPath();
 		void clear();
+		void deleteRandomNodeSet();
+		void testFunction();
 
 	protected:
 
@@ -64,13 +112,14 @@ class dynamicWaypointGraph : public systemBase
 		\brief  Handles disabling all connections with a given node
 		\param n - The node to invalidate connections to
 		*****************************************************************************************/
-		void disableNode(componentHandle<waypointNode> n);
+		void disableNode(waypointNode n);
 		
 		/*!***************************************************************************************
 		\brief  Compares a new connection with all other valid connections, creating new paths on intersection
+				Adds the connection to valid or invalid connections based on results
 		\param newConnection - The new connection to validate against all valid connections
 		*****************************************************************************************/
-		void validateConnection(nodeConnection newConnection);
+		void validateConnection(nodeConnection & newConnection);
 		
 		/*!***************************************************************************************
 		\brief  Gets a list of connections from a node set (no duplicates)
@@ -86,9 +135,16 @@ class dynamicWaypointGraph : public systemBase
 		\return If the two connections intersect or not, and the intersect position if true
 		*****************************************************************************************/
         std::pair<bool, vector3> doConnectionsIntersect(nodeConnection first, nodeConnection second) const;
-		//Abstract test version of above function
-		//std::pair<bool, vector3> doConnectionsIntersectTest(vector3 pointA, vector3 pointB, vector3 pointC, vector3 pointD);
-		
+
+		/*!***************************************************************************************
+		\brief  Helper function that attempts to connect two nodes and validate them
+				If the nodes are already connected, returns immediately.
+				Otherwise, calls validateConnection, which places them in the valid/invalid list
+		\param n1 - The first node to connect
+		\param n2 - The second node to connect
+		*****************************************************************************************/
+		void attemptConnectionAndValidation(componentHandle<waypointNode> n1, componentHandle<waypointNode> n2);
+
 		/*!***************************************************************************************
 		\brief  Finds intersections of a given node set with open valid connections
 		\param newSet - The node set to get intersections for
@@ -152,23 +208,62 @@ class dynamicWaypointGraph : public systemBase
 		\param isObjectPath - If this object is 
 		\return The new node connection
 		*****************************************************************************************/
-		nodeConnection connectNodes(componentHandle<waypointNode> a, 
-								    componentHandle<waypointNode> b, bool isObjectPath = false, bool isValid = true);
+		nodeConnection connectNodes(componentHandle<waypointNode> a, componentHandle<waypointNode> b,
+									bool isObjectPath = false, bool isValid = true);
+
+		/*!***************************************************************************************
+		\brief  Handles creation of a single waypoint node set
+		\param set - The set to create
+		*****************************************************************************************/
+		void createNodeSet(componentHandle<waypointNodeSet> set);
 
 		/*!***************************************************************************************
 		\brief  Moves a node connection from valid to invalid
 		\param nc - The node connection to invalidate
 		*****************************************************************************************/
-		void invalidateConnection(nodeConnection nc);
+		void invalidateConnection(nodeConnection & nc);
 
+		/*!***************************************************************************************
+		\brief  Deletes a connection from the graph; valid or invalid.
+				Also removes connection from nodes
+		\param c - The connection to delete
+		*****************************************************************************************/
+		void deleteConnection(const nodeConnection & c);
+
+		/*!***************************************************************************************
+		\brief  Helper function to connect a waypoint set's nodes together
+		\param nodeSet - The set to connect
+		*****************************************************************************************/
 		void connectNodeSet(componentHandle<waypointNodeSet> nodeSet);
 
+		/*!***************************************************************************************
+		\brief  Helper function to check if two nodes are connected
+		\param n1 - The first node to check
+		\param n2 - The second node to check
+		\return True if they are already connected, false otherwise
+		*****************************************************************************************/
+		bool nodesAreConnected(componentHandle<waypointNode> n1, componentHandle<waypointNode> n2);
+
+		/*!***************************************************************************************
+		\brief  Adds a debug line to the object of the first node in the connection
+		\param nc - The node connection to add the debug line to
+		\param color - The color of the line
+		*****************************************************************************************/
 		void addDebugLine(nodeConnection nc, vector3 color = {1,1,1});
 
+		/*!***************************************************************************************
+		\brief  Removes a debug line from the node connection
+		\param nc - The connection to remove the debug line from
+		*****************************************************************************************/
 		void removeDebugLine(nodeConnection nc);
-
-		//Test function
-		void testRuns();
+		
+		/*!***************************************************************************************
+		\brief  Makes a node game object in the space given
+		\param s - The space of the node set to create the object
+		\param c - The color of the node. Default gray
+		\return Shared ptr to the new node
+		*****************************************************************************************/
+		std::shared_ptr<gameObject> makeNodeGameobject(space * s, std::string materialName = "solidred.mtl") const;
 
 		//!<List of valid connections for path finding
 		std::list<nodeConnection> validConnections;

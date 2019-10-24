@@ -321,7 +321,10 @@ void graphicsSystem::initShaders()
 		l_fragmentDir / "ForwardPlus.frag");
 
 	for (auto&& shader : l_shaders)
+	{
 		shader->build();
+		shader->unbind();
+	}
 }
 
 void graphicsSystem::initAssets()
@@ -353,6 +356,11 @@ void graphicsSystem::initAssets()
 	l_skybox->build();
 
 	m_textureManager->UnbindAll();
+}
+
+void graphicsSystem::shutdownShaders()
+{
+	m_shaderManager->clearShaders();
 }
 
 auto graphicsSystem::getObjectList(componentType const& type) const
@@ -444,6 +452,7 @@ void graphicsSystem::onEndFrame()
 void graphicsSystem::onShutdown()
 {
 	textRenderer::shutdown();
+	shutdownShaders();
 	delete m_shaderManager;
 	delete m_vertexArrayManager;
 	delete m_textureManager;
@@ -504,16 +513,10 @@ void graphicsSystem::render(std::shared_ptr<shaderProgram> p_shaderProgram, comp
 
 	renderOpaque(l_listObjects, l_listLights, p_camera);
 
-
-
-	if (m_textureIndex <= -1)
+	if (m_textureIndex != -1)
 	{
-		renderOld(l_listObjects, l_listLights, p_camera);
+		renderTextureToScreen(std::static_pointer_cast<simpleTexture>(getTextureManager()->getSimpleTexture(textureNames[m_textureIndex])));
 	}
-
-	renderDebug(p_camera);
-	renderSkybox(l_listSkybox, p_camera);
-	renderTextureToScreen(std::static_pointer_cast<simpleTexture>(getTextureManager()->getSimpleTexture(textureNames[forwardColor])));
 
 }
 
@@ -583,7 +586,7 @@ void graphicsSystem::recordToRenderPool(std::shared_ptr<shaderProgram> p_shaderP
 	l_bufferPool.pop_front();
 }
 
-void graphicsSystem::renderSkybox(objectList const& p_listSkybox, componentHandle<cameraBase> p_camera)
+void graphicsSystem::renderSkybox(const objectList & p_listSkybox, componentHandle<cameraBase> p_camera)
 {
 	{//========================SkyBox========================//
 		glCullFace(GL_FRONT);
@@ -592,7 +595,7 @@ void graphicsSystem::renderSkybox(objectList const& p_listSkybox, componentHandl
 		glDepthMask(false);
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-		for (auto & renderObj : p_listSkybox)
+		for (const auto & renderObj : p_listSkybox)
 		{
 			auto l_skybox = renderObj->getComponent<skybox>();
 			std::shared_ptr<shaderProgram> l_shaderProgram = m_shaderManager->getShaderProgram(programType::enm_skybox);
@@ -617,7 +620,7 @@ void graphicsSystem::renderSkybox(objectList const& p_listSkybox, componentHandl
 
 			vao->unbind();
 
-			//shaderProgram->unbind();
+			l_shaderProgram->unbind();
 			//GLDebug::getLastError();
 
 			m_textureManager->UnbindAll();
@@ -632,7 +635,7 @@ void graphicsSystem::renderSkybox(objectList const& p_listSkybox, componentHandl
 	}//=======================================================//
 }
 
-void graphicsSystem::renderOpaque(objectList const& p_listObjects, objectList& p_lights, componentHandle<cameraBase> p_camera)
+void graphicsSystem::renderOpaque(const objectList & p_listObjects, const objectList& p_lights, componentHandle<cameraBase> p_camera)
 {
 	int l_dim[4];
 	glGetIntegerv(GL_VIEWPORT, l_dim);
@@ -663,18 +666,24 @@ void graphicsSystem::renderOpaque(objectList const& p_listObjects, objectList& p
 	renderDebug(p_camera);
 	renderSkybox(getObjectList(skybox::getType()), p_camera);
 
-
 	glBindFramebuffer(GL_FRAMEBUFFER, lastBound);
 	if (!lastBound) glDrawBuffer(GL_BACK_LEFT);
 	glViewport(x, y, width, height);
 
+	l_forwardBuffer->bindRead();
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lastBound);
+
+	glBlitFramebuffer(0, 0, 1920, 1080, x, y, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+	l_forwardBuffer->unbindRead();
 }
 
-void graphicsSystem::renderNormals(objectList const& p_obj, componentHandle<cameraBase> p_camera)
+void graphicsSystem::renderNormals(const objectList & p_obj, componentHandle<cameraBase> p_camera)
 {
 	if (auto&& l_shader = getShaderManager()->getShaderProgram(programType::enm_writeNormals); l_shader)
 	{
-		l_shader->bind();
+		const auto bound = l_shader->objectBind();
 		p_camera->setCameraUniforms(l_shader);
 		for (auto&& i_obj : p_obj)
 		{
@@ -693,26 +702,25 @@ void graphicsSystem::renderNormals(objectList const& p_obj, componentHandle<came
 				auto l_materialPtr = assetManager::getAsset(l_renderer->getMaterialPath());
 				l_shader->setUniforms("material.specularExponent", l_materialPtr->getData<materialData>().getData().getSpecularExponent());
 			}
-			
+
 			l_shader->setUniforms("ModelMatrix", l_transform->getGlobalMatrix());
 
 			l_vao->bind();
 			l_vao->render();
 			l_vao->unbind();
 		}
-
 		getTextureManager()->UnbindAll();
 	}
 
 }
 
-void graphicsSystem::renderLighting(objectList const& p_lights, componentHandle<cameraBase> p_camera)
+void graphicsSystem::renderLighting(const objectList & p_lights, componentHandle<cameraBase> p_camera)
 {
 	// TODO: Light Volume stencil hack
 
 	auto&& l_shader = getShaderManager()->getShaderProgram(programType::enm_accumulateLights);
-	l_shader->bind();
-	p_camera->setCameraUniforms(l_shader); 
+	const auto bound = l_shader->objectBind();
+	p_camera->setCameraUniforms(l_shader);
 	l_shader->setUniforms("invView", p_camera->getInvViewMatrix());
 
 	vector2 nearFar;
@@ -723,7 +731,7 @@ void graphicsSystem::renderLighting(objectList const& p_lights, componentHandle<
 	auto&& l_gBuffer = getFramebufferManager()->getModFramebuffer(framebufferType::DeferredGBuffer);
 	l_gBuffer->bindColorAttachments(l_shader);   // 0
 	l_gBuffer->bindDepthAttachment(l_shader, 1); // 1
-	
+
 	// necessary.
 	// inputs: normal+shininess, depth, lighting information
 	// outputs: intermediate lighting information
@@ -745,14 +753,13 @@ void graphicsSystem::renderLighting(objectList const& p_lights, componentHandle<
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
-	
-	l_vao->unbind();
 
+	l_vao->unbind();
 
 	getTextureManager()->UnbindAll();
 }
 
-void graphicsSystem::renderForwardPlus(objectList const& p_objects, componentHandle<cameraBase> p_camera)
+void graphicsSystem::renderForwardPlus(const objectList & p_objects, componentHandle<cameraBase> p_camera)
 {
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(-1, -1);
@@ -760,7 +767,7 @@ void graphicsSystem::renderForwardPlus(objectList const& p_objects, componentHan
 	glDepthMask(GL_FALSE);
 
 	auto&& l_shader = getShaderManager()->getShaderProgram(programType::enm_forwardPlus);
-	l_shader->bind();
+	const auto bound = l_shader->objectBind();
 	p_camera->setCameraUniforms(l_shader);
 	l_shader->setUniforms("invView", p_camera->getInvViewMatrix());
 
@@ -778,7 +785,7 @@ void graphicsSystem::renderForwardPlus(objectList const& p_objects, componentHan
 	{
 		auto&& l_transform = i_obj->getComponent<transform>();
 		if (!l_transform) continue;
-		
+
 		auto&& l_renderer = i_obj->getComponent<renderer>();
 		if (!l_renderer->hasMaterial()) continue;
 
@@ -802,22 +809,22 @@ void graphicsSystem::renderForwardPlus(objectList const& p_objects, componentHan
 	getTextureManager()->UnbindAll();
 }
 
-void graphicsSystem::renderForward(objectList const&, componentHandle<cameraBase>)
+void graphicsSystem::renderForward(const objectList &, componentHandle<cameraBase>)
 {
 	// TODO: when applicable, render transparent surfaces here
 }
 
-void graphicsSystem::renderOld(objectList const& p_listObjects, objectList & p_lights, componentHandle<cameraBase> p_camera)
+void graphicsSystem::renderOld(const objectList & p_listObjects, const objectList & p_lights, componentHandle<cameraBase> p_camera)
 {
-	for (auto & renderObj : p_listObjects)
+	for (const auto & renderObj : p_listObjects)
 	{
 		auto l_renderer = renderObj->getComponent<renderer>();
 
 		// get the program object and bind
-		std::shared_ptr<shaderProgram> l_shaderProgram = m_shaderManager->getShaderProgram(l_renderer->GetProgrameType());
+		auto l_shaderProgram = m_shaderManager->getShaderProgram(l_renderer->GetProgrameType());
 
 		// GLDebug::getLastFrameBufferError();
-		l_shaderProgram->bind();
+		const auto bound = l_shaderProgram->objectBind();
 
 		// set camera uniforms
 		p_camera->setCameraUniforms(l_shaderProgram);
@@ -856,15 +863,14 @@ void graphicsSystem::renderOld(objectList const& p_listObjects, objectList & p_l
 		vao->unbind();
 
 		// unbinding step
-	   // shaderProgram->unbind();
 		m_textureManager->UnbindAll();
 	}
 }
 
 void graphicsSystem::renderDebug(componentHandle<cameraBase> p_camera)
 {
-	renderDebugWireframes(getObjectList(rigidBody::getType()), p_camera);
-	renderDebugLines(getObjectList(debugLines::getType()), p_camera);
+	if(m_showWireframes) renderDebugWireframes(getObjectList(rigidBody::getType()), p_camera);
+	if(m_showDebugLines) renderDebugLines(getObjectList(debugLines::getType()), p_camera);
 }
 
 
@@ -872,7 +878,7 @@ void graphicsSystem::renderDebugWireframes(const objectList & p_physObj, compone
 {
 	auto l_shader = m_shaderManager->getShaderProgram(programType::enm_debugSolid);
 
-	l_shader->bind();
+	const auto bound = l_shader->objectBind();
 
 	p_camera->setCameraUniforms(l_shader);
 	l_shader->setUniforms("color", vector4{ 1,0,0,1 });
@@ -897,6 +903,7 @@ void graphicsSystem::renderDebugWireframes(const objectList & p_physObj, compone
 	}
 	l_vao->unbind();
 
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDisable(GL_POLYGON_OFFSET_FILL);
 }
@@ -911,7 +918,7 @@ void graphicsSystem::renderDebugLines(const objectList & p_lines, componentHandl
 		if (auto l_debugLineShader = getShaderManager()->getShaderProgram(programType::enm_debugLine);
 			l_debugLineShader)
 		{
-			l_debugLineShader->bind();
+			const auto bound = l_debugLineShader->objectBind();
 			p_camera->setCameraUniforms(l_debugLineShader);
 
 			for (auto&& obj : p_lines)
@@ -936,7 +943,7 @@ void graphicsSystem::renderDebugLines(const objectList & p_lines, componentHandl
 			auto l_vao = m_vertexArrayManager->getVertexArrayBuffer(CUBE_FILE);
 			l_vao->bind();
 
-			l_shader->bind();
+			const auto bound = l_shader->objectBind();
 			p_camera->setCameraUniforms(l_shader);
 
 
@@ -989,7 +996,7 @@ void graphicsSystem::renderTextureToScreen(std::shared_ptr<simpleTexture> p_text
 {
 	auto l_shader = getShaderManager()->getShaderProgram(programType::enm_fsq);
 
-	l_shader->bind();
+	const auto bound = l_shader->objectBind();
 
 	p_texture->bind(0);
 
@@ -1045,7 +1052,7 @@ void graphicsSystem::captureForAllRecordingCameras()
 
 void graphicsSystem::renderToScreen(std::shared_ptr<shaderProgram> p_shaderProgram, componentHandle<cameraBase> p_camera)
 {
-	p_shaderProgram->bind();
+	const auto bound = p_shaderProgram->objectBind();
 
 	//m_framebufferManager->renderToScreen();
 
@@ -1059,7 +1066,7 @@ std::shared_ptr<framebuffer> graphicsSystem::renderToBuffer(std::shared_ptr<shad
 	l_capture_buffer->bind();
 	l_capture_buffer->clear();
 
-	p_shaderProgram->bind();
+	const auto bound = p_shaderProgram->objectBind();
 
 	render(p_shaderProgram, componentHandle<cameraBase>::castHandle(p_camera));
 
@@ -1093,20 +1100,14 @@ void graphicsSystem::renderButtons()
 			//			//1024, 768
 			//	auto ortho = matrix4x4::computeOrthographicMatrix(0, 1024/*m_mainCamera->getWidth()*/,0, 768/*m_mainCamera->getHeight()*/, m_mainCamera->getNearPlaneDistance(), m_mainCamera->getFarPlaneDistance());
 			//l_shaderProgram->setUniforms("OrthoMatrix", ortho);
-				std::shared_ptr<shaderProgram> l_shaderProgram;
-				if (l_uiObject->isSelected())
-				{
-					l_shaderProgram = m_shaderManager->getShaderProgram(programType::enm_screenSpaceHighlight);
-					l_shaderProgram->bind();
-				}
-				else
-				{
-					l_shaderProgram = m_shaderManager->getShaderProgram(programType::enm_screenSpace);
-					l_shaderProgram->bind();
-				}
 
-				if (l_shaderProgram == nullptr)
+				const auto l_shaderType = l_uiObject->isSelected() ? programType::enm_screenSpaceHighlight : programType::enm_screenSpace;
+				auto l_shaderProgram{ m_shaderManager->getShaderProgram(l_shaderType)};
+
+				if (!l_shaderProgram)
 					continue;
+
+				const auto bound = l_shaderProgram->objectBind();
 
 				l_shaderProgram->setUniforms("Scale", l_transform->getGlobalScale());
 
@@ -1117,6 +1118,7 @@ void graphicsSystem::renderButtons()
 				l_shaderProgram->setUniforms("CameraHeight", m_mainCamera->getHeight());
 
 				std::shared_ptr<texture> l_texture;
+
 				std::string l_textureName = l_uiObject->getTextureName();
 
 				l_texture = m_textureManager->getSimpleTexture(l_textureName);

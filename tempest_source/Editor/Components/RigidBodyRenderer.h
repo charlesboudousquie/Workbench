@@ -17,7 +17,7 @@ namespace Editor
     rigidBodyRenderer(editorWindow * p_parent_window);
 
   protected:
-    bool onRender(typeRT & p_type_data) override;
+    bool onRender(typeRT & p_type_data, objID p_editor_object_id) override;
 
   private:
     bool m_collisionLayerSelfWorld = false, m_collisionLayerSelfPlayer = false, m_collisionLayerSelfEnemy = false, m_collisionLayerSelfTrigger = false;

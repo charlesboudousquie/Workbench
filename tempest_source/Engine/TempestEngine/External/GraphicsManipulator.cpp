@@ -12,20 +12,74 @@ graphicsManipulator::graphicsManipulator(systemManagerInterface * p_system_manag
 
 std::vector<std::string> graphicsManipulator::getRenderTextureNames()
 {
-	return std::vector<std::string>{
-		graphicsSystem::textureNames.cbegin(),
-		graphicsSystem::textureNames.cend()
-	};
+	if (getGraphicsSystem())
+	{
+		static std::vector<std::string> names{
+			graphicsSystem::textureNames.cbegin(),
+			graphicsSystem::textureNames.cend()
+		};
+
+		return names;
+	}
+	else
+	{
+		return std::vector<std::string>{};
+	}
+
 }
 
 void graphicsManipulator::setRenderTextureIndex(int index)
 {
-	auto l_graphics = m_system_manager->getSystem<graphicsSystem>();
-	l_graphics->m_textureIndex = std::clamp<int>(index, -1, graphicsSystem::s_texCount);
+	if (auto l_graphics = getGraphicsSystem(); l_graphics)
+		l_graphics->m_textureIndex = std::clamp<int>(index, -1, graphicsSystem::s_texCount);
 }
 
 int graphicsManipulator::getRenderTextureIndex()
 {
-	auto l_graphics = m_system_manager->getSystem<graphicsSystem>();
-	return l_graphics->m_textureIndex;
+	if (auto l_graphics = getGraphicsSystem(); l_graphics)
+		return l_graphics->m_textureIndex;
+	else
+		return -1;
+}
+
+void graphicsManipulator::reloadShaders()
+{
+	if (auto l_graphics = getGraphicsSystem(); l_graphics)
+	{
+		l_graphics->shutdownShaders();
+		l_graphics->initShaders();
+	}
+}
+
+bool graphicsManipulator::isDisplayingWireframes()
+{
+	if (auto l_graphics = getGraphicsSystem(); l_graphics)
+		return l_graphics->m_showWireframes;
+	else
+		return false;
+}
+
+void graphicsManipulator::displayWireframes(bool show)
+{
+	if (auto l_graphics = getGraphicsSystem(); l_graphics)
+		l_graphics->m_showWireframes = show;
+}
+
+bool graphicsManipulator::isDisplayingDebugLines()
+{
+	if (auto l_graphics = getGraphicsSystem(); l_graphics)
+		return l_graphics->m_showDebugLines;
+	else
+		return false;
+}
+
+void graphicsManipulator::displayDebugLines(bool show)
+{
+	if(auto l_graphics = getGraphicsSystem(); l_graphics)
+		l_graphics->m_showDebugLines = show;
+}
+
+graphicsSystem * graphicsManipulator::getGraphicsSystem()
+{
+	return m_system_manager->getSystem<graphicsSystem>();
 }

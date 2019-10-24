@@ -57,8 +57,9 @@
 							// not in map, add it
 							std::filesystem::path l_path("textures");
 							l_path /= p_fileName;
-							createSimpleTexture(assetManager::getAsset(l_path));
-							l_texture = m_textures.find(p_fileName);
+							auto asset = assetManager::getAsset(l_path);
+							if (asset == nullptr) return std::nullptr_t{};
+							return createSimpleTexture(asset);
                 //logger("TextureManager").debug() << "Error: Simple Texture Not in Map: " << p_fileName;
                 //return nullptr;
             }

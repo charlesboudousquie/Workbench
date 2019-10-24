@@ -29,6 +29,10 @@ void waypointNodeSet::updateFromTypeRT(typeRT & p_type)
 {
 	auto l_members = p_type.members();
 
+	if (l_members.find("debugName") != l_members.end())
+	{
+		debugName = p_type.member("debugName").getString();
+	}
 	if (l_members.find("Node 1") != l_members.end())
 	{
 		nodeOne = (::toVector3(p_type.member("Node 1")));
@@ -54,6 +58,8 @@ typeRT waypointNodeSet::toTypeRT() const
 	l_result.setVariableName(type().name());
 
 	std::vector<typeRT> members;
+
+	l_result.insertMember(typeRT("debugName", debugName));
 
 	typeRT one = ::toTypeRT(nodeOne);
 	one.setVariableName("Node 1");

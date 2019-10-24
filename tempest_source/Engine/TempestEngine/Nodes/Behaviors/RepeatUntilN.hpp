@@ -17,8 +17,6 @@ private:
     int maximumSuccesses;
 public:
 
-    void handleResult(BehaviorResult) override;
-
     static typeRT onRender();
 
     void Init()override;

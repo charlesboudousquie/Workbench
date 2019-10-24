@@ -64,6 +64,10 @@ void inputSystem::inputKeyboardListener(scancodeWrapper p_scancode, actionType p
 	case actionType::Released:
 		keys[p_scancode.scancode] = false;
 		break;
+	case actionType::Repeat:
+	default:
+		// TODO: Log a warning here
+		;
 	}
 }
 
@@ -103,7 +107,7 @@ void inputSystem::onInitialize()
 	// clean out memory
 	std::memset(&keys, 0, sizeof(keys));
 	std::memset(&mouseButtons, 0, sizeof(mouseButtons));
-	
+
 	// attach to the input source by setting up the callbacks
 	// m_input_source_ptr->setKeyboardCallback(inputSystem::inputKeyboardListener);
 	// m_input_source_ptr->setMousePosCallback(inputSystem::inputMousePosListener);
@@ -114,7 +118,7 @@ void inputSystem::onInitialize()
 		source->setConnectionStateCallbackFunction(inputSystem::inputConnectionStateListener);
 		source->setGamepadAxisCallbackFunction(inputSystem::inputGamepadAxisListener);
 		source->setGamepadButtonCallback(inputSystem::inputGamepadButtonListener);
-		
+
 	}
 
 
@@ -266,12 +270,12 @@ void inputSystem::onStartFrame()
 							l_component->controllerToNameMap.erase(l_controller.first);
 						}
 					}
-					
-					break;				
+
+					break;
 					default: ;
 				}
 			}
-			
+
 			// iterate over all keycodes on the component
 			for(auto & l_keycode_pair : l_component->scancodeToNameMap)
 			{
@@ -319,8 +323,8 @@ void inputSystem::onStartFrame()
 			{
 				l_component->controllerNameToStatusMap[controller.second] = getControllerState(controller.first);
 			}
-				
-			
+
+
 
 			// }
 			// else  // else, clear all statuses
@@ -358,7 +362,7 @@ bool inputSystem::isMouseButton(int p_key) const
 
 bool inputSystem::getMouseButton(int p_button) const
 {
-	return mouseButtons[p_button]; 
+	return mouseButtons[p_button];
 }
 
 actionType inputSystem::getGamepadButton(unsigned p_button, unsigned p_id)

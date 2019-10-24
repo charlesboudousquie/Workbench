@@ -82,7 +82,7 @@ Editor::rendererRenderer::rendererRenderer(editorWindow* p_parent_window)
 }
 
 //If you don't use type data then leave this commented out
-bool Editor::rendererRenderer::onRender(typeRT&  p_type_data)
+bool Editor::rendererRenderer::onRender(typeRT&  p_type_data, objID /* p_editor_object_id */)
 {
     // =============================== //
     //   show List of all Model Files  //

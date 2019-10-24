@@ -1,7 +1,191 @@
 
 
-The ability to load trees on the fly and attach agents to them.
+new bug:
+  doing control z oustide of editor window causes crash
+  due to m_editor_input being garbage.
 
-LoadTree
 
-AttachAgentToTree
+
+problem:
+ saving graph.bht.bht
+ 
+ places where name is edited
+ 
+ 1. saveGraph() // nodeGraphWindow.cpp
+       ".bht" is appended
+ 2. onRender // agentRenderer
+    edits parentTree = whatever name is passed in
+    also displays list of BT files
+
+
+So how should this go?
+
+user should never have to type in ".bht"
+user should never see ".bht" on screen
+
+m_graph_name should NEVER have .bht extension
+
+
+
+places you have to edit when adding a new node
+{
+  BehaviorTreeBuilder --> constructor
+  
+  Nodes.def in Samples/Assets/
+  
+  NodeFactory.cpp
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void findSubsetsSumMinDiff(int arr[], int n) 
+{
+  Arrays.sort(arr);
+  int i=0, j=n-1;
+  int sum1=arr[i], sum2=arr[j];
+  ArrayList<integer> subSet1 = new ArrayList<integer>();
+  subSet1.add(arr[i]);
+  ArrayList<integer> subSet2 = new ArrayList<integer>();
+  subSet2.add(arr[j]);
+  while(j>i+1) 
+  {
+
+    if(sum1 == sum2) 
+    {
+      i++;
+      j--;
+      sum1 = sum1+arr[i];
+      sum2 = sum2+arr[j];
+      subSet1.add(arr[i]);
+      subSet2.add(arr[j]);
+    }
+    else if(sum1<sum2) 
+    {="" i++;="" subset1.add(arr[i]);="" sum1="sum1+arr[i];" }="" else="" {="" j--;="" subset2.add(arr[j]);="" sum2="sum2+arr[j];" }="" }="" system.out.println("subset1:="" "+subset1);="" system.out.println("subset2:="" "+subset2);="" }="" and="" easy="" enough="" approach!="">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nodes to tackle:
+
+# leaves
+    Nodes/Behaviors/Leaf.hpp Nodes/Behaviors/Leaf.cpp // check
+    Nodes/Behaviors/DefaultLeaf.hpp Nodes/Behaviors/DefaultLeaf.cpp // check
+    Nodes/Behaviors/Repeater.hpp Nodes/Behaviors/Repeater.cpp  // test it
+    Nodes/Behaviors/JumpUp.hpp Nodes/Behaviors/JumpUp.cpp // test it
+
+    #Decorators
+    Nodes/Behaviors/Timer.hpp Nodes/Behaviors/Timer.cpp // test it
+    Nodes/Behaviors/Inverter.hpp Nodes/Behaviors/Inverter.cpp // test it
+    Nodes/Behaviors/Decorator.hpp Nodes/Behaviors/Decorator.cpp // check
+    Nodes/Behaviors/ReturnTrue.hpp Nodes/Behaviors/ReturnTrue.cpp // test ist
+    Nodes/Behaviors/RepeatUntilN.hpp Nodes/Behaviors/RepeatUntilN.cpp // test it
+    Nodes/Behaviors/RepeatUntilFailure.hpp Nodes/Behaviors/RepeatUntilFailure.cpp // test it
+    Nodes/Behaviors/RepeatUntilSuccess.hpp Nodes/Behaviors/RepeatUntilSuccess.cpp // test it
+
+    #Composites
+    Nodes/Behaviors/Composite.hpp Nodes/Behaviors/Composite.cpp // check
+    Nodes/Behaviors/Selector.hpp Nodes/Behaviors/Selector.cpp // test it
+    Nodes/Behaviors/Sequencer.hpp Nodes/Behaviors/Sequencer.cpp // check
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+load in tree when user selects agent
+
+m_editor_window->getProjectFilePath() produces:
+   C:/Users/boudo/Desktop/senior_game/tempestengine/Samples/
+   
+   add on Assets/graphs/ + filename to get FULL path
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

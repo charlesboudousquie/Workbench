@@ -9,20 +9,6 @@
 #include "ReturnTrue.hpp"
 #ifndef TESTING_NODES
 
-void ReturnTrue::handleResult(BehaviorResult)
-{
-    // get child phase
-    BehaviorPhase childPhase = child->GetPhase();
-
-    // dont care if they succeeded as long as they are done
-    if (childPhase == BehaviorPhase::DONE)
-    {
-        // dont care if child finished or not
-        this->phase = BehaviorPhase::DONE;
-        this->result = BehaviorResult::SUCCESS;
-    }
-}
-
 typeRT ReturnTrue::onRender()
 {
     return Decorator::decoratorOnRender();
@@ -30,8 +16,9 @@ typeRT ReturnTrue::onRender()
 
 void ReturnTrue::Update(float dt)
 {
-  // activate child
-  child->tick(dt);
+    // child is done at this point
+    GetTask()->SetResult(BehaviorResult::SUCCESS);
+    GiveToParent(GetTask());
 }
 
 #endif

@@ -27,7 +27,7 @@ namespace Editor
 		inputRenderer(editorWindow * p_parent_window);
 
 	protected:
-		bool onRender(typeRT & p_type_data) override;
+		bool onRender(typeRT & p_type_data, objID p_editor_object_id) override;
 	private:
 
 /*!***************************************************************************************

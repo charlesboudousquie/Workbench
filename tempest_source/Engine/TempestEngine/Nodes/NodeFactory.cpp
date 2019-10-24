@@ -18,10 +18,13 @@
 
 // leaves
 #include "Nodes/Behaviors/DefaultLeaf.hpp"
+#include "Nodes/Behaviors/JumpUp.hpp"
+
+// decorators
 #include "Nodes/Behaviors/Inverter.hpp"
 #include "Nodes/Behaviors/Repeater.hpp"
-#include "Nodes/Behaviors/RepeatUntilFailure.hpp"
 #include "Nodes/Behaviors/RepeatUntilN.hpp"
+#include "Nodes/Behaviors/RepeatUntilFailure.hpp"
 #include "Nodes/Behaviors/RepeatUntilSuccess.hpp"
 #include "Nodes/Behaviors/ReturnTrue.hpp"
 #include "Nodes/Behaviors/Timer.hpp"
@@ -29,7 +32,6 @@
 //composites
 #include "Nodes/Behaviors/Selector.hpp"
 #include "Nodes/Behaviors/Sequencer.hpp"
-
 
 const std::string l_fileName("../../Samples/Assets/Nodes.def");
 
@@ -39,20 +41,20 @@ static std::map<std::string, std::function<typeRT()>> renderTypes
 {
 // leaves
 {"DefaultLeaf", DefaultLeaf::onRender},
+{"JumpUp", JumpUp::onRender},
 
 // composites
-//{"Selector", Selector::onRender},
+{"Selector", Selector::onRender},
 {"Sequencer", Sequencer::onRender},
 
 // decorators
-//{"ReturnTrue", ReturnTrue::onRender},
-//{"Inverter",Inverter::onRender},
-//
-//{"Repeater", Repeater::onRender},
-//{"RepeatUntilFailure",RepeatUntilFailure::onRender},
-//{"RepeatUntilN", RepeatUntilN::onRender},
-//{"RepeatUntilSuccess", RepeatUntilSuccess::onRender},
-//{"Timer", Timer::onRender},
+{"Inverter",Inverter::onRender},
+{"Repeater", Repeater::onRender},
+{"RepeatUntilN", RepeatUntilN::onRender},
+{"RepeatUntilFailure",RepeatUntilFailure::onRender},
+{"RepeatUntilSuccess", RepeatUntilSuccess::onRender},
+{"ReturnTrue", ReturnTrue::onRender},
+{"Timer", Timer::onRender},
 };
 
 

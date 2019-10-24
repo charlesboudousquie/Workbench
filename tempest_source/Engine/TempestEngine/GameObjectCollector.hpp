@@ -34,6 +34,7 @@ class gameObjectCollector
 	////////   Public                                                               ////////
 	////////========================================================================////////
 public:
+    virtual ~gameObjectCollector() = default;
 
 	/*!***************************************************************************************
 	\brief  Notifies that a game object has changed its configuration

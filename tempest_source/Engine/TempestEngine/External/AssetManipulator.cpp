@@ -11,3 +11,8 @@ std::string assetManipulator::stringFromWide(const std::wstring & p_convert)
     return assetManager::stringFromWide(p_convert);
 }
 
+void assetManipulator::reloadAssets()
+{
+    assetManager::reload();
+}
+

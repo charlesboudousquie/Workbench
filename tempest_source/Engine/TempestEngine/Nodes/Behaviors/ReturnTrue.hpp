@@ -13,8 +13,6 @@
 class ReturnTrue : public Decorator
 {
 public:
-    
-    void handleResult(BehaviorResult) override;
 
     static typeRT onRender();
 

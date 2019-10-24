@@ -22,7 +22,7 @@ Editor::sampleRenderer::sampleRenderer(editorWindow* p_parent_window)
 }
 
 //If you don't use type data then leave this commented out
-bool Editor::sampleRenderer::onRender(typeRT& /* p_type_data */)
+bool Editor::sampleRenderer::onRender(typeRT& /* p_type_data */, objID /* p_editor_object_id */)
 {
   //auto l_engine_controller = getEngineController();
   //auto l_selection = getSelectionKeeper();

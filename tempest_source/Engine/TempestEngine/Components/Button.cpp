@@ -165,13 +165,17 @@ void button::setNeighbor(std::shared_ptr<gameObject> p_neighbor, buttonDirection
 	}
 }
 
-void button::removeNeighbor(buttonDirection p_direction)
+objID button::removeNeighbor(buttonDirection p_direction)
 {
+  objID l_removed_neighbor_id = 0;
+
   if(m_neighborMap[p_direction].second == true)
   {
     auto l_neighbor = m_neighborMap[reverseDirection(p_direction)].first;
     if(l_neighbor != nullptr)
     {
+      l_removed_neighbor_id = l_neighbor->getID();
+
       l_neighbor->getComponent<button>()->m_neighborMap[reverseDirection(p_direction)].first = nullptr;
       l_neighbor->getComponent<button>()->m_neighborMap[reverseDirection(p_direction)].second = false;
     }
@@ -180,6 +184,8 @@ void button::removeNeighbor(buttonDirection p_direction)
   m_neighborMap[p_direction].first = nullptr;
   m_neighborMap[p_direction].second = false;
   m_neighborObjectIDs[p_direction] = 0;
+
+  return l_removed_neighbor_id;
 }
 
 void button::setSelected(bool p_selected)

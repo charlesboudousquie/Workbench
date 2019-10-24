@@ -10,23 +10,6 @@
 #include "RepeatUntilSuccess.hpp"
 #ifndef TESTING_NODES
 
-void RepeatUntilSuccess::handleResult(BehaviorResult)
-{
-    auto childResult = child->getResult();
-
-    // if child succeeeded then we are done
-    if (childResult == BehaviorResult::SUCCESS)
-    {
-        this->phase = BehaviorPhase::DONE;
-        this->result = BehaviorResult::SUCCESS;
-    }
-    else if (childResult == BehaviorResult::FAILURE)
-    {
-        // restart child
-        child->SetPhase(BehaviorPhase::STARTING);
-    }
-}
-
 typeRT RepeatUntilSuccess::onRender()
 {
     return Decorator::decoratorOnRender();
@@ -34,6 +17,19 @@ typeRT RepeatUntilSuccess::onRender()
 
 void RepeatUntilSuccess::Update(float dt)
 {
-    child->tick(dt);
+    auto task = GetTask();
+    auto childResult = task->GetResult();
+
+    // if child succeeeded then we are done
+    if (childResult == BehaviorResult::SUCCESS)
+    {
+        task->SetResult(BehaviorResult::SUCCESS);
+        GiveToParent(task);
+    }
+    else if (childResult == BehaviorResult::FAILURE)
+    {
+        GiveToChild(task); // tell child to try again
+    }
 }
 #endif TESTING_NODES
+

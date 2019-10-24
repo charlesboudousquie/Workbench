@@ -6,11 +6,9 @@
 \par        Project: TBD
 \brief      Delegate (aka helper) object that constructs trees for the BehaviorTree Manager.
 *****************************************************************************************/
-#include "AgentEncapsulator.hpp"
 #include "BehaviorTreeBuilder.hpp"
 #include "BehaviorTree.hpp"
 #include <stack>
-
 
 #include <rapidjson.h>
 #include "document.h"
@@ -31,8 +29,7 @@
 #include "../Nodes/Behaviors/RepeatUntilSuccess.hpp"
 #include "../Nodes/Behaviors/ReturnTrue.hpp"
 #include "../Nodes/Behaviors/Timer.hpp"
-
-//#include "../../Samples/Assets/graphs/"
+#include "../Nodes/Behaviors/JumpUp.hpp"
 
 // composites
 #include "../Nodes/Behaviors/Selector.hpp"
@@ -50,25 +47,27 @@ typedef int NodeID;
 
 BehaviorTreeBuilder::BehaviorTreeBuilder()
 {
+    // decorators
+    nodeMap["Inverter"] = []() { return std::make_shared< Inverter>(); };
+    nodeMap["Repeater"] = []() {return std::make_shared< Repeater>(); };
+    nodeMap["RepeatUntilN"] = []() {return std::make_shared< RepeatUntilN>(); };
+    nodeMap["RepeatUntilFailure"] = []() {return std::make_shared< RepeatUntilFailure>(); };
+    nodeMap["RepeatUntilSuccess"] = []() {return std::make_shared< RepeatUntilSuccess>(); };
+    nodeMap["ReturnTrue"] = []() {return std::make_shared< ReturnTrue>(); };
+    nodeMap["Timer"] = []() {return std::make_shared<Timer>(); };
     // leaves
-    //nodeMap["Inverter"] = []() { return std::make_shared< Inverter>(); };
-    //nodeMap["Repeater"] = []() {return std::make_shared< Repeater>(); };
-    //nodeMap["RepeatUntilN"] = []() {return std::make_shared< RepeatUntilN>(); };
-    //nodeMap["RepeatUntilFailure"] = []() {return std::make_shared< RepeatUntilFailure>(); };
-    //nodeMap["RepeatUntilSuccess"] = []() {return std::make_shared< RepeatUntilSuccess>(); };
-    //nodeMap["ReturnTrue"] = []() {return std::make_shared< ReturnTrue>(); };
     nodeMap["DefaultLeaf"] = []() {return std::make_shared<DefaultLeaf>(); };
-    //nodeMap["Timer"] = []() {return std::make_shared<Timer>(); };
+    nodeMap["JumpUp"] = []() {return std::make_shared<JumpUp>(); };
 
     // composites
-    //nodeMap["Selector"] = []() {return std::make_shared< Selector>(); };
+    nodeMap["Selector"] = []() {return std::make_shared< Selector>(); };
     nodeMap["Sequencer"] = []() {return std::make_shared< Sequencer>(); };
 
 }
 
 std::shared_ptr<BehaviorTree> BehaviorTreeBuilder::CreateTree(const std::string & fileName)
 {
-    auto assetList = assetManager::assetList(".graph");
+    auto assetList = assetManager::assetList(".bht");
     std::string filePath = "../../Samples/Assets/";
     // find specific item in assetlist with fileName
     for (auto asset : assetList)
@@ -76,6 +75,7 @@ std::shared_ptr<BehaviorTree> BehaviorTreeBuilder::CreateTree(const std::string 
         if (asset.find(fileName) != std::string::npos)
         {
             filePath += asset;
+            break;
         }
     }
 
@@ -190,18 +190,7 @@ void BehaviorTreeBuilder::SetManager(BehaviorTreeManager * manager_)
 {
     this->manager = manager_;
 }
-//
-//std::shared_ptr<BehaviorTree> BehaviorTreeBuilder::GetTree(std::string fileName)
-//{
-//    auto table = BuildTable(fileName);
-//
-//    auto root = BuildTree(table);
-//    //
-//    auto tree = std::make_shared<BehaviorTree>();
-//    tree->SetUpTree(root);
-//
-//    return tree;
-//}
+
 
 void BehaviorTreeBuilder::LinkNodes(std::map<int, std::vector<NodeID>>& nodeLinks, std::map<int, BehaviorPtr>& behaviors)
 {

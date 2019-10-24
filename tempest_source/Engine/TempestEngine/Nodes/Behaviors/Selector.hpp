@@ -14,7 +14,6 @@
 class Selector : public Composite
 {
 public:
-    void handleResult(BehaviorResult childResult) override;
 
     static typeRT onRender();
 

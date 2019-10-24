@@ -7,22 +7,33 @@
 \brief  This is the interface for the Manager that controls any behavior tree an agent may use.
 *****************************************************************************************/
 #include "BehaviorTreeManager.hpp"
-#include "BehaviorTreeDataBase.hpp"
+
 #include "BehaviorTreeBuilder.hpp"
 #include "BehaviorTree.hpp"
 #include "BehaviorTask.hpp"
 
+#include "GameObjectGatherer.hpp"
+#include "SystemManager.hpp"
 #include "Nodes/Behaviors/Behavior.hpp"
-#include "AgentEncapsulator.hpp"
 #include "Agent.hpp"
 #include "GameObject.hpp"
+
+BehaviorTreePtr BehaviorTreeManager::GetTree(const std::string &  treeName)
+{
+    // if tree does not exist then create it
+    if (trees.find(treeName) == trees.end())
+    {
+        trees[treeName] = builder->CreateTree(treeName);
+    }
+
+    return trees[treeName];
+}
 
 BehaviorTreeManager::BehaviorTreeManager()
 {
     this->builder = std::make_shared<BehaviorTreeBuilder>();
-    this->dataBase = std::make_shared<BehaviorTreeDataBase>();
+    //this->dataBase = std::make_shared<BehaviorTreeDataBase>();
     this->builder->SetManager(this);
-    shouldUpdate = false;
 }
 
 const std::string & BehaviorTreeManager::name() const
@@ -32,70 +43,42 @@ const std::string & BehaviorTreeManager::name() const
 
 void BehaviorTreeManager::onUpdate()
 {
-    if (this->shouldUpdate)
+    // get all actors
+    std::vector<std::shared_ptr<gameObject>> actors = this->getAgentGameObjects();
+
+    // for every single actor
+    for (auto actor : actors)
     {
-        auto tasks = dataBase->GetTasks();
-
-        //for each task
-        for (auto task : tasks)
-        {
-            // get tree
-            auto tree = task->GetTree();
-
-            // Tell Task Proxy to use this particular task
-            tree->SetTask(task);
-
-            // current behavior tick
-            task->GetCurrentBehavior()->tick(this->getDt());
-        }
+        // get agent
+        auto agent = actor->getComponent<Agent>();
+        // get tree
+        auto tree = GetTree(agent->getTreeName());
+        agent->Update(this->getDt(), tree);
     }
 }
 
 void BehaviorTreeManager::onInitialize() {}
 
-//void BehaviorTreeManager::ActivateTree()
-//{
-//
-//}
-
-void BehaviorTreeManager::linkAgentComponentToTree(std::shared_ptr<Agent> agent, const std::string & treeName)
+std::vector<std::shared_ptr<gameObject>> BehaviorTreeManager::getAgentGameObjects()
 {
-    // if tree exists
-    if (dataBase->HasTree(treeName))
-    {
-        this->dataBase->AssignAgentToTree(agent, treeName);
-    }
-    //if tree does not exist then create it
-    else
-    {
-        BehaviorTreePtr tree = this->builder->CreateTree(treeName);
+    GameObjectFiltering::componentTypeSet node_pattern;
+    node_pattern.setType(Agent::getType());
 
-        // if tree loading succeeded
-        if (tree != nullptr)
-        {
-            dataBase->AddTree(tree, treeName);
-        }
-        // otherwise it failed
-        else
-        {
-            std::cout << "Failed to create tree: " << treeName << std::endl;
-        }
-    }
+    std::vector<std::shared_ptr<gameObject>> actors = getSystemManager()->getGameObjectGatherer()->getList(node_pattern);
+
+    return actors;
 }
 
-int BehaviorTreeManager::getCurrentNodeID(AgentPtr agent)
+int BehaviorTreeManager::getCurrentNodeID(GameObjectPtr actor_)
 {
-    return dataBase->AgentGetActiveBehavior(agent)->getId();
-}
+   auto agent = actor_->getComponent<Agent>();
+   auto currentBehavior = agent->GetTask()->GetCurrentBehavior();
+   if (currentBehavior)
+   {
+       return currentBehavior->getId();
+   }
 
-//int BehaviorTreeManager::getCurrentNodeID()
-//{
-//    if (tree != nullptr && tree->GetActiveNode() != nullptr)
-//    {
-//        auto currentNode = tree->GetActiveNode();
-//        return currentNode->getId();
-//    }
-//
-//    return -1;
-//}
+   // task not active
+   return -1;
+}
 

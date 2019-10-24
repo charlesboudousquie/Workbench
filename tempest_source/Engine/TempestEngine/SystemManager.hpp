@@ -33,7 +33,7 @@ class systemBase;
 \par class: systemManager
 \brief   Manages systems.
 *****************************************************************************************/
-class systemManager final : public systemManagerInterface
+class systemManager : public systemManagerInterface
 {
 	///////============================================================================///////
 	///////   Public                                                                   ///////
@@ -209,7 +209,7 @@ class systemManager final : public systemManagerInterface
 		\param  system_name - name of system to add
 		*****************************************************************************************/
 		void activateSystemBundle(const std::string &system_name);
-	
+
 		/*!***************************************************************************************
 		\brief  Shuts down a bundle by removing it from the job manager.
 		\param  system_name - name of system to shutdown

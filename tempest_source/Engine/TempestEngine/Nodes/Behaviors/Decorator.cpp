@@ -47,6 +47,17 @@ typeRT Decorator::decoratorOnRender()
 
     l_data.insertMember(l_non_render_data);
 
+
+
+    // now for render data
+    typeRT l_render_data;
+    l_render_data.setTypeName("Node Render Data");
+    l_render_data.setVariableName("Node Render Data");
+
+    typeRT l_type_name("Type", (std::string)"Decorator");
+    l_render_data.insertMember(l_type_name);
+    l_data.insertMember(l_render_data);
+
     return l_data;
 }
 
@@ -67,10 +78,13 @@ void Decorator::Init()
 {
     assert(child != nullptr);
 
-    // start up node
-    auto task = GetTask();
-    BehaviorState state(this->getId(), 0, BehaviorPhase::STARTING);
-    task->Push_State(state);
+    GetTask()->SetPhase(BehaviorPhase::PROGRESSING);
+    Behavior::GiveToChild(this->GetTask());
+}
+
+void Decorator::Exit()
+{
+    Behavior::Exit();
 }
 
 

@@ -90,10 +90,10 @@ void Editor::engineController::stop()
 		auto l_bundle_names = l_bundle_manip->getAllBundles();
 		for (auto l_bundle : l_bundle_names)
 		{
-            if (l_bundle == "BehaviorTreeManager")
+            /*if (l_bundle == "BehaviorTreeManager")
             {
                 continue;
-            }
+            }*/
 
 			if (l_bundle == "physics Bundle")
 			{

@@ -6,15 +6,13 @@
 \par        Project: Boomerang
 \brief  This is the interface for the main editor window class
 *****************************************************************************************/
-#include <iostream>
-#include <fstream>
 
 //======== 1st Party Includes ==========================================================//
 #include "EditorWindow.hpp"
-
 #include "EngineController.hpp"
 #include "UndoRedo.hpp"
 #include "EditorInput.hpp"
+#include "GraphicsWindow.hpp"
 
 //======== 3rd Party Includes ==========================================================//
 #include <imgui.h>
@@ -23,19 +21,23 @@
 #include <IComponentRepository.hpp>
 #include <EngineRunner.hpp>
 #include <Engine.hpp>
+#include <windef.h> // UINT
+
+#include <iostream>
+#include <fstream>
 
 //#define IMGUIFILESYSTEM_USE_ASCII_SHORT_PATHS_ON_WINDOWS
 Editor::EditorLogger Editor::editorWindow::m_logger;
 
-Editor::editorWindow::editorWindow(externalWindowInterface * p_external_window_ptr, renderContextInterface * p_render_context_ptr, 
-    inputSourceInterface * p_input_source_ptr, const std::string & p_base_path, const std::string & p_project_name, bool p_dark_mode)
+Editor::editorWindow::editorWindow(externalWindowInterface * p_external_window_ptr, renderContextInterface * p_render_context_ptr, inputSourceInterface * p_input_source_ptr, const std::string & p_base_path, const std::string & p_project_name, bool p_dark_mode)
 	: m_engine_controller{new engineController(nullptr, m_logger)},
 	m_hierarchy_window{new hierarchyWindow(this)},
 	m_scene_window{new sceneWindow(this)},
 	m_dataSelect_window{new dataSelect(this)},
     m_inspector_window{new inspectorWindow(this)},
 	m_navmesh_window{new navMeshWindow(this)},
-	m_nodegraph_window{new nodeGraphWindow(this, /*&m_current_state,*/ m_engine_controller)},
+	m_nodegraph_window{new nodeGraphWindow(this, m_engine_controller)},
+	m_graphics_window{new graphicsWindow{this}},
 	m_hierarchy_selection(m_logger),
 	m_gizmo_renderer(this),
 	m_dark_mode(false),
@@ -45,7 +47,7 @@ Editor::editorWindow::editorWindow(externalWindowInterface * p_external_window_p
 {
 	configuration l_config;
 	l_config.asset_path = p_base_path + "/" + "Assets/";
-	l_config.data_path = p_base_path + "/" + "data/";
+	l_config.data_path = p_base_path + "/" + "Data/";
 	l_config.no_initial_scene = true;
 	l_config.initial_window_show = true;
 
@@ -278,11 +280,11 @@ void Editor::editorWindow::render()
 	// make the docking window fullscreen and invisible
 	ImGuiID dockspace_id = ImGui::GetID("EditorDockspace");
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-	const ImGuiWindowFlags l_flags = ImGuiWindowFlags_NoMove 
+	const ImGuiWindowFlags l_flags = ImGuiWindowFlags_NoMove
 																| ImGuiWindowFlags_NoBringToFrontOnFocus
-																| ImGuiWindowFlags_NoResize 
-																| ImGuiWindowFlags_NoScrollbar 
-																| ImGuiWindowFlags_NoSavedSettings 
+																| ImGuiWindowFlags_NoResize
+																| ImGuiWindowFlags_NoScrollbar
+																| ImGuiWindowFlags_NoSavedSettings
 																| ImGuiWindowFlags_NoTitleBar
 																| ImGuiWindowFlags_MenuBar;
 	const float l_old_window_rounding = ImGui::GetStyle().WindowRounding;
@@ -299,6 +301,9 @@ void Editor::editorWindow::render()
 
 	if (l_visible)
 	{
+        // check for undo or redo
+        m_editor_input->Update();
+
 		// display main menu
 		if (ImGui::BeginMainMenuBar())
 		{
@@ -346,7 +351,7 @@ void Editor::editorWindow::render()
             {
               m_logger.AddLog("[NOTICE] Stopping the engine.\n");
               m_logger.AddLog("[EDITOR] Saving scene.\n");
-              //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("data/");
+              //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("Data/");
               m_engine_controller->getEngineRunner()->getEngine()->getPersistenceManipulator().lock()->saveCurrentScene();
               //m_nodegraph_window->saveGraph();
             }
@@ -357,10 +362,11 @@ void Editor::editorWindow::render()
           m_show_file_system = true;
           m_coming_from_file_open_project = true;
         }
-				if(ImGui::MenuItem("Open Scene ..."))
-				{
+
+        if(ImGui::MenuItem("Open Scene ..."))
+		{
 					m_hierarchy_selection.clearSelection();
-					//m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("data/");
+					//m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("Data/");
 					//m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->load("testname");
 
           if(m_project_folder_set)
@@ -379,7 +385,9 @@ void Editor::editorWindow::render()
             m_logger.AddLog("[WARNING] Please open or create a project first.\n");
           }
 				}
-				if(ImGui::MenuItem("Quit", "ALT+F4"))
+
+
+                if(ImGui::MenuItem("Quit", "ALT+F4"))
 				{
           if(!m_show_quit_window)
           {
@@ -430,7 +438,7 @@ void Editor::editorWindow::render()
         ImGui::OpenPopup("Are You Sure You Want To Quit?");
         m_openPupUpOnce = false;
       }
-      
+
       if(ImGui::BeginPopupModal("Are You Sure You Want To Quit?", &m_show_quit_window))
       {
         if (ImGui::Button("Save And Quit", ImVec2(250.0f, 20.0f)))
@@ -438,7 +446,7 @@ void Editor::editorWindow::render()
           if(saveProjectFile())
           {
             //Save then quit
-            //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("data/");
+            //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("Data/");
             m_engine_controller->getEngineRunner()->getEngine()->getPersistenceManipulator().lock()->saveCurrentScene();
             //m_nodegraph_window->saveGraph();
 
@@ -472,7 +480,7 @@ void Editor::editorWindow::render()
     }
     else
     {
-      chosenPath = m_project_file_path + "/data/scenes";
+      chosenPath = m_project_file_path + "/Data/scenes";
     }
 
     if(m_show_file_system)
@@ -485,7 +493,7 @@ void Editor::editorWindow::render()
       {
         chosenPath = l_newPath;
       }
-      
+
       // If you want to copy the (valid) returned path somewhere, you can use something like:
       static char myPath[4096];
 
@@ -512,8 +520,11 @@ void Editor::editorWindow::render()
 
             m_logger.AddLog("[EDITOR] Loading scene: %s.\n", l_return);
 
-            //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("data/");
+            //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("Data/");
             m_engine_controller->getEngineRunner()->getEngine()->getPersistenceManipulator().lock()->load(l_return);
+
+            // contact undo redo system to clear its history
+            UndoRedoManager::GetInstance().ClearHistory();
 
             m_show_file_system = false;
           }
@@ -548,7 +559,7 @@ void Editor::editorWindow::render()
             m_logger.AddLog("[WARNING] %s is not a valid extension.\n Please select a .prj file.\n", l_ext);
           }
         }
-        
+
       }
     }
 
@@ -590,7 +601,7 @@ void Editor::editorWindow::render()
           if (m_coming_from_file_save_scene)
           {
             //Save here
-            //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("data/");
+            //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->setPersistenceLocation("Data/");
             //m_engine_controller->getEngineRunner()->getPersistenceManipulator().lock()->saveCurrentScene();
           }
         }
@@ -638,7 +649,7 @@ void Editor::editorWindow::render()
 
 		//  display the toolbar
 //		m_toolbar_renderer.render(&m_current_state);
-    
+
 		// display tabs
 		// hierarchy window must be rendered first to get the selection updates
 		if (ImGui::Begin("Hierarchy", nullptr, ImGuiWindowFlags_MenuBar))
@@ -681,6 +692,12 @@ void Editor::editorWindow::render()
 		if(ImGui::Begin("Tools"))
 		{
 			m_navmesh_window->render();
+		}
+    ImGui::End();
+
+		if (ImGui::Begin("Graphics"))
+		{
+			m_graphics_window->render();
 		}
     ImGui::End();
 

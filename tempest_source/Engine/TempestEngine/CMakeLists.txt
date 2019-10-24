@@ -4,22 +4,29 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../Programs/cmake-preco
 include(PrecompiledHeader)
 
 # dependencies
+
 find_package(GLEWInternal REQUIRED)
+find_package(GLFW REQUIRED)
 find_package(GLM REQUIRED)
 #find_package(BulletInternal REQUIRED)
 find_package(FBX REQUIRED)
 find_package(RapidJSON REQUIRED)
 find_package(FreetypeInternal REQUIRED)
 find_package(STB REQUIRED)
-find_package(GLFW REQUIRED)
-find_package(XINPUT REQUIRED)
+
+if(WIN32)
+    find_package(XINPUT REQUIRED)
+else()
+    find_package(XInput REQUIRED)
+    find_package(LinuxWinDefs REQUIRED)
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions -fdeclspec")
+endif()
 
 add_library(TempestEngine STATIC
     Precompiled.cpp # this MUST be the first entry in the files list (for cotire)
     Precompiled.h
     Application.hpp Application.cpp
-    ComponentFactory.hpp ComponentFactory.cpp
-    ComponentLists.h
     DLLControl.hpp
     Engine.hpp Engine.cpp
     FilterBase.h
@@ -41,15 +48,11 @@ add_library(TempestEngine STATIC
     SystemTask.hpp SystemTask.cpp
     TransformTestScript.hpp TransformTestScript.cpp
 
-
     ../../EngineInterfaces/Public/IComponentRepository.hpp ../../ComponentRepository/Private/ComponentRepository.cpp
-
     Actions/Action.hpp Actions/Action.cpp
     Actions/ActionSystem.hpp Actions/ActionSystem.cpp
     Actions/DelayAction.hpp Actions/DelayAction.cpp
     Actions/LerpAction.hpp Actions/LerpAction.cpp
-
-     DynamicWaypoints/DynamicWaypointGraph.hpp DynamicWaypoints/DynamicWaypointGraph.cpp
 
     Audio/AudioComponent.hpp Audio/AudioComponent.cpp
     Audio/AudioSystem.h Audio/AudioSystem.cpp
@@ -69,6 +72,9 @@ add_library(TempestEngine STATIC
     Components/Skybox.hpp Components/Skybox.cpp
     Components/WaypointNode.hpp Components/WaypointNode.cpp
     Components/WaypointNodeSet.hpp Components/WaypointNodeSet.cpp
+	
+    DynamicWaypoints/WaypointGraphPathfinder.hpp DynamicWaypoints/WaypointGraphPathfinder.cpp
+    DynamicWaypoints/DynamicWaypointGraph.hpp DynamicWaypoints/DynamicWaypointGraph.cpp
 
     Events/CollisionEvent.hpp
     Events/EventSystem.hpp Events/EventSystem.cpp
@@ -82,6 +88,8 @@ add_library(TempestEngine STATIC
     External/CameraManipulatorInterface.hpp
     External/EngineMetadataManipulator.hpp External/EngineMetadataManipulator.cpp
     External/EngineMetadataManipulatorInterface.hpp
+	External/GraphicsManipulatorInterface.hpp
+	External/GraphicsManipulator.hpp External/GraphicsManipulator.cpp
     External/NodeManipulator.hpp External/NodeManipulator.cpp
     External/NodeManipulatorInterface.hpp
     External/SceneEntityReference.hpp External/SceneEntityReference.cpp
@@ -128,7 +136,6 @@ add_library(TempestEngine STATIC
     Messaging/MessageQueue.hpp Messaging/MessageQueue.cpp
     Messaging/MessagingSystem.hpp Messaging/MessagingSystem.cpp
 
-
     # Behavior Tree Section
 
     BehaviorEnums.hpp
@@ -139,27 +146,26 @@ add_library(TempestEngine STATIC
     BehaviorTask.hpp BehaviorTask.cpp
     BehaviorTaskProxy.hpp BehaviorTaskProxy.cpp
 
-    #AgentEncapsulator.hpp AgentEncapsulator.cpp
-
     Nodes/Behaviors/Behavior.hpp Nodes/Behaviors/Behavior.cpp
-
     Nodes/Node.hpp Nodes/Node.cpp
     Nodes/NodeFactory.hpp Nodes/NodeFactory.cpp
     Nodes/TemplateNode.hpp Nodes/TemplateNode.cpp
     Nodes/BaseNode1.hpp Nodes/BaseNode1.cpp
     Nodes/BaseNode2.hpp Nodes/BaseNode2.cpp
-
     # leaves
     Nodes/Behaviors/Leaf.hpp Nodes/Behaviors/Leaf.cpp 
     Nodes/Behaviors/DefaultLeaf.hpp Nodes/Behaviors/DefaultLeaf.cpp
-    Nodes/Behaviors/Decorator.hpp Nodes/Behaviors/Decorator.cpp
-    Nodes/Behaviors/Inverter.hpp Nodes/Behaviors/Inverter.cpp
-    Nodes/Behaviors/RepeatUntilN.hpp Nodes/Behaviors/RepeatUntilN.cpp
     Nodes/Behaviors/Repeater.hpp Nodes/Behaviors/Repeater.cpp
+    Nodes/Behaviors/JumpUp.hpp Nodes/Behaviors/JumpUp.cpp
+
+    #Decorators
+    Nodes/Behaviors/Timer.hpp Nodes/Behaviors/Timer.cpp
+    Nodes/Behaviors/Inverter.hpp Nodes/Behaviors/Inverter.cpp
+    Nodes/Behaviors/Decorator.hpp Nodes/Behaviors/Decorator.cpp
+    Nodes/Behaviors/ReturnTrue.hpp Nodes/Behaviors/ReturnTrue.cpp
+    Nodes/Behaviors/RepeatUntilN.hpp Nodes/Behaviors/RepeatUntilN.cpp
     Nodes/Behaviors/RepeatUntilFailure.hpp Nodes/Behaviors/RepeatUntilFailure.cpp
     Nodes/Behaviors/RepeatUntilSuccess.hpp Nodes/Behaviors/RepeatUntilSuccess.cpp
-    Nodes/Behaviors/ReturnTrue.hpp Nodes/Behaviors/ReturnTrue.cpp
-    Nodes/Behaviors/Timer.hpp Nodes/Behaviors/Timer.cpp
 
     #Composites
     Nodes/Behaviors/Composite.hpp Nodes/Behaviors/Composite.cpp
@@ -184,6 +190,7 @@ add_library(TempestEngine STATIC
     Rendering/GraphicsSystem.hpp Rendering/GraphicsSystem.cpp
     Rendering/IndexBufferObject.hpp Rendering/IndexBufferObject.cpp
     Rendering/LineMesh.cpp
+    Rendering/DepthTexture.hpp Rendering/DepthTexture.cpp
     Rendering/DebugLines.hpp Rendering/DebugLines.cpp
     Rendering/LineBuffer.hpp Rendering/LineBuffer.cpp
     Rendering/LineSegment.hpp Rendering/LineSegment.cpp
@@ -192,6 +199,7 @@ add_library(TempestEngine STATIC
     Rendering/MaterialLoader.hpp Rendering/MaterialLoader.cpp
     Rendering/Mesh.hpp Rendering/Mesh.cpp
     Rendering/MeshBuilder.hpp Rendering/MeshBuilder.cpp
+    Rendering/ModularFrameBuffer.hpp Rendering/ModularFrameBuffer.cpp
     Rendering/ParticleBuffer.hpp Rendering/ParticleBuffer.cpp
     Rendering/ParticleMesh.hpp Rendering/ParticleMesh.cpp
     Rendering/ParticleSystem.hpp Rendering/ParticleSystem.cpp
@@ -209,8 +217,6 @@ add_library(TempestEngine STATIC
     Rendering/VertexArrayObject.hpp Rendering/VertexArrayObject.cpp
     Rendering/VertexBufferObject.hpp Rendering/VertexBufferObject.cpp
     #Rendering/Windowing.hpp Rendering/Windowing.cpp # TODO: Fix this!
-    Rendering/DepthTexture.hpp Rendering/DepthTexture.cpp
-    Rendering/ModularFrameBuffer.hpp Rendering/ModularFrameBuffer.cpp
 
     Replay/InstantReplaySystem.hpp Replay/InstantReplaySystem.cpp
     Replay/JumbotronComponent.hpp Replay/JumbotronComponent.cpp
@@ -247,7 +253,9 @@ add_library(TempestEngine STATIC
     Utility/GeneralizedFileLoader.hpp Utility/GeneralizedFileLoader.cpp
     Utility/NavMeshGenerator.hpp Utility/NavMeshGenerator.cpp
     Utility/TextureLoader.hpp Utility/TextureLoader.cpp
-    Utility/TreeLoader.hpp Utility/TreeLoader.cpp
+    ComponentFactory.cpp
+    ComponentFactory.hpp
+    ComponentLists.h
     )
 
 target_include_directories(TempestEngine
@@ -279,7 +287,16 @@ target_include_directories(TempestEngine
     PRIVATE ${GLM_INCLUDE_DIRS}
     PRIVATE ${RapidJSON_INCLUDE_DIRS}
     PRIVATE ${STB_INCLUDE_DIRS}
+    PRIVATE ${LinuxWinDefs_INCLUDES}
 )
+
+if(UNIX)
+    target_link_libraries(TempestEngine
+        PRIVATE stdc++fs
+        PRIVATE LinuxWinDefs
+        PRIVATE ${XInput_LIBRARIES}
+    )
+endif()
 
 target_link_libraries(TempestEngine
     PRIVATE Logger
@@ -303,7 +320,9 @@ target_link_libraries(TempestEngine
     PRIVATE LinearMath
     PRIVATE GLFW
     PRIVATE XInput
+    PRIVATE ComponentRepository
 )
+
 
 # build up resources list
 list(APPEND resources ${Graphics.OpenGL4_RESOURCES})
@@ -318,9 +337,9 @@ set(TempestEngine_RESOURCES ${resources} CACHE STRING "TempestEngine_RESOURCES" 
 set_target_properties(TempestEngine PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
+    CXX_EXTENSIONS ON
 )
 
 ## setup the precompiled header
-add_precompiled_header(TempestEngine Precompiled.h 
+add_precompiled_header(TempestEngine Precompiled.h
     SOURCE_CXX Precompiled.cpp FORCEINCLUDE)

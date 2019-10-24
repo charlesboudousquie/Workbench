@@ -20,9 +20,11 @@ public:
 
     static typeRT onRender();
 
-    //void handleResult(BehaviorResult) override;
+    void Init()override;
 
     void Update(float) override;
+
+    void Exit()override;
     
 };
 

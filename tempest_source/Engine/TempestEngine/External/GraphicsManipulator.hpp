@@ -2,6 +2,7 @@
 #include "GraphicsManipulatorInterface.hpp"
 
 class systemManagerInterface;
+class graphicsSystem;
 
 class graphicsManipulator : public graphicsManipulatorInterface
 {
@@ -21,7 +22,15 @@ public:
 	// reloads all shaders currently in use
 	void reloadShaders() override;
 
+	bool isDisplayingWireframes() override;
+	void displayWireframes(bool)  override;
+
+	bool isDisplayingDebugLines() override;
+	void displayDebugLines(bool)  override;
+
 
 private:
 	systemManagerInterface * m_system_manager;
+
+	graphicsSystem * getGraphicsSystem();
 };

@@ -7,15 +7,14 @@
 \brief  This is the object contains Behavior Nodes.
 *****************************************************************************************/
 #include "BehaviorTree.hpp"
-#include "BehaviorTaskProxy.hpp"
 #include "Nodes/Behaviors/Behavior.hpp"
-#include "AgentEncapsulator.hpp"
 #include "Agent.hpp"
 
 BehaviorTaskPtr BehaviorTree::GetTask()
 {
     return this->task;
 }
+
 void BehaviorTree::SetTask(BehaviorTaskPtr t)
 {
     this->task = t;
@@ -23,45 +22,16 @@ void BehaviorTree::SetTask(BehaviorTaskPtr t)
 
 void BehaviorTree::SetUpTree(BehaviorPtr root_, std::map<int, BehaviorPtr> nodes_)
 {
-    //this->task = std::make_shared<BehaviorTaskProxy>();
-
-    // set root
-    this->root = root_;
-
-    // proxy is already set in constructor
-    //RecursivelySetProxy(this->taskProxy, this->root);
-
+    root = root_;
+    RecursiveSetParentTree(root.get());
 }
-
-//void BehaviorTree::RecursivelySetProxy(BehaviorTaskProxyPtr proxy, BehaviorPtr node)
-//{
-//    // set agent proxy
-//    node->setTaskProxy(proxy);
-//
-//    // get child nodes
-//    auto children = node->GetChildren();
-//
-//    // if any children then we recursively set proxy for them
-//    for (auto child : children)
-//    {
-//        RecursivelySetProxy(proxy, child);
-//    }
-//}
-
-//BehaviorTaskProxyPtr BehaviorTree::GetProxyTask()
-//{
-//    return this->taskProxy;
-//}
 
 BehaviorPtr BehaviorTree::GetRoot()
 {
     return root;
 }
 
-BehaviorTree::BehaviorTree()
-{
-    //this->taskProxy = std::make_shared<BehaviorTaskProxy>();
-}
+BehaviorTree::BehaviorTree(){}
 
 void BehaviorTree::SetName(const std::string & newName)
 {
@@ -73,7 +43,14 @@ std::string BehaviorTree::GetName()
     return this->name;
 }
 
-void BehaviorTree::SetRoot(BehaviorPtr root_)
+void BehaviorTree::RecursiveSetParentTree(Behavior* behavior)
 {
-    root = root_;
+    behavior->setParentTree(this);
+
+    auto children = behavior->GetChildren();
+
+    for (auto child : children)
+    {
+        RecursiveSetParentTree(child.get());
+    }
 }

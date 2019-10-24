@@ -21,6 +21,7 @@
 #include "../Utility/TextureLoader.hpp"
 
 #include <cstring>
+#include <algorithm>
 
 //#include <stb_image_write.h>
 
@@ -67,7 +68,7 @@ int toOffset(format const& f)
 //==============================================================================//
 simpleTexture::simpleTexture(assetHandle p_assetHandle) : m_assetHandle(p_assetHandle){}
 
-simpleTexture::simpleTexture(unsigned p_width, unsigned p_height, format p_format) 
+simpleTexture::simpleTexture(unsigned p_width, unsigned p_height, format p_format)
 	: m_width(p_width), m_height(p_height),
 	m_assetHandle(nullptr),
 	m_format{p_format},
@@ -110,7 +111,7 @@ void simpleTexture::initTex()
 //void simpleTexture::setPixelData(unsigned char* p_data)
 //{
 //
-//  
+//
 //        // create internal buffer
 //        auto pixelData = new unsigned char[m_width* m_height* m_format];
 //
@@ -118,9 +119,9 @@ void simpleTexture::initTex()
 //        std::memcpy(pixelData, p_data, m_width * m_height * m_format);
 //
 //        m_pixelData = pixelData;
-//    
 //
-//} 
+//
+//}
 
 //==============================================================================//
 //        Operators                                                             //
@@ -159,7 +160,7 @@ void simpleTexture::build()
 	const GLenum l_internalformat = formatToGLFormat[toOffset(m_format)];
 	const GLenum l_format = m_format != format::enm_rgba_float ? l_internalformat : GL_RGBA;
 	glTexImage2D(GL_TEXTURE_2D, 0, static_cast<GLint>(l_internalformat), m_width, m_height, 0, l_format, GL_UNSIGNED_BYTE, text);
-    // send texture data    
+    // send texture data
 
     //GLDebug::getLastError();
 
@@ -182,14 +183,6 @@ void simpleTexture::buildNoData()
 
 void simpleTexture::bind(unsigned int slot)
 {
-    //TODO(cody):Check if already bound
-    if (m_boundSlot != UnboundTexture)
-    {
-        logger("SimpleTexture").debug() << "ERROR: texture already bound";
-        return;
-    }
-        
-
     //http://stackoverflow.com/questions/8866904
     // sets current active object
     glActiveTexture(GL_TEXTURE0 + slot);
@@ -200,45 +193,52 @@ void simpleTexture::bind(unsigned int slot)
     //GLDebug::getLastError();
 
     // save slot its in
-    m_boundSlot = slot;
+    m_boundSlot.emplace_back(slot);
+}
+
+void simpleTexture::unbind(unsigned int slot)
+{
+	auto slotInd = std::find(m_boundSlot.begin(), m_boundSlot.end(), slot);
+	if (slotInd != m_boundSlot.end())
+	{
+		m_boundSlot.erase(slotInd);
+		glActiveTexture(GL_TEXTURE0 + slot);
+		glBindTexture(GL_TEXTURE_2D, m_textureHandle);
+	}
 }
 
 void simpleTexture::unbind()
 {
-
-    if (m_boundSlot == UnboundTexture)
-    {
-        //logger("SimpleTexture").debug() << "ERROR: texture already unbound";
-        return;
-    }
-     
-    // unbind texture from slot
-    glActiveTexture(GL_TEXTURE0 + m_boundSlot);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    m_boundSlot = UnboundTexture; // unbound = -1
+	while (m_boundSlot.size())
+	{
+		// unbind texture from slot
+		glActiveTexture(GL_TEXTURE0 + m_boundSlot.back());
+		glBindTexture(GL_TEXTURE_2D, 0);
+		m_boundSlot.pop_back();
+	}
 }
 
 
 //void simpleTexture::load()
 //{
-//    
+//
 //    int l_width, l_height, l_bpp;
 //
-//		
 //
-//		
+//
+//
 //
 //    stbi_set_flip_vertically_on_load(true);
 //    unsigned char * textureData = stbi_load(m_texturePath.c_str(), &l_width, &l_height, &l_bpp, 0);
-//    
-//    if (!textureData) 
+//
+//    if (!textureData)
 //    {
 //        logger("SimpleTexture").debug() << "ERROR: stbi_load failed";
 //        return;
 //    }
-//       
 //
-//    m_width = l_width; 
+//
+//    m_width = l_width;
 //    m_height = l_height;
 //    m_format = l_bpp;
 //

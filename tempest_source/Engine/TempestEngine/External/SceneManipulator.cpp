@@ -523,9 +523,11 @@ void sceneManipulator::setButtonNeighbor(objID p_objectID, objID p_neighborID, i
   }
 }
 
-void sceneManipulator::removeButtonNeighbor(objID p_objectID, int p_neighbor)
+objID sceneManipulator::removeButtonNeighbor(objID p_objectID, int p_neighbor)
 {
   std::shared_ptr<gameObject> l_object = findGameObjectByID(p_objectID);
+
+  objID l_removed_neighbor_id = 0;
 
   if (l_object != nullptr)
   {
@@ -533,22 +535,22 @@ void sceneManipulator::removeButtonNeighbor(objID p_objectID, int p_neighbor)
     {
     case 4:
     {
-      l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_RIGHT);
+      l_removed_neighbor_id = l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_RIGHT);
       break;
     }
     case 5:
     {
-      l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_LEFT);
+      l_removed_neighbor_id = l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_LEFT);
       break;
     }
     case 6:
     {
-      l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_UP);
+      l_removed_neighbor_id = l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_UP);
       break;
     }
     case 7:
     {
-      l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_DOWN);
+      l_removed_neighbor_id = l_object->getComponent<button>()->removeNeighbor(button::DIRECTION_DOWN);
       break;
     }
     default:
@@ -557,6 +559,8 @@ void sceneManipulator::removeButtonNeighbor(objID p_objectID, int p_neighbor)
     }
     }
   }
+
+  return l_removed_neighbor_id;
 }
 
 objID sceneManipulator::getObjectID(std::string p_objectName)
@@ -906,4 +910,11 @@ void sceneManipulator::dynamicWaypointGraphClear()
 	dynamicWaypointGraph * dwg = m_system_manager->getSystem<dynamicWaypointGraph>();
 	if (dwg != nullptr)
 		dwg->clear();
+}
+
+void sceneManipulator::dynamicWaypointGraphDeleteRandomNodeSet()
+{
+	dynamicWaypointGraph * dwg = m_system_manager->getSystem<dynamicWaypointGraph>();
+	if (dwg != nullptr)
+		dwg->deleteRandomNodeSet();
 }

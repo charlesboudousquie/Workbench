@@ -28,6 +28,8 @@ class task;
 class systemManagerInterface
 {
 public:
+	virtual ~systemManagerInterface() = default;
+
 	virtual gameObjectGatherer * getGameObjectGatherer() const = 0;
 	virtual systemBase * getSystem(const std::string & p_system_name) = 0;
 	virtual void setGameObjectGatherer(gameObjectGatherer * p_go_filter) = 0;

@@ -68,6 +68,7 @@
 #include "External/CameraManipulator.hpp"
 #include "External/NodeManipulatorInterface.hpp"
 #include "External/NodeManipulator.hpp"
+#include "External/GraphicsManipulator.hpp"
 #include "Utility/AssetManager.hpp"
 #include "Utility/GeneralizedFileLoader.hpp"
 #include "Systems/FBXLoader.hpp"
@@ -423,6 +424,19 @@ std::weak_ptr<nodeManipulatorInterface> engine::getNodeManipulator()
   }
 
   return m_node_manipulator_ptr;
+}
+
+std::weak_ptr<graphicsManipulatorInterface> engine::getGraphicsManipulator()
+{
+	if (m_graphics_manipulator_ptr == nullptr)
+	{
+		if (m_system_manager != nullptr)
+		{
+			m_graphics_manipulator_ptr = std::make_shared<graphicsManipulator>(m_system_manager);
+		}
+	}
+
+	return m_graphics_manipulator_ptr;
 }
 
 

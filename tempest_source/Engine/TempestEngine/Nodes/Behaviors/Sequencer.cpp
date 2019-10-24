@@ -8,33 +8,6 @@
 *****************************************************************************************/
 #include "Sequencer.hpp"
 
-//void Sequencer::handleResult(BehaviorResult childResult)
-//{
-//    auto task = GetTask();
-//
-//    // if child failed then we failed
-//    if (childResult == BehaviorResult::FAILURE)
-//    {
-//        task->SetPhase(BehaviorPhase::DONE);
-//        task->SetResult(BehaviorResult::FAILURE);
-//        this->GiveToParent(task);
-//        //this->phase = BehaviorPhase::DONE;
-//        //this->result = BehaviorResult::FAILURE;
-//    }
-//    else if (childResult == BehaviorResult::SUCCESS)
-//    {
-//        // if child succeeded then move onto next one
-//        currentChild++;
-//
-//        // if at end then we succeeded
-//        if (currentChild == childNodes.end())
-//        {
-//            this->phase = BehaviorPhase::DONE;
-//            this->result = BehaviorResult::SUCCESS;
-//        }
-//    }
-//}
-
 typeRT Sequencer::onRender()
 {
     return Composite::compositeOnRender();
@@ -43,7 +16,6 @@ typeRT Sequencer::onRender()
 void Sequencer::Update(float dt)
 {
     auto task = GetTask();
-
     auto result = task->GetResult();
     
     // if our child succeeded then move onto next one
@@ -56,9 +28,12 @@ void Sequencer::Update(float dt)
         if (task->GetChildIndex() == this->childNodes.size())
         {
             task->SetResult(BehaviorResult::SUCCESS);
-            // Setting phase doesnt matter since we are leaving
-            // this node.
             GiveToParent(task);
+        }
+        // if we are not done then we send it back down to the next child
+        else
+        {
+            GiveToChild(task);
         }
     }
     else if (result == BehaviorResult::FAILURE)

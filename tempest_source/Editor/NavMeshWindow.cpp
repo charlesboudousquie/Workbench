@@ -73,6 +73,10 @@ namespace Editor
 		{
 			getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->dynamicWaypointGraphClear();
 		}
+		if (ImGui::Button("Delete Random Node Set"))
+		{
+			getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->dynamicWaypointGraphDeleteRandomNodeSet();
+		}
 	}
 
 }

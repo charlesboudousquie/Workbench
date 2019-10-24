@@ -11,28 +11,27 @@
 
 void Selector::Update(float dt)
 {
-    // run current child
-    (*currentChild)->tick(dt);
-}
+    //// run current child
+    //(*currentChild)->tick(dt);
+    auto task = GetTask();
+    auto childResult = task->GetResult();
 
-void Selector::handleResult(BehaviorResult childResult)
-{
     // if child succeeded then we succeeded
     if (childResult == BehaviorResult::SUCCESS)
     {
-        this->result = childResult;
-        this->phase = BehaviorPhase::DONE;
+        task->SetResult(BehaviorResult::SUCCESS);
+        GiveToParent(task);
     }
     if (childResult == BehaviorResult::FAILURE)
     {
         // if failed then go to next child
-        currentChild++;
+        task->IncrementChildIndex();
 
         // if no more child nodes left to try
-        if (currentChild == childNodes.end())
+        if (task->GetChildIndex() == childNodes.size())
         {
-            this->phase = BehaviorPhase::DONE;
-            this->result = BehaviorResult::FAILURE;
+            task->SetResult(BehaviorResult::FAILURE);
+            GiveToParent(task);
         }
     }
 }

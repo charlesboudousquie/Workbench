@@ -7,6 +7,7 @@
 \brief	
 *****************************************************************************************/
 #include "ComponentRenderer.hpp"
+#include "../EditorObject.hpp"
 
 Editor::componentRenderer::componentRenderer(Editor::editorWindow * p_parent_window)
         : renderableBase(p_parent_window)
@@ -14,10 +15,10 @@ Editor::componentRenderer::componentRenderer(Editor::editorWindow * p_parent_win
 
 }
 
-bool Editor::componentRenderer::render(typeRT & p_type_data)
+bool Editor::componentRenderer::render(typeRT & p_type_data, objID p_editor_object_id)
 {
   //Aaron does this and one time he said you should do it like this. 
-  return onRender(p_type_data);
+  return onRender(p_type_data, p_editor_object_id);
 }
 
 bool Editor::componentRenderer::overridesMember(const std::string & p_member)

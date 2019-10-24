@@ -30,6 +30,7 @@ class windowing final : public systemBase
 
         static constexpr const char * SYSTEM_NAME = "windowing"; //!< Name for looking up this system
 
+        const std::string& name() const override { static std::string s(SYSTEM_NAME); return s; }
 
 	////////========================================================================////////
 	////////   Protected                                                            ////////

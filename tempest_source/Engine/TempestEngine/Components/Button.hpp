@@ -90,8 +90,9 @@ public:
   /*!***************************************************************************************
   \brief Removes a button's neighbor in a given direction.
   \param p_direction The direction to remove.
+  \return The object id of the removed neighbor.
   *****************************************************************************************/
-  void removeNeighbor(buttonDirection p_direction);
+  objID removeNeighbor(buttonDirection p_direction);
 
   /*!***************************************************************************************
   \brief Whether or not this button is currently selected so that it can be pressed.

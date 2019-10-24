@@ -23,11 +23,14 @@
 class NodeManager;
 class EditorNode;
 
+
 namespace Editor
 {
   //======== Forward Declarations=======================================================//
   class editorWindow;
   class engineController;
+  class GraphTypeSelector;
+  class AgentMenuSelection;
 
   /*!***************************************************************************************
   \par class: nodeGraphWindow
@@ -83,6 +86,10 @@ namespace Editor
 
     editorWindow* m_editor_window;
 
+    GraphTypeSelector* g_type_selector;
+
+    AgentMenuSelection* agentMenuSelector;
+
     std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> m_node_definitions;
 
     void createNodeMenu(ImVec2 p_scene_pos);
@@ -94,7 +101,7 @@ namespace Editor
     void drawNodes(ImDrawList * p_draw_list);
     void graphNameRender();
     void openGraphButton();
-    //void testGraphButton();
+    void graphTypeMenu(); // 
 
     void renderGraphPopup();
 

@@ -181,6 +181,7 @@ private:
 class fileLoader
 {
 public:
+    virtual ~fileLoader() = default;
 
 	/*!***************************************************************************************
 	\brief Fill a list of all assets found in the filename
@@ -211,6 +212,13 @@ public:
 	\brief initialize the asset manager, searches asset path for loadable assets
 	*****************************************************************************************/
 	static void init(const std::string & p_asset_path);
+
+    /*!***************************************************************************************
+    \brief refreshes asset list using the current asset path
+    *****************************************************************************************/
+    static void reload();
+
+
 	/*!***************************************************************************************
 	\brief shutdown the asset manager, unloads ALL ASSETS
 	*****************************************************************************************/
@@ -286,6 +294,9 @@ private:
 	static std::map<std::wstring, fileLoader*> m_typeToLoader; //!< filename extention to loader map
 	static fileLoader* m_fallbackLoader; //!< uses this loader if no fileLoader matches an extention in the map
 	static logger log; //!< logger
+
+    static std::string m_asset_path; //!< asset path we are currently using
+
 };
 
 //template functions

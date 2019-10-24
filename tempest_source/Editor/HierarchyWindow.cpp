@@ -18,6 +18,7 @@
 #include <EngineRunner.hpp>
 #include <Engine.hpp>
 #include "EditorWindow.hpp"
+#include "EditorObject.hpp"
 
 Editor::hierarchyWindow::hierarchyWindow(editorWindow * p_parent_editor)
 	: windowBase( p_parent_editor), m_renderer(p_parent_editor)
@@ -27,6 +28,8 @@ Editor::hierarchyWindow::hierarchyWindow(editorWindow * p_parent_editor)
 void Editor::hierarchyWindow::onRender()
 {
   Editor::EditorLogger & l_log = getLogger();
+  auto l_scene_manipulator = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock();
+  EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
 	// display hierarchy menu
 	if (ImGui::BeginMenuBar())
 	{
@@ -36,13 +39,22 @@ void Editor::hierarchyWindow::onRender()
       {
         if(getSelectionKeeper().isSceneSelected())
         {
-          auto l_return = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->addEmptySpace(getSelectionKeeper().getSelectionId());
+          auto l_return = l_scene_manipulator->addEmptySpace(getSelectionKeeper().getSelectionId());
 
           if(l_return != nullptr)
           {
             l_log.AddLog("[NOTICE] New Empty Space created in scene: %s \n", getSelectionKeeper().getSelectionName().c_str());
 
             getSelectionKeeper().setSelected(l_return);
+
+            //Need to create new Editor Object for the new space
+            typeRT l_data = l_scene_manipulator->getTypeRT(l_return->getID());
+            EditorObject * l_new_object = new EditorObject(EditorObjectType::enm_space, l_data, l_return->getID());
+
+            if(l_new_object != nullptr)
+            {
+              l_editor_object_manager.addEditorObject(l_new_object);
+            }
           }
           else
           {
@@ -52,13 +64,22 @@ void Editor::hierarchyWindow::onRender()
         }
         else
         {
-          auto l_return = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->addEmptySpace();
+          auto l_return = l_scene_manipulator->addEmptySpace();
 
           if (l_return != nullptr)
           {
             l_log.AddLog("[NOTICE] New Empty Space created.\n");
 
             getSelectionKeeper().setSelected(l_return);
+
+            //Need to create new Editor Object for the new space
+            typeRT l_data = l_scene_manipulator->getTypeRT(l_return->getID());
+            EditorObject * l_new_object = new EditorObject(EditorObjectType::enm_space, l_data, l_return->getID());
+
+            if (l_new_object != nullptr)
+            {
+              l_editor_object_manager.addEditorObject(l_new_object);
+            }
           }
           else
           {
@@ -70,13 +91,22 @@ void Editor::hierarchyWindow::onRender()
 			{
         if(getSelectionKeeper().isNoneSelected() || getSelectionKeeper().isSceneSelected())
         {
-          auto l_return = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->addEmptyGameObject();
+          auto l_return = l_scene_manipulator->addEmptyGameObject();
 
           if (l_return != nullptr)
           {
             getSelectionKeeper().setSelected(l_return);
 
             l_log.AddLog("[NOTICE] New Empty Game Object created.\n");
+
+            //Need to create new Editor Object for the new game object
+            typeRT l_data = l_scene_manipulator->getTypeRT(l_return->getID());
+            EditorObject * l_new_object = new EditorObject(EditorObjectType::enm_space, l_data, l_return->getID());
+
+            if (l_new_object != nullptr)
+            {
+              l_editor_object_manager.addEditorObject(l_new_object);
+            }
           }
           else
           {
@@ -85,13 +115,22 @@ void Editor::hierarchyWindow::onRender()
         }
         else
         {
-          auto l_return = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->addEmptyGameObject(getSelectionKeeper().getSelectionId());
+          auto l_return = l_scene_manipulator->addEmptyGameObject(getSelectionKeeper().getSelectionId());
 
           if (l_return != nullptr)
           {
             l_log.AddLog("[NOTICE] New Empty Game Object created to parent: %s.\n", getSelectionKeeper().getSelectionName().c_str());
 
             getSelectionKeeper().setSelected(l_return);
+
+            //Need to create new Editor Object for the new game object
+            typeRT l_data = l_scene_manipulator->getTypeRT(l_return->getID());
+            EditorObject * l_new_object = new EditorObject(EditorObjectType::enm_space, l_data, l_return->getID());
+
+            if (l_new_object != nullptr)
+            {
+              l_editor_object_manager.addEditorObject(l_new_object);
+            }
           }
           else
           {

@@ -15,6 +15,9 @@
 #include <SceneManagement/Scene.hpp>
 #include <SceneManagement/Space.hpp>
 #include <SceneManagement/GameObject.hpp>
+#include "EditorWindow.hpp"
+#include "EditorObjectManager.hpp"
+#include "EditorObject.hpp"
 
 Editor::hierarchyRenderer::hierarchyRenderer(editorWindow * p_parent_window)
 	: renderableBase{p_parent_window}
@@ -38,6 +41,23 @@ void Editor::hierarchyRenderer::onRender(std::vector<std::shared_ptr<scene>> p_s
 
 void Editor::hierarchyRenderer::renderScene(std::shared_ptr<scene> p_scene)
 {
+  auto l_scene_manipulator = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock();
+  EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
+  objID l_object_id = p_scene->getID();
+
+  //First time rendering this object, need to create a Editor Object for this scene
+  if(!l_editor_object_manager.ifEditorObjectExists(l_object_id))
+  {
+    //Need to create new Editor Object
+    typeRT l_data = l_scene_manipulator->getTypeRT(l_object_id);
+    EditorObject * l_new_object = new EditorObject(EditorObjectType::enm_scene, l_data, l_object_id);
+
+    if(l_new_object != nullptr)
+    {
+      l_editor_object_manager.addEditorObject(l_new_object);
+    }
+  }
+
 	ImGuiTreeNodeFlags l_node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 	// check for selection
 	if (getSelectionKeeper().isSelected(p_scene))
@@ -61,6 +81,23 @@ void Editor::hierarchyRenderer::renderScene(std::shared_ptr<scene> p_scene)
 
 void Editor::hierarchyRenderer::renderSpace(std::shared_ptr<space> p_space)
 {
+  auto l_scene_manipulator = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock();
+  EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
+  objID l_object_id = p_space->getID();
+
+  //First time rendering this object, need to create a Editor Object for this scene
+  if (!l_editor_object_manager.ifEditorObjectExists(l_object_id))
+  {
+    //Need to create new Editor Object
+    typeRT l_data = l_scene_manipulator->getTypeRT(l_object_id);
+    EditorObject * l_new_object = new EditorObject(EditorObjectType::enm_space, l_data, l_object_id);
+
+    if (l_new_object != nullptr)
+    {
+      l_editor_object_manager.addEditorObject(l_new_object);
+    }
+  }
+
 	ImGuiTreeNodeFlags l_node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 	// check for selection
 	if (getSelectionKeeper().isSelected(p_space))
@@ -84,6 +121,23 @@ void Editor::hierarchyRenderer::renderSpace(std::shared_ptr<space> p_space)
 
 void Editor::hierarchyRenderer::renderGameObject(std::shared_ptr<gameObject> p_object)
 {
+  auto l_scene_manipulator = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock();
+  EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
+  objID l_object_id = p_object->getID();
+
+  //First time rendering this object, need to create a Editor Object for this scene
+  if (!l_editor_object_manager.ifEditorObjectExists(l_object_id))
+  {
+    //Need to create new Editor Object
+    typeRT l_data = l_scene_manipulator->getTypeRT(l_object_id);
+    EditorObject * l_new_object = new EditorObject(EditorObjectType::enm_game_object, l_data, l_object_id);
+
+    if (l_new_object != nullptr)
+    {
+      l_editor_object_manager.addEditorObject(l_new_object);
+    }
+  }
+
 	ImGuiTreeNodeFlags l_node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 	// check for selection
 	if (getSelectionKeeper().isSelected(p_object))

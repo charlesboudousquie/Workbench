@@ -25,7 +25,11 @@ protected:
 
     virtual void addChild(BehaviorPtr newChild) override;
 
+    // automatically adds new state for child to work with
+    // and sends task to child
     void Init() override;
+
+    virtual void Exit() override;
 
     BehaviorPtr child = nullptr;
 };

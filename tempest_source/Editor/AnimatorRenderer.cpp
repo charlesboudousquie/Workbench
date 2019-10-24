@@ -23,7 +23,7 @@ Editor::animatorRenderer::animatorRenderer(editorWindow* p_parent_window):
 
 }
 
-bool Editor::animatorRenderer::onRender(typeRT& p_type_data)
+bool Editor::animatorRenderer::onRender(typeRT& p_type_data, objID p_editor_object_id)
 {
 
 	constexpr int buff_size = 2048;

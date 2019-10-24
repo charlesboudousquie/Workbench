@@ -46,6 +46,8 @@ public:
 	void bind() override;
 	void unbind() const override;
 
+	virtual void bindRead();
+	virtual void unbindRead();
 	void clear(clearBit bits = bufferClearbits::all);
 
 	void shutdown() override;

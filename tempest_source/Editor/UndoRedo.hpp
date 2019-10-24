@@ -21,6 +21,38 @@ namespace Editor
 
     typedef std::shared_ptr<Command> CommandPtr;
 
+
+    class UndoRedoWatchdog
+    {
+        bool shouldRecord;
+        UndoRedoWatchdog() {}
+    public:
+
+        static UndoRedoWatchdog& Get()
+        {
+            static UndoRedoWatchdog instance;
+            return instance;
+        }
+
+        // reset watchdog to look for new changes
+        void Reset()
+        {
+            shouldRecord = false;
+        }
+
+        // change spotted in inspector renderer
+        bool sawChange()
+        {
+            return shouldRecord;
+        }
+
+        // alert watchdog to change
+        void Notify()
+        {
+            shouldRecord = true;
+        }
+    };
+
     /*!***************************************************************************************
     \par class: UndoRedoManager
     \brief   This is the class which knows how to undo and redo user changes.

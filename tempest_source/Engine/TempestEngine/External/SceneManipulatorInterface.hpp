@@ -55,7 +55,7 @@ public:
 	virtual void removeEditorCamera() = 0;
 
   virtual void setButtonNeighbor(objID p_objectID, objID p_neighborID, int p_neighbor) = 0;
-  virtual void removeButtonNeighbor(objID p_objectID, int p_neighbor) = 0;
+  virtual objID removeButtonNeighbor(objID p_objectID, int p_neighbor) = 0;
   virtual objID getObjectID(std::string p_objectName) = 0;
 
   virtual void setCollisionLayer(objID p_object_id, unsigned int p_data, unsigned int p_type) = 0;
@@ -81,5 +81,6 @@ public:
   virtual void dynamicWaypointGraphCreateSetPaths() = 0;
   virtual void dynamicWaypointGraphStitchPaths() = 0;
   virtual void dynamicWaypointGraphClear() = 0;
+  virtual void dynamicWaypointGraphDeleteRandomNodeSet() = 0;
 };
 

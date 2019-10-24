@@ -11,15 +11,11 @@
 
 #include "AgentEncapsulator.hpp"
 
-//class BehaviorTaskProxy;
 class BehaviorTask;
 class Behavior;
-class Agent;
 
 typedef std::shared_ptr<BehaviorTask> BehaviorTaskPtr;
-//typedef std::shared_ptr<BehaviorTaskProxy> BehaviorTaskProxyPtr;
 typedef std::shared_ptr<Behavior> BehaviorPtr;
-typedef std::shared_ptr<Agent> AgentPtr;
 
 class BehaviorTree
 {
@@ -30,20 +26,16 @@ class BehaviorTree
     BehaviorPtr root;
 
     BehaviorTaskPtr task;
-    //BehaviorTaskProxyPtr taskProxy;
 
     // name of tree
     std::string name;
 
-    //void RecursivelySetProxy(BehaviorTaskProxyPtr proxy, BehaviorPtr node);
+    //void SetRoot(BehaviorPtr);
 
-    //void ResetTree();
-    void SetRoot(BehaviorPtr);
+    // for each behavior set its parent tree to this
+    void RecursiveSetParentTree(Behavior*);
 
 public:
-
-    // get task proxy
-    //BehaviorTaskProxyPtr GetProxyTask();
 
     BehaviorTaskPtr GetTask();
     void SetTask(BehaviorTaskPtr);

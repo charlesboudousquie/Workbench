@@ -26,7 +26,7 @@ Editor::rigidBodyRenderer::rigidBodyRenderer(editorWindow* p_parent_window)
   l_styles.setStyle("*", "collisionLayerWith", "readonly", 1);
 }
 
-bool Editor::rigidBodyRenderer::onRender(typeRT & p_type_data)
+bool Editor::rigidBodyRenderer::onRender(typeRT & p_type_data, objID /* p_editor_object_id */)
 {
   auto l_engine_controller = getEngineController();
   auto l_selection = getSelectionKeeper();

@@ -195,6 +195,8 @@ private:
 	void initShaders();
 	void initAssets();
 
+	void shutdownShaders();
+
 	/*!***************************************************************************************
 	\brief Wrangles all of the game objects with the given component
 	\param type the type of component requested
@@ -214,16 +216,19 @@ private:
 
 	using objectList = std::vector<std::shared_ptr<gameObject>>;
 
-	void renderSkybox(objectList const& p_obj, componentHandle<cameraBase> p_cam);
-	void renderOpaque(objectList const& p_obj, objectList& p_lights, componentHandle<cameraBase> p_cam);
-		void renderNormals(objectList const& p_obj, componentHandle<cameraBase> p_camera);
-		void renderLighting(objectList const& p_lights, componentHandle<cameraBase> p_camera);
-		void renderForwardPlus(objectList const& p_obj, componentHandle<cameraBase> p_camera);
-	void renderForward(objectList const& p_obj, componentHandle<cameraBase> p_cam);
+	void renderSkybox(const objectList& p_obj, componentHandle<cameraBase> p_cam);
+	void renderOpaque(const objectList& p_obj, const objectList& p_lights, componentHandle<cameraBase> p_cam);
+		void renderNormals(const objectList& p_obj, componentHandle<cameraBase> p_camera);
+		void renderLighting(const objectList& p_lights, componentHandle<cameraBase> p_camera);
+		void renderForwardPlus(const objectList& p_obj, componentHandle<cameraBase> p_camera);
+	void renderForward(const objectList& p_obj, componentHandle<cameraBase> p_cam);
 	void renderDebug(componentHandle<cameraBase> p_cam);
+
+	bool m_showWireframes{ false };
 	void renderDebugWireframes(const objectList& p_physObj, componentHandle<cameraBase> p_camera);
+	bool m_showDebugLines{ false };
 	void renderDebugLines(const objectList& p_lines, componentHandle<cameraBase> p_camera);
-	void renderOld(objectList const& p_listObjects, objectList & p_lights, componentHandle<cameraBase> p_camera);
+	void renderOld(const objectList & p_listObjects, const objectList & p_lights, componentHandle<cameraBase> p_camera);
 
 	void renderTextureToScreen(std::shared_ptr<simpleTexture> p_texture);
 

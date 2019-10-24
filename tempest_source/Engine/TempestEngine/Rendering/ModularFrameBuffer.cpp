@@ -97,6 +97,16 @@ void modularFramebuffer::bind()
 	glDrawBuffers(m_drawBuffers.size(), m_drawBuffers.data());
 }
 
+void modularFramebuffer::bindRead()
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fboHandle);
+}
+
+void modularFramebuffer::unbindRead()
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+}
+
 void modularFramebuffer::unbind() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

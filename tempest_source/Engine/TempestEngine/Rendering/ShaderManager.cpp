@@ -45,6 +45,11 @@
 		{
 		    return m_shaderPrograms.find(p_programType)->second->getShader(p_shaderType);
 		}
+		void shaderManager::clearShaders()
+		{
+			m_shaderPrograms.clear();
+			m_programPipeline.clear();
+		}
 		std::shared_ptr<programPipeline> shaderManager::getProgramPipeline(programType p_programType) const
 		{
 			return m_programPipeline.find(p_programType)->second;

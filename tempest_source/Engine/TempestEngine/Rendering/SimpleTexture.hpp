@@ -14,6 +14,7 @@
 
 //========3rd Party Includes============================================================//
 #include <DataTypes.hpp>
+#include <vector>
 //========Types=========================================================================//
 //========Defines=======================================================================//
 //========Forward Deceleration==========================================================//
@@ -43,11 +44,12 @@ public:
     void build() override;
 	virtual void buildNoData();
     void bind(unsigned int slot) override;
+	virtual void unbind(unsigned int slot);
     void unbind() override;
 
     ~simpleTexture() = default;
 
-    int getBoundSlot() override { return m_boundSlot; }
+    int getBoundSlot() override { return m_boundSlot.size() ? m_boundSlot.back() : -1; }
 
 		assetHandle getAssetHandle() { return m_assetHandle; }
 
@@ -82,7 +84,7 @@ private:
     unsigned m_width = 0;
     unsigned m_height = 0;
     format m_format = format::enm_rgb;
-    int m_boundSlot = -1;
+	std::vector<int> m_boundSlot;
 
 
     unsigned m_textureHandle = 0;

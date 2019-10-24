@@ -387,14 +387,19 @@ void renderer::setMaterialUniforms(std::shared_ptr<shaderProgram> p_program, mat
 
 void renderer::unbindTextures(material const& p_mat, textureManager * p_textureManager)
 {
-	if (m_textureData.m_hasDiffuseMap)
+	if (m_textureData.m_hasNormalMap)
 	{
-		p_textureManager->getSimpleTexture(p_mat.getDiffuseMapName())->unbind();
+		p_textureManager->getSimpleTexture(p_mat.getNormalMapName())->unbind();
 	}
 
 	if (m_textureData.m_hasSpecularMap)
 	{
 		p_textureManager->getSimpleTexture(p_mat.getSpecularMapName())->unbind();
+	}
+
+	if (m_textureData.m_hasDiffuseMap)
+	{
+		p_textureManager->getSimpleTexture(p_mat.getDiffuseMapName())->unbind();
 	}
 }
 
@@ -432,7 +437,7 @@ void renderer::setTextureUniforms(std::shared_ptr<shaderProgram> p_program, text
 		p_program->setUniforms( "material.hasSpecularTexture", m_textureData.m_hasSpecularMap);
 	}
 
-	if (m_textureData.m_hasSpecularMap)
+	if (m_textureData.m_hasNormalMap)
 	{
 		// get and bind texture
 		auto l_texture = p_textureManager->getSimpleTexture(m_textureData.m_normalMapName);

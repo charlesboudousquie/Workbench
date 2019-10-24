@@ -16,6 +16,9 @@
 #include <Reflection.hpp>
 #include <EngineRunner.hpp>
 #include <Engine.hpp>
+#include "../EditorWindow.hpp"
+#include "../EditorObjectManager.hpp"
+#include "../EditorObject.hpp"
 
 Editor::buttonRenderer::buttonRenderer(editorWindow* p_parent_window)
 : componentRenderer(p_parent_window)
@@ -32,7 +35,7 @@ Editor::buttonRenderer::buttonRenderer(editorWindow* p_parent_window)
   l_styles.setStyle("*", "parent", "readonly", 1);
 }
 
-bool Editor::buttonRenderer::onRender(typeRT & /* p_type_data */)
+bool Editor::buttonRenderer::onRender(typeRT & /* p_type_data */, objID p_editor_object_id)
 {
   auto l_selection = getSelectionKeeper();
   
@@ -84,24 +87,57 @@ bool Editor::buttonRenderer::onRender(typeRT & /* p_type_data */)
     m_buttonText = 7;
   }
 
+  auto l_scene_manipulator = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock();
+
+  EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
+  EditorObject * l_editor_object = l_editor_object_manager.getEditorObject(p_editor_object_id);
+
   //Have to press enter while in the text field to run this code
   std::string buffer;
   if (ImGui::InputText("Name of Button", &buffer, ImGuiInputTextFlags_EnterReturnsTrue))
   {
-    objID l_myID = getSelectionKeeper().getSelectionId();
+    objID l_my_id = getSelectionKeeper().getSelectionId();
     if (m_buttonText >= 0 && m_buttonText <= 3)
     {
       //Find the button with the given name
-      objID l_neighbor = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->getObjectID(std::string(buffer.c_str()));
+      objID l_neighbor_id = l_scene_manipulator->getObjectID(std::string(buffer.c_str()));
 
-      if (l_neighbor != 0)
+      if (l_neighbor_id != 0)
       {
-        getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->setButtonNeighbor(l_myID, l_neighbor, m_buttonText);
+        l_scene_manipulator->setButtonNeighbor(l_my_id, l_neighbor_id, m_buttonText);
+
+        //Need new typeRT
+        typeRT l_my_new_data = l_scene_manipulator->getTypeRT(l_my_id);
+        l_editor_object->setData(l_my_new_data);
+
+        typeRT l_neighbor_new_data = l_scene_manipulator->getTypeRT(l_neighbor_id);
+        EditorObject * l_neighbor_object = l_editor_object_manager.getEditorObject(l_neighbor_id);
+
+        if(l_neighbor_object != nullptr)
+        {
+          l_neighbor_object->setData(l_neighbor_new_data);
+        }
+
       }
     }
     else if (m_buttonText >= 4 && m_buttonText <= 7)
     {
-      getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->removeButtonNeighbor(l_myID, m_buttonText);
+      objID l_neighbor_id = l_scene_manipulator->removeButtonNeighbor(l_my_id, m_buttonText);
+
+      //Need new typeRT
+      typeRT l_my_new_data = l_scene_manipulator->getTypeRT(l_my_id);
+      l_editor_object->setData(l_my_new_data);
+
+      if(l_neighbor_id != 0)
+      {
+        typeRT l_neighbor_new_data = l_scene_manipulator->getTypeRT(l_neighbor_id);
+        EditorObject * l_neighbor_object = l_editor_object_manager.getEditorObject(l_neighbor_id);
+
+        if (l_neighbor_object != nullptr)
+        {
+          l_neighbor_object->setData(l_neighbor_new_data);
+        }
+      }
     }
 
     return false;

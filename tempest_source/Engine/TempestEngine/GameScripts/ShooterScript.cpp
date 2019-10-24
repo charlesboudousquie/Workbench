@@ -4,7 +4,7 @@
 \date       7/31/18
 \copyright  All content � 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
-\brief  
+\brief
 *****************************************************************************************/
 #include "ShooterScript.h"
 #include "../Components/Renderer.hpp"
@@ -12,6 +12,7 @@
 #include "../Physics/PhysicsSystem.hpp"
 #include "LifetimeScript.hpp"
 #include "../SceneManagement/Transform.hpp"
+#include "GameObjectSerialization.hpp"
 
 shooterScript::shooterScript(typeRT p_data): scriptCPP(p_data)
 {

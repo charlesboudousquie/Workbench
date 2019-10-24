@@ -16,7 +16,7 @@
 \return string of the error
 *****************************************************************************************/
 
-std::string GLErrorToString(GLenum error)
+const char * GLErrorToString(GLenum error)
 {
     switch (error)
     {
@@ -37,7 +37,7 @@ std::string GLErrorToString(GLenum error)
     }
 }
 
-std::string GLFramebufferErrorToString(GLenum error)
+const char * GLFramebufferErrorToString(GLenum error)
 {
     switch (error)
     {
@@ -61,29 +61,47 @@ std::string GLFramebufferErrorToString(GLenum error)
 }
 
 
+template<typename getFunc, typename infoLogFunc>
+void logGLError(getFunc getter, infoLogFunc logging, GLuint p_handle)
+{
+	std::string l_infoLog;
+	GLint l_length;
+	logger("GLDebug").debug() << GLErrorToString(glGetError()) << std::endl;
+	getter(p_handle, GL_INFO_LOG_LENGTH, &l_length);
+
+	l_infoLog.resize(l_length);
+
+	//bool isShader = glIsShader(handle);
+	logging(p_handle, l_infoLog.length(), &l_length, l_infoLog.data());
 
 
+	logger("GLDebug").debug() << "ERROR::PROGRAM::COMPILATION_FAILED\n" << std::move(l_infoLog) << std::endl;
+}
+
+
+void logPipelineError(GLint p_handle)
+{
+	logGLError(glGetProgramPipelineiv, glGetProgramPipelineInfoLog, p_handle);
+}
+
+
+void logShaderError(GLint p_handle)
+{
+	logGLError(glGetShaderiv, glGetShaderInfoLog, p_handle);
+}
+
+void logProgramError(GLint p_handle)
+{
+	logGLError(glGetProgramiv, glGetProgramInfoLog, p_handle);
+}
 
 void GLDebug::GetLastShaderError(GLint p_handle)
 {
-
     GLint l_success = 0;
-    GLint l_legth = 0;
-
-
-
     glGetShaderiv(p_handle, GL_COMPILE_STATUS, &l_success);
     if (l_success == GL_FALSE)
     {
-        logger("GLDebug").debug() << GLErrorToString(glGetError()) << std::endl;
-        glGetShaderiv(p_handle, GL_INFO_LOG_LENGTH, &l_legth);
-
-        GLchar * l_infoLog = new GLchar[l_legth];
-
-        glGetShaderInfoLog(p_handle, l_legth, &l_legth, l_infoLog);
-        logger("GLDebug").debug() << "ERROR::SHADER_" << p_handle << "::COMPILATION_FAILED\n" << l_infoLog << std::endl;
-
-        delete[] l_infoLog;
+		logShaderError(p_handle);
     }
     else
     {
@@ -105,60 +123,35 @@ void GLDebug::InitializeDebugCallback()
 void GLDebug::GetLastProgramError(GLint p_handle)
 {
     GLint l_success = 0;
-    GLint l_legth = 512;
-    GLchar l_infoLog[512];
 
     glGetProgramiv(p_handle, GL_COMPILE_STATUS, &l_success);
 
     if (l_success == GL_FALSE)
     {
-        logger("GLDebug").debug() << GLErrorToString(glGetError()) << std::endl;
-        glGetProgramiv(p_handle, GL_INFO_LOG_LENGTH, &l_legth);
-
-        //bool isShader = glIsShader(handle);
-        glGetProgramInfoLog(p_handle, l_legth, &l_legth, l_infoLog);
-        logger("GLDebug").debug() << "ERROR::PROGRAM::COMPILATION_FAILED\n" << l_infoLog << std::endl;
-    }
+		logProgramError(p_handle);
+	}
 }
 
 void GLDebug::GetLastProgramLinkError(GLint p_handle)
 {
     GLint l_success = 0;
-    GLint l_legth = 512;
-    GLchar l_infoLog[513]={'\0'};
-
     glGetProgramiv(p_handle, GL_LINK_STATUS, &l_success);
 
     if (l_success == GL_FALSE)
     {
-        logger("GLDebug").debug() << GLErrorToString(glGetError()) << std::endl;
-		GLint log_length;
-        glGetProgramiv(p_handle, GL_INFO_LOG_LENGTH, &log_length);
-
-		log_length = std::min(log_length, l_legth);
-
-        //bool isShader = glIsShader(handle);
-        glGetProgramInfoLog(p_handle, l_legth, &log_length, l_infoLog);
-        logger("GLDebug").debug() << "ERROR::PROGRAM::LINKING_FAILED\n" << l_infoLog << std::endl;
+		logProgramError(p_handle);
     }
 }
 
 void GLDebug::GetLastProgramPipelineError(GLint p_handle)
 {
     GLint l_success = 0;
-    GLint l_legth = 512;
-    GLchar l_infoLog[512];
 
     glGetProgramPipelineiv(p_handle, GL_COMPILE_STATUS, &l_success);
 
     if (l_success == GL_FALSE)
     {
-        logger("GLDebug").debug() << GLErrorToString(glGetError()) << std::endl;
-        glGetProgramPipelineiv(p_handle, GL_INFO_LOG_LENGTH, &l_legth);
-
-        //bool isShader = glIsShader(handle);
-        glGetProgramPipelineInfoLog(p_handle, l_legth, &l_legth, l_infoLog);
-        logger("GLDebug").debug() << "ERROR::PROGRAM::COMPILATION_FAILED\n" << l_infoLog << std::endl;
+		logPipelineError(p_handle);
     }
 }
 
@@ -180,7 +173,8 @@ void GLDebug::getLastFrameBufferError()
 
  void GLAPIENTRY GLDebug::message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
-	 if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+	 if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return; // verbose debug information
+	 if (id == 131218) return; // NVIDIA vendor specific: recompilation based on GLstate
 	UNREFERENCED_PARAMETER(length);
 	UNREFERENCED_PARAMETER(user_param);
 	auto const src_str = [source]() {

@@ -33,7 +33,8 @@ namespace Editor
     //======== Forward Declarations=========================================================//
     class EditorInput;
 	class styleKeeper;
-
+	class graphicsWindow;
+	
 	/*!***************************************************************************************
 	\par class: editorWindow
 	\brief   This is the interface for the editor's main window
@@ -61,6 +62,12 @@ namespace Editor
 		\return sceneWindow & - Reference to the scene window
 		*****************************************************************************************/
 		sceneWindow & getSceneWindow() const { return *m_scene_window; }
+
+    /*!***************************************************************************************
+    \brief  Retrieves a reference to the inspector window within this editor
+    \return inspectorWindow & - Reference to the inspector window
+    *****************************************************************************************/
+    inspectorWindow & getInspectorWindow() const { return *m_inspector_window; }
 
 		/*!***************************************************************************************
 		\brief  Renders the editor window and subwindows
@@ -150,6 +157,7 @@ namespace Editor
 		inspectorWindow * m_inspector_window;
 		navMeshWindow * m_navmesh_window;
 		nodeGraphWindow * m_nodegraph_window;
+		graphicsWindow * m_graphics_window;
 
 
         EditorInput * m_editor_input;

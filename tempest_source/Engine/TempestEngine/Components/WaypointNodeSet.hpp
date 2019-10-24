@@ -4,20 +4,17 @@
 \date       9/24/19
 \copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
-\brief
+\brief  
 *****************************************************************************************/
 #pragma once
 
 //======== 1st Party Includes ==========================================================//
 #include "Component.hpp"
 #include "Vector3.hpp"
+#include "WaypointNode.hpp"
 //======== 3rd Party Includes ==========================================================//
-#include <list>
-#include <IComponentRepository.hpp>
-#include "WaypointNode.hpp" // necessary for component handle reasons. 
-
+#include <string>
 //======== Types =======================================================================//
-
 //======== Defines =====================================================================//
 //======== Forward Declarations=========================================================//
 
@@ -28,12 +25,14 @@
 class waypointNodeSet : public componentCRTP<waypointNodeSet>
 {
 public:
+	std::string debugName = "Waypoint Node Set";
+
 	vector3 nodeOne;
 	vector3 nodeTwo;
 	vector3 nodeThree;
 	vector3 nodeFour;
 
-	std::list<componentHandle<waypointNode>> nodes;
+	std::vector<componentHandle<waypointNode>> nodes;
 
 	/*!***************************************************************************************
 	\brief  componentType getter

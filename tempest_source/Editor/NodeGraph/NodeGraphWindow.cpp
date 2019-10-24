@@ -13,6 +13,11 @@
 #include "EditorNode.hpp"
 #include "../EditorWindow.hpp"
 #include "BehaviorTreeManipulatorInterface.hpp"
+#include "GraphTypeSelector.hpp"
+#include "AgentMenuSelection.hpp"
+#include "GameObject.hpp"
+#include "NGE_Watchdog.hpp"
+#include "Agent.hpp"
 
 #include "../EngineController.hpp"
 #include <EngineRunner.hpp>
@@ -33,16 +38,25 @@ static inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs) { return Im
 static const float NODE_SLOT_RADIUS = 4.0f;
 static const ImVec2 NODE_WINDOW_PADDING(8.0f, 8.0f);
 
+std::string getFileName(const std::string& name)
+{
+    // retrieve ONLY the name of the file, no extensions or any part of the path
+    // will be returned except the actual file name
+    // EX: if name = "assets/graphs/tree.bht"
+    // function will then return "tree"
+    return std::filesystem::path(name).stem().string();
+}
+
 Editor::nodeGraphWindow::nodeGraphWindow(editorWindow * p_parent_editor, engineController * p_engine_controller)
     : windowBase(p_parent_editor), m_editor_window(p_parent_editor), m_draw(true), m_show_grid(true), m_open_context_menu(false), m_first_run(false), m_node_manager(new NodeManager(p_engine_controller, getLogger())),
     m_node_hovered_in_list(-1), m_node_hovered_in_scene(-1), m_node_slot_radius(4.0f), m_node_window_padding(8.0f, 8.0f), m_graph_name("Unnamed_Graph"), m_open_graph(false)
+    , g_type_selector(new GraphTypeSelector()), agentMenuSelector(new AgentMenuSelection(p_engine_controller))
 {
-
 }
 
 Editor::nodeGraphWindow::~nodeGraphWindow()
 {
-
+    delete g_type_selector;
 }
 
 void Editor::nodeGraphWindow::reset()
@@ -53,8 +67,22 @@ void Editor::nodeGraphWindow::reset()
 void Editor::nodeGraphWindow::saveGraph()
 {
     std::string p_path = m_editor_window->getProjectFilePath();
-    std::string p_file_name = m_graph_name + ".graph";
+
+    std::string p_file_name = getFileName(m_graph_name);
+
+    if (g_type_selector->GetSelectedType() == GraphType::BEHAVIORTREE)
+    {
+        p_file_name += ".bht";
+    }
+    else if (g_type_selector->GetSelectedType() == GraphType::SCRIPT)
+    {
+        p_file_name += ".script";
+    }
+
     m_node_manager->serializeNodes(p_path, p_file_name);
+
+    // update asset manager
+    getEngineController().getEngineRunner()->getEngine()->getAssetManipulator().lock()->reloadAssets();
 }
 
 void Editor::nodeGraphWindow::onRender()
@@ -124,6 +152,9 @@ void Editor::nodeGraphWindow::onRender()
 
     //Open Graph Button code
     openGraphButton();
+
+    graphTypeMenu();
+    agentMenuSelector->Display();
 
     // test run the current graph
     //testGraphButton();
@@ -453,8 +484,52 @@ void Editor::nodeGraphWindow::drawNodes(ImDrawList * p_draw_list)
         m_node_manager->setActiveNodeData();
     }
 
+    // Check watchdog for changes in inspector
+    // Specific change here would be that user changed which tree an agent will be using
+    // in 
+    if (NGE_Watchdog::GetInstance().inspectorChangedTree())
+    {
+        auto object = NGE_Watchdog::GetInstance().getChangedAgent();
+        auto actor = getEngineController().getEngineRunner()->getEngine()->getCurrentScene().lock()->findGameObjectByID(object);
+
+        // check if our selected agent is the same as the agent being modified
+        // in the inspector window
+        if (actor == agentMenuSelector->getSelectedObject())
+        {
+            auto treeName = actor->getComponent<Agent>()->getTreeName();
+            // clear entire graph
+            m_node_manager->reset();
+            // get name of tree that selected Actor is using
+            auto path = this->m_editor_window->getProjectFilePath() + "/Assets/graphs/";
+
+            //C:/Users/boudo/Desktop/senior_game/tempestengine/Samples/ + /Assets/graphs/ + graph_name
+            m_graph_name = getFileName(treeName);
+            m_node_manager->readFromFile(path + m_graph_name + ".bht");
+        }
+
+        NGE_Watchdog::GetInstance().Reset();
+    }
+
+    // if user just chose a new agent's graph to display then load it in
+    if (agentMenuSelector->userChangedSelection())
+    {
+        
+        // clear entire graph
+        m_node_manager->reset();
+        // get name of tree that selected Actor is using
+        auto path = this->m_editor_window->getProjectFilePath() + "/Assets/graphs/";
+
+        //C:/Users/boudo/Desktop/senior_game/tempestengine/Samples/ + /Assets/graphs/ + graph_name
+        m_graph_name = getFileName(agentMenuSelector->getSelectionTreeName());
+        m_node_manager->readFromFile(path + m_graph_name + ".bht");
+
+        // reset menu selector to watch out for new selection
+        agentMenuSelector->rewatch();
+    }
+
     // get node that is currently being processed by the BehaviorTreeManager
-    auto idOfActiveNode = getEngineController().getEngineRunner()->getEngine()->getBehaviorManipulator().lock()->getActiveNodeID(nullptr);
+    auto behManipulator = getEngineController().getEngineRunner()->getEngine()->getBehaviorManipulator().lock();
+    auto idOfActiveNode = behManipulator->getActiveNodeID(agentMenuSelector->getSelectedObject());
 
 
     // for all nodes
@@ -572,15 +647,10 @@ void Editor::nodeGraphWindow::openGraphButton()
     }
 }
 
-//void Editor::nodeGraphWindow::testGraphButton()
-//{
-//    ImGui::SameLine();
-//    if (ImGui::Button("Test Graph"))
-//    {
-//        std::string fileName = m_graph_name + ".graph";
-//        getEngineController().getEngineRunner()->getEngine()->getNodeManipulator().lock()->testTree(fileName);
-//    }
-//}
+void Editor::nodeGraphWindow::graphTypeMenu()
+{
+    g_type_selector->DisplayMenu();
+}
 
 void Editor::nodeGraphWindow::renderGraphPopup()
 {
@@ -615,7 +685,8 @@ void Editor::nodeGraphWindow::renderGraphPopup()
             char l_ext[40];
             ImGuiFs::PathGetExtension(myPath, l_ext);
 
-            if (strcmp(l_ext, ".graph") == 0)
+            // if it is a behavior tree or a script
+            if ((strcmp(l_ext, ".bht") == 0) || (strcmp(l_ext, ".script") == 0))
             {
                 char l_return[4096];
                 ImGuiFs::PathGetFileNameWithoutExtension(myPath, l_return);
@@ -626,7 +697,7 @@ void Editor::nodeGraphWindow::renderGraphPopup()
 
                 m_node_manager->readFromFile(myPath);
 
-                m_graph_name = l_return;
+                m_graph_name = getFileName(l_return);
 
                 m_open_graph = false;
             }
@@ -651,7 +722,7 @@ void Editor::nodeGraphWindow::graphNameRender()
     if (ImGui::InputText("Graph Name", &buffer[0], buff_size, ImGuiInputTextFlags_EnterReturnsTrue))
     {
         std::string l_new_name(buffer);
-        m_graph_name = l_new_name;
+        m_graph_name = getFileName(l_new_name);
     }
 }
 

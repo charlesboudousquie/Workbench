@@ -10,14 +10,12 @@
 #include "BehaviorTask.hpp"
 #include "BehaviorTree.hpp"
 
-#include "Agent.hpp"
 #include "../Nodes/Behaviors/Behavior.hpp"
 
-//void BehaviorTask::PushChildIndex(int newIndex)
-//{
-//
-//    currentChildStack.push(newIndex);
-//}
+bool BehaviorTask::WorkingWithTree()
+{
+    return !history.empty();
+}
 
 void BehaviorTask::Push_State(BehaviorState state)
 {
@@ -40,11 +38,6 @@ int BehaviorTask::GetChildIndex()
     return history.top().childIndex;
 }
 
-//void BehaviorTask::PopChildIndex()
-//{
-//    currentChildStack.pop();
-//}
-
 void BehaviorTask::SetResult(BehaviorResult r)
 {
     result = r;
@@ -59,36 +52,22 @@ BehaviorResult BehaviorTask::GetResult()
 void BehaviorTask::SetPhase(BehaviorPhase p)
 {
     history.top().phase = p;
-    //assert(phases.top() == p);// this better not be modifying a temporary
 }
-
-//// usually want to push a new phase during init()
-//void BehaviorTask::Push_Phase(BehaviorPhase p)
-//{
-//    phases.push(p);
-//}
 
 BehaviorPhase BehaviorTask::GetPhase()
 {
     return history.top().phase;
 }
-//
-//// only called when going back up to parent node
-//void BehaviorTask::Pop_Phase()
-//{
-//    phases.pop();
-//}
 
-BehaviorTask::AgentPtr BehaviorTask::GetAgent()
+GameObjectPtr BehaviorTask::GetActor()
 {
-    return agent;
+    return actor;
 }
 
-void BehaviorTask::SetAgent(AgentPtr agent_)
+void BehaviorTask::SetActor(GameObjectPtr actor_)
 {
-    agent = agent_;
+    actor = actor_;
 }
-
 
 void BehaviorTask::SetChildBehavior(Behavior* b)
 {
@@ -110,7 +89,6 @@ Behavior* BehaviorTask::GetParentBehavior()
     return parentBehavior;
 }
 
-
 void BehaviorTask::SetCurrentBehavior(Behavior* b)
 {
     currentBehavior = b;
@@ -130,3 +108,15 @@ BehaviorTreePtr BehaviorTask::GetTree()
 {
     return tree;
 }
+
+void BehaviorTask::ClearHistory()
+{
+    history = {};
+}
+
+void BehaviorTask::RegisterNewNode(int id)
+{
+    BehaviorState newState(id, 0, BehaviorPhase::STARTING);
+    history.push(newState);
+}
+

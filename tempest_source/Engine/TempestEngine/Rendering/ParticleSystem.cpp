@@ -322,32 +322,36 @@ vector4 particleSystem::calculateRandomPositionBasedOnShapeType(std::mt19937 p_r
 		// prune by shape type
 		switch (p_shape)
 		{
-				case emitterShape::enm_cube:
+			case emitterShape::enm_cube:
 
+				return vector4(l_x, l_y, l_z, 1);
+
+			case emitterShape::enm_circle:
+
+				if(isInsideCircle(l_x,l_y,l_z))
 					return vector4(l_x, l_y, l_z, 1);
+				else
+					continue;
 
-				case emitterShape::enm_circle:
+			case emitterShape::enm_cone:
 
-					if(isInsideCircle(l_x,l_y,l_z))
-						return vector4(l_x, l_y, l_z, 1);
-					else
-						continue;
+				if (isInsideCone(l_x, l_y, l_z))
+					return vector4(l_x, l_y, l_z, 1);
+				else
+					continue;
 
-				case emitterShape::enm_cone:
+			case emitterShape::enm_torus:
 
-					if (isInsideCone(l_x, l_y, l_z))
-						return vector4(l_x, l_y, l_z, 1);
-					else
-						continue;
-
-				case emitterShape::enm_torus:
-
-					if (isInsideTorus(l_x, l_y, l_z))
-						return vector4(l_x, l_y, l_z, 1);
-					else
-						continue;
-				}
+				if (isInsideTorus(l_x, l_y, l_z))
+					return vector4(l_x, l_y, l_z, 1);
+				else
+					continue;
+			case emitterShape::enm_size:
+			default:
+				// TODO: Log a warning, or deal with this properly
+				;
 		}
+	}
 
 }
 

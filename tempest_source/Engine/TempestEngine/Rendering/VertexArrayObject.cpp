@@ -69,10 +69,10 @@
 
 
 
-vertexArrayObject::vertexArrayObject(size_t p_vertexCount, size_t p_primitiveCount, size_t p_vertexSize, topology p_topology) : m_handle(NULL),
+vertexArrayObject::vertexArrayObject(size_t p_vertexCount, size_t p_primitiveCount, size_t p_vertexSize, topology p_topology) : m_handle(0),
                                                                                                                         m_ibo(p_topology, p_primitiveCount),
                                                                                                                         m_vbo(p_vertexCount, p_vertexSize)
-                                    
+
 {
 }
 
@@ -107,7 +107,7 @@ void vertexArrayObject::build(const mesh * p_mesh)
         glVertexAttribPointer(static_cast<GLuint>(i),
             static_cast<GLint>(p_mesh->getAttributeElementCounts()[i]), GL_FLOAT, GL_FALSE,
             static_cast<GLuint>(l_vertexSize), reinterpret_cast<GLvoid *>(l_offset));
-     
+
         l_offset += p_mesh->getAttributeElementSize()[i]; // skip to the next attribute
 
         }
@@ -128,11 +128,11 @@ void vertexArrayObject::render()
     switch(m_ibo.getTopology())
     {
         case topology::enm_lines:
-            glDrawElements(GL_LINES, static_cast<GLsizei>(m_ibo.getIndexCount()), GL_UNSIGNED_INT, nullptr);     
+            glDrawElements(GL_LINES, static_cast<GLsizei>(m_ibo.getIndexCount()), GL_UNSIGNED_INT, nullptr);
             break;
         case topology::enm_triangle:
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_ibo.getIndexCount()), GL_UNSIGNED_INT, nullptr);
-            break;      
+            break;
     }
 }
 

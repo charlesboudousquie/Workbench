@@ -8,21 +8,12 @@
 *****************************************************************************************/
 #include "Behavior.hpp"
 #include "BehaviorTree.hpp"
-//#include "BehaviorTask.hpp"
-
-//
-//void Behavior::Init()
-//{
-//    //// set Result to running
-//    //result = BehaviorResult::RUNNING;
-//    //// set Phase to Progressing
-//    //phase = BehaviorPhase::PROGRESSING;
-//}
+#include "Agent.hpp"
 
 void Behavior::Exit()
 {
     // when exiting a node, the state related to said node is removed, (except the result of that behavior)
-    GetTask()->Pop_State();
+    Behavior::GiveToParent(GetTask());
 }
 
 BehaviorTaskPtr Behavior::GetTask()
@@ -73,6 +64,11 @@ void Behavior::updateFromTypeRT(typeRT & p_data)
 {
 }
 
+void Behavior::setParentTree(BehaviorTree *pt)
+{
+    parentTree = pt;
+}
+
 void Behavior::setParent(BehaviorPtr parent_)
 {
     this->parent = parent_;
@@ -81,6 +77,11 @@ void Behavior::setParent(BehaviorPtr parent_)
 BehaviorPtr Behavior::getParent()
 {
     return parent;
+}
+
+std::shared_ptr<gameObject> Behavior::getActor()
+{
+    return parentTree->GetTask()->GetActor();
 }
 
 void Behavior::TakeTask(BehaviorTaskPtr t)
@@ -92,12 +93,18 @@ void Behavior::TakeTask(BehaviorTaskPtr t)
 
 void Behavior::GiveToChild(BehaviorTaskPtr t)
 {
+    auto child = getCurrentChild();
+    // add new state for the child to mess with
+    t->RegisterNewNode(child->getId());
     // give task pointer to child
-    getCurrentChild()->TakeTask(t);
+    child->TakeTask(t);
 }
 
 void Behavior::GiveToParent(BehaviorTaskPtr t)
 {
+    // remove state related to this behavior
+    t->Pop_State();
+    
     // if parent exists then give task to them
     if (parent)
     {

@@ -1,5 +1,5 @@
 /*!***************************************************************************************
-\file       Node.cpp
+\file       EditorNode.cpp
 \author     Ryan Booth
 \date       9/12/2019
 \copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
@@ -16,11 +16,10 @@
 #include "Color4.hpp"
 
 #include <iostream>
-
 const float c_field_width = 75.0f; //units = pixels
 
 
-EditorNode::EditorNode() : m_id(0), m_depth(0), m_name(""), m_type_name(""), m_inputs(0), m_outputs(0), m_num_children(0), m_num_parents(0),
+EditorNode::EditorNode() : m_id(0), m_depth(0), m_name(""), m_class_name(""), m_type_name(""), m_inputs(0), m_outputs(0), m_num_children(0), m_num_parents(0),
 m_position(0.0f, 0.0f), m_scale(190.0f, 90.0f), m_color(0.0f, 0.0f, 0.0f, 17.0f), m_active(false)
 {
 
@@ -45,7 +44,7 @@ void EditorNode::render(bool p_engine_active)
   //Get a copy in case we change it
   typeRT l_type_data = m_render_data;
 
-    auto l_members = l_type_data.members();
+  auto l_members = l_type_data.members();
 
   ImGui::BeginGroup(); // Lock horizontal position
 
@@ -147,20 +146,19 @@ void EditorNode::render(bool p_engine_active)
           l_changed = true;
         }
       }
-    }
 
       if (p_engine_active)
         enableModifications();
 
       ImGui::PopItemWidth();
     }
-  
+  }
 
   std::string l_name = m_name;
   l_name.append(": ");
   l_name.append(std::to_string(m_id));
 
-  ImGui::Text(l_name.c_str()); 
+  ImGui::Text("%s", l_name.c_str());
 
   ImGui::EndGroup();
 

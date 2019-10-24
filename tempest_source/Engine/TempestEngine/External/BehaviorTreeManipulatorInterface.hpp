@@ -8,15 +8,17 @@
 *****************************************************************************************/
 #pragma once
 #include <string>
+#include <vector>
 #include <memory>
 
-class Agent;
+class gameObject;
+typedef std::shared_ptr<gameObject> GameObjectPtr;
 
 class behaviorTreeManipulatorInterface
 {
 
 public:
-    virtual void AddAgentToTree(const std::string& treeName, std::shared_ptr<Agent> agent) = 0;
-    virtual int getActiveNodeID(std::shared_ptr<Agent> agent) const = 0;
-
+    //virtual void AddAgentToTree(const std::string& treeName, GameObjectPtr agent/*componentHandle<Agent> agent*/) = 0;
+    virtual int getActiveNodeID(/*componentHandle<Agent>*/GameObjectPtr agent) const = 0;
+    virtual std::vector<std::shared_ptr<gameObject>> getObjectsWithAgents() = 0;
 };

@@ -21,6 +21,7 @@
 //======== Forward Declarations=========================================================//
 class typeRT;
 
+typedef unsigned long objID;
 namespace Editor
 {
 	//======== Forward Declarations=======================================================//
@@ -28,6 +29,7 @@ namespace Editor
 	class engineController;
 	class styleKeeper;
 	class windowBase;
+  class EditorObject;
 
 /*!***************************************************************************************
 \par class: inspectorRenderer
@@ -62,23 +64,26 @@ namespace Editor
 		/*!***************************************************************************************
 		\brief  Renders the contents of a particular game object to the window
 		\param p_type_data - the game object data to be rendered
+    \param p_editor_object_id - the editor object id that holds onto the data
 		\return bool - true if any of the game object data was modified, false otherwise
 		*****************************************************************************************/
-		bool renderGameObject(typeRT & p_type_data);
+		bool renderGameObject(typeRT & p_type_data, objID p_editor_object_id);
 
     /*!***************************************************************************************
     \brief  Renders the contents of a particular scene to the window
     \param p_type_data - the scene data to be rendered
+    \param p_editor_object_id - the editor object that holds onto the data
     \return bool - true if any of the scene data was modified, false otherwise
     *****************************************************************************************/
-    bool renderScene(typeRT & p_type_data);
+    bool renderScene(typeRT & p_type_data, objID p_editor_object_id);
 
     /*!***************************************************************************************
     \brief  Renders the contents of a particular space to the window
     \param p_type_data - the space data to be rendered
+    \param p_editor_object_id - the editor object that holds onto the data
     \return bool - true if any of the space data was modified, false otherwise
     *****************************************************************************************/
-    bool renderSpace(typeRT & p_type_data);
+    bool renderSpace(typeRT & p_type_data, objID p_editor_object_id);
 
 	private:
 		/*!***************************************************************************************
@@ -90,10 +95,10 @@ namespace Editor
 		\brief  Renders type data under the specified component type context.
 		\param p_current_component_type - the context the data should be rendered within.
 		\param p_type_data - the data that should be rendered
-        \param shouldUndo - checks if there was an undoable operation that occured
+    \param p_editor_object_id - the editor object that holds onto the data
 		\return bool - true if any of the data was modified, false otherwise
 		*****************************************************************************************/
-		bool render(const std::string & p_current_component_type, typeRT & p_type_data, bool& shouldUndo);
+		bool render(const std::string & p_current_component_type, typeRT & p_type_data, objID p_editor_object_id);
 		/*!***************************************************************************************
 		\brief  Determines if a particular filter option has been enabled
 		\param p_name - the name of the filter option to check

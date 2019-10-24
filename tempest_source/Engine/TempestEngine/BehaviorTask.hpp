@@ -11,7 +11,9 @@
 #include <stack>
 #include "BehaviorEnums.hpp"
 
-class Agent;
+class gameObject;
+typedef std::shared_ptr<gameObject> GameObjectPtr;
+
 class Behavior;
 class BehaviorTree;
 
@@ -22,8 +24,8 @@ class BehaviorState
 {
 public:
     BehaviorState(BehaviorID id_, ChildIndex childIndex_,
-        BehaviorPhase phase_/*, BehaviorResult result_*/)
-        : id(id_), childIndex(childIndex_), phase(phase_)//, result(result_)
+        BehaviorPhase phase_)
+        : id(id_), childIndex(childIndex_), phase(phase_)
     {}
 
     BehaviorID id;
@@ -35,7 +37,6 @@ class BehaviorTask
 {
 public:
 
-    typedef std::shared_ptr<Agent> AgentPtr;
     typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
 
     // NOTE:
@@ -60,33 +61,30 @@ public:
     // tree are NOT allowed to store state. The nodes in the Behavior Tree
     // are essentially glorified instructions through which an agent acts upon.
 
+    // Tells user whether or not this task
+    // is currently working with a tree or not
+    bool WorkingWithTree();
+
     // pushes a new state onto the history stack
     void Push_State(BehaviorState);
     void Pop_State();
 
-    // add child index to keep track of
-    //void PushChildIndex(int newIndex);
     // increment child index by 1
     void IncrementChildIndex();
     // Of the node we are currently in (like a sequncer),
     // this will tell us the index of the child node we 
     // are operating on.
     int GetChildIndex();
-    //void PopChildIndex();
 
     void SetResult(BehaviorResult);
     BehaviorResult GetResult();
 
-    // usually want to set phase during Behavior update() or Behavior exit()
+    // usually want to set phase during Behavior update()
     void SetPhase(BehaviorPhase);
-    // usually want to push a new phase during Behavior init()
-    //void Push_Phase(BehaviorPhase);
     BehaviorPhase GetPhase();
-    // only called when going back up to parent node
-    //void Pop_Phase();
 
-    AgentPtr GetAgent();
-    void SetAgent(AgentPtr);
+    GameObjectPtr GetActor();
+    void SetActor(GameObjectPtr);
 
     void SetChildBehavior(Behavior*);
     Behavior* GetChildBehavior();
@@ -99,6 +97,12 @@ public:
 
     void SetTreePtr(BehaviorTreePtr);
     BehaviorTreePtr GetTree();
+
+    // clears all history accumulated
+    void ClearHistory();
+
+    // prepare new slot in history so we can record our state with the new node
+    void RegisterNewNode(int id);
 
 private:
     // parent node that we go to when 
@@ -113,10 +117,13 @@ private:
     Behavior* childBehavior;
 
     // The agent we will be working with
-    AgentPtr agent;
+    GameObjectPtr actor;
 
     // the tree this task is working in
     BehaviorTreePtr tree;
+
+    // last known result of operation
+    BehaviorResult result;
 
     // NOTE: 
     // Since traversing a Behavior Tree is similar to depth
@@ -124,9 +131,6 @@ private:
     // our state in higher nodes. This is helpful when an agent
     // finishes a particular behavior and needs to remember
     // what its last state was in the parent node.
-
-    // last known result of operation
-    BehaviorResult result;
 
     // history of states throughout while traversing the tree
     std::stack<BehaviorState> history;

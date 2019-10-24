@@ -30,7 +30,7 @@ Editor::inputRenderer::inputRenderer(editorWindow* p_parent_window)
 //======== Getters & Setters ===========================================================//
 
 //======== Overrides ===================================================================//
-bool Editor::inputRenderer::onRender(typeRT& p_type_data)
+bool Editor::inputRenderer::onRender(typeRT& p_type_data, objID p_editor_object_id)
 {
 	///// to the next maintainer
 	///// I failed to make this work properly.  Because the maps are being rebuilt every frame (see updateFromTypeRT),

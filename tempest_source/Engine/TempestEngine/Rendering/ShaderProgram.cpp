@@ -43,6 +43,10 @@
 		, m_fragmentShader(p_fragAsset)
     {
 	}
+	shaderProgram::~shaderProgram()
+	{
+		shutdown();
+	}
 	//==============================================================================//
 	//        Destructor                                                            //
 	//==============================================================================//
@@ -200,6 +204,20 @@
 			uniforms.clear();
     }
 
+	void shaderProgram::shutdown()
+	{
+		if (m_handle)
+		{
+			glDeleteProgram(m_handle);
+			m_handle = 0;
+		}
+	}
+
+	shaderProgram::OOBind shaderProgram::objectBind() const
+	{
+		return OOBind{ *this };
+	}
+
     void shaderProgram::bind() const
     {
        // logger("ShaderProgram").debug() << "bind ProgrameHnadle: " << m_handle;
@@ -209,7 +227,7 @@
 
     void shaderProgram::unbind() const
     {
-        glUseProgram(NULL);
+        glUseProgram(0);
     }
 
 ///////========================================================================///////
@@ -232,11 +250,13 @@
     //        Helper                                                                //
     //==============================================================================//
 
+	shaderProgram::OOBind::OOBind(shaderProgram const& p_prog) noexcept
+		: m_prog {p_prog}
+	{
+		m_prog.bind();
+	}
 
-
-
-
-
-
-
-
+	shaderProgram::OOBind::~OOBind()
+	{
+		m_prog.unbind();
+	}

@@ -140,8 +140,7 @@ void Editor::dataSelect::Refresh()
 
 			if(l_file_path.extension() == ".csv")
 			{
-				std::wstring l_wide = l_file_path.generic_wstring();
-				std::string l_thin(l_wide.begin(), l_wide.end());
+				std::string l_thin = l_file_path.generic_string();
 
 				if(ValidateFile(l_thin))
 				{

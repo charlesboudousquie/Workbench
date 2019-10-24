@@ -8,6 +8,62 @@
 *****************************************************************************************/
 #include "Agent.hpp"
 #include "GameObject.hpp"
+#include "BehaviorTask.hpp"
+#include "BehaviorTree.hpp"
+#include "Nodes/Behaviors/Behavior.hpp"
+
+// given a task and a tree, introduce the task to the tree
+void IntroduceTaskToTree(GameObjectPtr parent, BehaviorTreePtr tree, BehaviorTaskPtr task)
+{
+    // clear task of any state
+    task->ClearHistory();
+
+    // push new state onto task
+    task->RegisterNewNode(tree->GetRoot()->getId());
+
+    task->SetActor(parent);
+
+    // set new tree
+    task->SetTreePtr(tree);
+
+    // set task pointer for all behaviors to acess
+    tree->SetTask(task);
+
+    // allow root of tree to take task first
+    tree->GetRoot()->TakeTask(task);
+}
+
+bool TaskDone(BehaviorTaskPtr task, BehaviorTreePtr tree)
+{
+    return (task->GetPhase() == BehaviorPhase::DONE) && 
+        (tree->GetRoot().get() == task->GetCurrentBehavior());
+}
+
+Agent::Agent()
+{
+    task_ = std::make_shared<BehaviorTask>();
+}
+
+BehaviorTaskPtr Agent::GetTask()
+{
+    return task_;
+}
+
+void Agent::Update(float dt, BehaviorTreePtr tree)
+{
+    GameObjectPtr parentObject = this->getGameObject().lock();
+
+    // if first time using tree
+    if (task_->GetTree() != tree || !task_->WorkingWithTree())
+    {
+        IntroduceTaskToTree(parentObject, tree, task_);
+    }
+    else
+    {
+        // otherwise merely tick tree
+        task_->GetCurrentBehavior()->tick(dt);
+    }
+}
 
 componentType const Agent::type() const
 {
@@ -23,7 +79,7 @@ typeRT Agent::toTypeRT() const
 
     // agent should know what tree it belongs to
     typeRT parentTree("parentTree", this->treeName);
-
+    
     // this should set the parent tree, since an agent should only have 1 tree
     result.insertMember(parentTree);
 
@@ -82,9 +138,9 @@ std::vector<std::string> Agent::getQueryablePropertyNames()
     return { "parentTree" };
 }
 
-void Agent::setTreeName(const std::string & treeName_)
+bool Agent::hasTreeName()
 {
-    this->treeName = treeName_;
+    return !treeName.empty();
 }
 
 std::string Agent::getTreeName()

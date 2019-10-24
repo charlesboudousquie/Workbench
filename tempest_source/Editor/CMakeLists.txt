@@ -20,11 +20,13 @@ add_executable(Editor WIN32
     dirent_portable.h
     EditorLogger.hpp
     EditorState.hpp
+    EditorObject.hpp EditorObject.cpp
+    EditorObjectManager.hpp EditorObjectManager.cpp
     ObjectSelectorManipulator.hpp
-    EditorWIndow.hpp EditorWindow.cpp
-    ObjectSelector.hpp
+    EditorWindow.hpp EditorWindow.cpp
     ObjectSelector.hpp
     EngineController.hpp EngineController.cpp
+    GraphicsWindow.hpp GraphicsWindow.cpp
     HierarchyRenderer.hpp HierarchyRenderer.cpp
     HierarchySelectionKeeper.hpp HierarchySelectionKeeper.cpp
     HierarchyWindow.hpp HierarchyWindow.cpp
@@ -49,7 +51,10 @@ add_executable(Editor WIN32
     NodeGraph/NodeGraphWindow.hpp NodeGraph/NodeGraphWindow.cpp
     NodeGraph/NodeManager.hpp NodeGraph/NodeManager.cpp
     NodeGraph/EditorNode.hpp NodeGraph/EditorNode.cpp
-    #NodeGraph/Node.hpp NodeGraph/Node.cpp
+
+    NodeGraph/GraphTypeSelector.hpp NodeGraph/GraphTypeSelector.cpp
+    NodeGraph/AgentMenuSelection.hpp NodeGraph/AgentMenuSelection.cpp
+    NodeGraph/NGE_Watchdog.hpp NodeGraph/NGE_Watchdog.cpp
 
     Renderers/GizmoRenderer.hpp Renderers/GizmoRenderer.cpp
     Renderers/ToggleButton.hpp Renderers/ToggleButton.cpp
@@ -61,10 +66,6 @@ add_executable(Editor WIN32
     EditorInput.hpp EditorInput.cpp
     ObjectCommand.hpp ObjectCommand.cpp
     Command.hpp Command.cpp
-    #EditorEvent.hpp EditorEvent.cpp
-    #EditorEventSystem.hpp EditorEventSystem.cpp
-    #EventHandler.hpp
-    #UndoRedoEventHandler.hpp UndoRedoEventHandler.cpp
     )
 
 target_include_directories(Editor

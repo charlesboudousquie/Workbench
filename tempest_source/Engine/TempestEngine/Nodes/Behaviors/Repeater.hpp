@@ -1,5 +1,5 @@
 /*!***************************************************************************************
-\file       Repeater.cpp
+\file       Repeater.hpp
 \author     Charles Boudousquie
 \date       9/20/2019
 \copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
@@ -14,8 +14,6 @@
 class Repeater : public Decorator
 {
 public:
-
-    //void handleResult(BehaviorResult)override;
 
     static typeRT onRender();
 

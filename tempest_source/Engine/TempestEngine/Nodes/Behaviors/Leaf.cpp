@@ -1,6 +1,5 @@
 #include "Leaf.hpp"
 
-
 BehaviorPtr Leaf::getCurrentChild()
 {
     return nullptr;
@@ -9,12 +8,6 @@ BehaviorPtr Leaf::getCurrentChild()
 BehaviorType Leaf::GetType()
 {
     return BehaviorType::LEAF;
-}
-
-void Leaf::Init()
-{
-    BehaviorState state(this->getId(), -1, BehaviorPhase::STARTING);
-    GetTask()->Push_State(state);
 }
 
 typeRT Leaf::leafOnRender()
@@ -43,15 +36,38 @@ typeRT Leaf::leafOnRender()
 
     l_data.insertMember(l_non_render_data);
 
+
+    // now for render data
+    typeRT l_render_data;
+    l_render_data.setTypeName("Node Render Data");
+    l_render_data.setVariableName("Node Render Data");
+
+    typeRT l_type_name("Type", (std::string)"Leaf");
+    l_render_data.insertMember(l_type_name);
+    l_data.insertMember(l_render_data);
+
+
     return l_data;
 }
 
 std::vector<BehaviorPtr> Leaf::GetChildren()
 {
-    throw std::exception("Leaf Node has no child nodes, who is calling this?");
+    return {}; // no children
+    //throw std::exception("Leaf Node has no child nodes, who is calling this?");
 }
 
 void Leaf::addChild(BehaviorPtr)
 {
     throw std::exception("Tried to add child to leaf node. Not allowed.");
+}
+
+void Leaf::Init()
+{
+    // initialize phase to progressing by default
+    GetTask()->SetPhase(BehaviorPhase::PROGRESSING);
+}
+
+void Leaf::Exit()
+{
+    Behavior::Exit();
 }

@@ -10,25 +10,6 @@
 #include "Inverter.hpp"
 #ifndef TESTING_NODES
 
-void Inverter::handleResult(BehaviorResult)
-{
-    // get result of child
-    BehaviorResult childResult = child->getResult();
-
-    // if child succeeds then we have failed
-    if (childResult == BehaviorResult::SUCCESS)
-    {
-        this->result = BehaviorResult::FAILURE;
-        this->phase = BehaviorPhase::DONE;
-    }
-    else if(childResult == BehaviorResult::FAILURE)
-    {
-        // child failed so return success
-        this->result = BehaviorResult::SUCCESS;
-        this->phase = BehaviorPhase::DONE;
-    }
-}
-
 typeRT Inverter::onRender()
 {
     return Decorator::decoratorOnRender();
@@ -36,16 +17,27 @@ typeRT Inverter::onRender()
 
 void Inverter::Init()
 {
-    // need default initialization and need to start up child
+    // sends task to child
     Decorator::Init();
-
-    // we are ready to go
-    this->phase = BehaviorPhase::PROGRESSING;
 }
 
 void Inverter::Update(float dt)
 {
-    child->tick(dt);
+    auto task = GetTask();
+    auto childResult = task->GetResult();
+
+    // if child succeeds then we have failed
+    if (childResult == BehaviorResult::SUCCESS)
+    {
+        task->SetResult(BehaviorResult::FAILURE);
+        GiveToParent(task);
+    }
+    // child failed so return success
+    else if(childResult == BehaviorResult::FAILURE)
+    {
+        task->SetResult(BehaviorResult::SUCCESS);
+        GiveToParent(task);
+    }
 }
 
 #endif

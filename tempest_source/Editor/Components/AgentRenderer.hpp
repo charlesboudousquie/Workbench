@@ -9,6 +9,7 @@
 #pragma once
 #include "ComponentRenderer.hpp"
 #include <vector>
+#include <string>
 
 namespace Editor
 {
@@ -18,11 +19,11 @@ namespace Editor
         agentRenderer(editorWindow * p_parent_window);
 
     protected:
-        bool onRender(typeRT & p_type_data) override;
+        bool onRender(typeRT & p_type_data, objID p_editor_object_id) override;
 
     private:
         void LoadTreeList();
 
-        std::vector<const char*> treeList;
+        std::vector<std::string> treeList;
     };
 };

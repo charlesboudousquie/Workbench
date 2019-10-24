@@ -12,12 +12,16 @@
 #include "../Scaffolding/RenderableBase.hpp"
 class typeRT;
 
-namespace Editor {
+typedef unsigned long objID;
+
+namespace Editor 
+{
   class hierarchySelectionKeeper;
   class styleKeeper;
   class editorWindow;
   class editorState;
   class engineController;
+  class EditorObject;
 
   /*!***************************************************************************************
   \brief Component Rendering class for any component that needs any special (non-default)
@@ -40,9 +44,10 @@ namespace Editor {
     /*!***************************************************************************************
     \brief Calls the onRender function for any componentRenderer.
     \param p_type_data The component's typeRT data.
+    \param p_editor_object The editor object that owns this data.
     \return onRender's return value.
     *****************************************************************************************/
-    bool render(typeRT & p_type_data);
+    bool render(typeRT & p_type_data, objID p_editor_object);
 
     bool overridesMember(const std::string & p_member);
 
@@ -51,10 +56,11 @@ namespace Editor {
     /*!***************************************************************************************
     \brief Renders special fields of a component.
     \param p_type_data The component's typeRT data.
+    \param p_editor_object The editor object that owns this data.
     \return True if the typeRT was touched or nothing modified, false if the data was touched
             through other means.
     *****************************************************************************************/
-    virtual bool onRender(typeRT & p_type_data) = 0;
+    virtual bool onRender(typeRT & p_type_data, objID p_editor_object_id) = 0;
 
     /*!***************************************************************************************
     \brief List of special component members that you want to render yourself and not be default

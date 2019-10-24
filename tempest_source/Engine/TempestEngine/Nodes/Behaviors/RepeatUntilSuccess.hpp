@@ -15,8 +15,6 @@ class RepeatUntilSuccess : public Decorator
 {
 public:
 
-    void handleResult(BehaviorResult) override;
-
     static typeRT onRender();
 
     void Update(float)override;

@@ -59,7 +59,7 @@ void messagingSystem::onHandleMessage(message& p_message)
 {
 	logger mes_logger("messaging");
 	mes_logger.debug(std::string{ "message received" });
-	std::string messagecode("code is: " + p_message.m_message_code);
+	std::string messagecode = std::string("code is: ") + std::to_string(p_message.m_message_code);
 	mes_logger.debug(messagecode);
 }
 

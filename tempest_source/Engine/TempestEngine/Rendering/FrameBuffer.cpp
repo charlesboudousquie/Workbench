@@ -16,12 +16,12 @@
 
 
 
-framebuffer::framebuffer(const framebuffer& p_rhs) : 
-	m_width(p_rhs.m_width), m_height(p_rhs.m_height), 
+framebuffer::framebuffer(const framebuffer& p_rhs) :
+	m_width(p_rhs.m_width), m_height(p_rhs.m_height),
 	m_colorTextureAttachments(p_rhs.m_colorTextureAttachments),
 	m_depthTexture(p_rhs.m_depthTexture)
 {
-    
+
     //build();
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, p_rhs.m_fboHandle);
@@ -34,7 +34,7 @@ framebuffer::framebuffer(const framebuffer& p_rhs) :
     {
         glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
         glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-        glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height, 
+        glBlitFramebuffer(0, 0, m_width, m_height, 0, 0, m_width, m_height,
 			GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
         GLenum err = glGetError();
         if (err != GL_NO_ERROR)
@@ -46,7 +46,7 @@ framebuffer::framebuffer(const framebuffer& p_rhs) :
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    
+
 }
 
 void framebuffer::addColorAttachment(std::string const& samplerUniformName)
@@ -112,7 +112,7 @@ void framebuffer::build()
     glDrawBuffers(drawBuffers.size(), drawBuffers.data());
 
    GLDebug::getLastFrameBufferError();
-   
+
     glClearColor(0.f, 1.f, 1.f, 1.f); // default clear color
     glClearDepth(1.f);
     unbind();
@@ -145,7 +145,7 @@ void framebuffer::shutdown()
     unbind();
 
     glDeleteFramebuffers(1, &m_fboHandle);
-    m_fboHandle = NULL;
-    m_depthTextureHandle = NULL;
+    m_fboHandle = 0;
+    m_depthTextureHandle = 0;
 }
 

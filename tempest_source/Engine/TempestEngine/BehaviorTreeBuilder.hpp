@@ -12,12 +12,9 @@ class BehaviorTreeManager;
 class BehaviorTree;
 class Behavior;
 
-
 #include <unordered_map>
 #include <string>
 #include <utility>
-
-class AgentEncapsulator;
 
 class BehaviorTreeBuilder
 {

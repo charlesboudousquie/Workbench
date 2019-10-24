@@ -13,6 +13,7 @@
 #include "Renderers/ToggleButton.hpp"
 #include "Renderers/GizmoRenderer.hpp"
 #include "ObjectSelector.hpp"
+#include "EditorObjectManager.hpp"
 //======== 3rd Party Includes ==========================================================//
 #include <imgui.h>
 #include <tuple>
@@ -48,7 +49,7 @@ namespace Editor
 		*****************************************************************************************/
 		void setImageSize(float p_width, float p_height);
 
-
+    EditorObjectManager & getEditorObjectManager();
 
 		/*!***************************************************************************************
 		\brief  Specifies the identification number of the texture of the image rendered by the engine
@@ -62,6 +63,7 @@ namespace Editor
 		\brief  Handles the render event for drawing the window to the screen
 		*****************************************************************************************/
 		void onRender() override;
+		void renderGame();
 
 	private:
 		ImVec2 m_scene_image_size;
@@ -75,6 +77,8 @@ namespace Editor
 		ImVec2 m_last_drag_delta_2;
 
 		objectSelector m_osm;
+
+    EditorObjectManager m_editor_object_manager;
 	};
 
 

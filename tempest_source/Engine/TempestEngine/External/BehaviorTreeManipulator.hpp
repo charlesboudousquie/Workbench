@@ -8,6 +8,7 @@
 *****************************************************************************************/
 #pragma once
 #include "BehaviorTreeManipulatorInterface.hpp"
+
 class systemManagerInterface;
 
 class BehaviorTreeManipulator : public behaviorTreeManipulatorInterface
@@ -17,9 +18,13 @@ public:
 
     BehaviorTreeManipulator(systemManagerInterface*);
 
-    void AddAgentToTree(const std::string& treeName, std::shared_ptr<Agent> agent) override;
+    //void AddAgentToTree(const std::string& treeName, /*componentHandle<Agent>*/GameObjectPtr agent) override;
 
     // get active node in BehaviorManager system
-    int getActiveNodeID(std::shared_ptr<Agent> agent) const override;
+    int getActiveNodeID(/*componentHandle<Agent>*/GameObjectPtr agent) const override;
+
+    // get all game objects that have an agent component
+    std::vector<std::shared_ptr<gameObject>> getObjectsWithAgents();
+
 };
 
