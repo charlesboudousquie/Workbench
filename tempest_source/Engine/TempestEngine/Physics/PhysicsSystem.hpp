@@ -35,14 +35,14 @@ public:
         ////==========================================================================////
 
         /*!*******************************************************************************
-        \brief Engine system call to initalize 
+        \brief Engine system call to initalize
         *********************************************************************************/
         void onInitialize() override;
 
         void onStartFrame() override;
-        
+
         /*!*******************************************************************************
-        \brief Engine system call to update 
+        \brief Engine system call to update
         *********************************************************************************/
         void onUpdate() override;
 
@@ -50,12 +50,15 @@ public:
         void onEndFrame() override;
 
         /*!*******************************************************************************
-        \brief Engine system call to shutdown 
+        \brief Engine system call to shutdown
         *********************************************************************************/
         void onShutdown() override;
 
-				void onLevelLoad(const levelLoadEvent * /*p_event*/) override;
-				void onLevelUnload(const levelUnloadEvent * /*p_event*/) override;
+		void onLevelLoad();
+		void onLevelUnload();
+
+		void onLevelLoad(const levelLoadEvent & /*p_event*/) override;
+		void onLevelUnload(const levelUnloadEvent & /*p_event*/) override;
 
         /*!*******************************************************************************
         \brief Global gravity is what all objects use as the world's gravity, UNLESS the object
@@ -81,7 +84,7 @@ public:
         std::vector<std::shared_ptr<gameObject> > getObjectsWithinRadius(const vector3 & p_point, const float & radius);
 
         void addPhysicsObjectToWorld(std::shared_ptr<gameObject> p_gameObject);
-        
+
         void setSimulationTimeStep(float p_dt);
 
         void processCallback(btPersistentManifold* const & p_manifold, unsigned short p_type);

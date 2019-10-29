@@ -20,9 +20,9 @@ public:
 
 	~TemplateNode();
 
-	//typeRT toTypeRT() const override;
+	typeRT toTypeRT() const override;
 
-  //void updateFromTypeRT(const typeRT& p_data) override;
+  void updateFromTypeRT(const typeRT& p_data) override;
 
 	std::pair<bool, std::string> validate() override;
 
@@ -30,9 +30,8 @@ public:
 
 protected:
     virtual typeRT getTypeRT() const = 0;
-
   virtual void updateData(const typeRT& p_data) = 0;
-	
+
 	virtual std::pair<bool, std::string> validateBase();
 private:
 	std::string m_type;

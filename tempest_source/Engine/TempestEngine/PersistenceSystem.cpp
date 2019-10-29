@@ -11,7 +11,6 @@
 #include "PersistenceSystem.hpp"
 
 //========1st Party Includes============================================================//
-#include "Messaging/MessageQueue.hpp"
 #include "Serialization.h"
 #include "Reflection.hpp"
 

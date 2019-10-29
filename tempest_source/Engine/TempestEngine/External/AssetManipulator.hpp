@@ -8,7 +8,4 @@ class assetManipulator : public assetManipulatorInterface
 
     virtual std::string stringFromWide(const std::wstring& p_convert) override;
 
-    // call this when user makes a new asset and you want the asset list to reflect that
-    void reloadAssets() override;
-
 };

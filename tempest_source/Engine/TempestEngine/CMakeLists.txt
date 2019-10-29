@@ -48,7 +48,6 @@ add_library(TempestEngine STATIC
     SystemTask.hpp SystemTask.cpp
     TransformTestScript.hpp TransformTestScript.cpp
 
-    ../../EngineInterfaces/Public/IComponentRepository.hpp ../../ComponentRepository/Private/ComponentRepository.cpp
     Actions/Action.hpp Actions/Action.cpp
     Actions/ActionSystem.hpp Actions/ActionSystem.cpp
     Actions/DelayAction.hpp Actions/DelayAction.cpp
@@ -57,7 +56,6 @@ add_library(TempestEngine STATIC
     Audio/AudioComponent.hpp Audio/AudioComponent.cpp
     Audio/AudioSystem.h Audio/AudioSystem.cpp
 
-    Components/Agent.hpp Components/Agent.cpp
     Components/AnimatorComponent.hpp Components/AnimatorComponent.cpp
     Components/Button.hpp Components/Button.cpp
     Components/Camera.hpp Components/Camera.cpp
@@ -72,12 +70,11 @@ add_library(TempestEngine STATIC
     Components/Skybox.hpp Components/Skybox.cpp
     Components/WaypointNode.hpp Components/WaypointNode.cpp
     Components/WaypointNodeSet.hpp Components/WaypointNodeSet.cpp
-	
+
     DynamicWaypoints/WaypointGraphPathfinder.hpp DynamicWaypoints/WaypointGraphPathfinder.cpp
     DynamicWaypoints/DynamicWaypointGraph.hpp DynamicWaypoints/DynamicWaypointGraph.cpp
 
     Events/CollisionEvent.hpp
-    Events/EventSystem.hpp Events/EventSystem.cpp
     Events/TestEvent.hpp
 
     External/AssetManipulator.hpp External/AssetManipulator.cpp
@@ -95,7 +92,6 @@ add_library(TempestEngine STATIC
     External/SceneEntityReference.hpp External/SceneEntityReference.cpp
     External/SceneManipulator.hpp External/SceneManipulator.cpp
     External/SceneManipulatorInterface.hpp
-    External/BehaviorTreeManipulator.hpp External/BehaviorTreeManipulator.cpp
 
     GameObjectFiltering/ComponentTypeSet.hpp GameObjectFiltering/ComponentTypeSet.cpp
     GameObjectFiltering/GameObjectFilter.hpp GameObjectFiltering/GameObjectFilter.cpp
@@ -133,47 +129,12 @@ add_library(TempestEngine STATIC
     Input/InputSystem.hpp Input/InputSystem.cpp
 
     Messaging/Message.hpp
-    Messaging/MessageQueue.hpp Messaging/MessageQueue.cpp
-    Messaging/MessagingSystem.hpp Messaging/MessagingSystem.cpp
 
-    # Behavior Tree Section
-
-    BehaviorEnums.hpp
-    BehaviorTree.hpp BehaviorTree.cpp
-    BehaviorTreeManager.hpp BehaviorTreeManager.cpp
-    BehaviorTreeBuilder.hpp BehaviorTreeBuilder.cpp
-    BehaviorTreeDataBase.hpp BehaviorTreeDataBase.cpp
-    BehaviorTask.hpp BehaviorTask.cpp
-    BehaviorTaskProxy.hpp BehaviorTaskProxy.cpp
-
-    Nodes/Behaviors/Behavior.hpp Nodes/Behaviors/Behavior.cpp
     Nodes/Node.hpp Nodes/Node.cpp
     Nodes/NodeFactory.hpp Nodes/NodeFactory.cpp
     Nodes/TemplateNode.hpp Nodes/TemplateNode.cpp
     Nodes/BaseNode1.hpp Nodes/BaseNode1.cpp
     Nodes/BaseNode2.hpp Nodes/BaseNode2.cpp
-    # leaves
-    Nodes/Behaviors/Leaf.hpp Nodes/Behaviors/Leaf.cpp 
-    Nodes/Behaviors/DefaultLeaf.hpp Nodes/Behaviors/DefaultLeaf.cpp
-    Nodes/Behaviors/Repeater.hpp Nodes/Behaviors/Repeater.cpp
-    Nodes/Behaviors/JumpUp.hpp Nodes/Behaviors/JumpUp.cpp
-
-    #Decorators
-    Nodes/Behaviors/Timer.hpp Nodes/Behaviors/Timer.cpp
-    Nodes/Behaviors/Inverter.hpp Nodes/Behaviors/Inverter.cpp
-    Nodes/Behaviors/Decorator.hpp Nodes/Behaviors/Decorator.cpp
-    Nodes/Behaviors/ReturnTrue.hpp Nodes/Behaviors/ReturnTrue.cpp
-    Nodes/Behaviors/RepeatUntilN.hpp Nodes/Behaviors/RepeatUntilN.cpp
-    Nodes/Behaviors/RepeatUntilFailure.hpp Nodes/Behaviors/RepeatUntilFailure.cpp
-    Nodes/Behaviors/RepeatUntilSuccess.hpp Nodes/Behaviors/RepeatUntilSuccess.cpp
-
-    #Composites
-    Nodes/Behaviors/Composite.hpp Nodes/Behaviors/Composite.cpp
-    Nodes/Behaviors/Selector.hpp Nodes/Behaviors/Selector.cpp
-    Nodes/Behaviors/Sequencer.hpp Nodes/Behaviors/Sequencer.cpp
-
-
-    # End of Behavior Tree Section
 
     Physics/PhysicsSystem.hpp Physics/PhysicsSystem.cpp
 
@@ -306,7 +267,6 @@ target_link_libraries(TempestEngine
     PUBLIC EngineInterfaces
     PUBLIC SerializationCore
     PUBLIC ComponentCore
-    PUBLIC EventCore
     PRIVATE SystemCore
     PRIVATE Graphics.OpenGL4
     PRIVATE Physics.Bullet
@@ -321,6 +281,7 @@ target_link_libraries(TempestEngine
     PRIVATE GLFW
     PRIVATE XInput
     PRIVATE ComponentRepository
+    PRIVATE EventSystem
 )
 
 

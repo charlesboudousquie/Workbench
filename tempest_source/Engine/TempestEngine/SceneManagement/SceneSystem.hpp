@@ -10,11 +10,12 @@
 
 //========1st Party Includes============================================================//
 #include "../SystemBase.hpp"
-#include "../Events/EventSystem.hpp"
 
 //========3rd Party Includes============================================================//
 #include <memory>
 #include <vector>
+
+#include "EventBase.hpp"
 
 // forward declarations
 class scene;
@@ -24,7 +25,7 @@ class gameObjectCollector;
 ////////  Classes                                                                 ////////
 ////////==========================================================================////////
 
-class levelLoadEvent : public EventTemplate<levelLoadEvent>
+class levelLoadEvent : public EventSystem3::EventBase
 {
 public:
 	levelLoadEvent(std::shared_ptr<scene> p_scene) : m_scene{p_scene} {}
@@ -33,7 +34,7 @@ private:
 	std::shared_ptr<scene> m_scene;
 };
 
-class levelUnloadEvent : public EventTemplate<levelUnloadEvent>
+class levelUnloadEvent : public EventSystem3::EventBase
 {
 public:
 	levelUnloadEvent(std::shared_ptr<scene> p_scene) : m_scene{p_scene} {}

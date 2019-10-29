@@ -4,7 +4,7 @@
 \date       10/29/2018
 \copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
-\brief  
+\brief
 ************************************************************************************************************/
 #pragma once
 
@@ -51,12 +51,12 @@ public:
   /*!***************************************************************************************
   \brief Creates the UiSystem space and game object for input.
   *****************************************************************************************/
-  void onLevelLoad(const levelLoadEvent * /*p_event*/) override;
+  void onLevelLoad(const levelLoadEvent & /*p_event*/) override;
 
   /*!***************************************************************************************
   \brief Set's init to false.
   *****************************************************************************************/
-  void onLevelUnload(const levelUnloadEvent * /*p_event*/) override;
+  void onLevelUnload(const levelUnloadEvent & /*p_event*/) override;
 
   /*!***************************************************************************************
   \brief Adds a button to the uiSystem to track and manage.

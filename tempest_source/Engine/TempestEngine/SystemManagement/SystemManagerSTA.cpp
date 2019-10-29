@@ -9,12 +9,12 @@
 #include "SystemManagerSTA.hpp"
 #include "../SystemBase.hpp"
 #include <cassert>
-#include "../Messaging/MessagingSystem.hpp"
-#include "../Events/EventSystem.hpp"
 #include "../Utility/Debug.hpp"
 #include <iomanip>
 #include "SystemMonitor.hpp"
 #include <PreShutdownEvent.hpp>
+#include "EventBus.hpp"
+#include "Message.hpp"
 
 systemManagerSTA::systemManagerSTA()
 	: m_go_gatherer{nullptr}
@@ -186,7 +186,7 @@ void systemManagerSTA::update()
 		}
 	}
 
-	// loop over all active systems and run 
+	// loop over all active systems and run
 	for (size_t i_index = 0; i_index < l_bundle_count; ++i_index)
 	{
 		auto & l_sys_map = m_active_system_bundles[i_index]->sysVec();
@@ -195,14 +195,15 @@ void systemManagerSTA::update()
 			l_system->endFrame();
 		}
 	}
+
+    EVENT_BUS.update(l_dt);
 }
 
 void systemManagerSTA::shutdown()
 {
 	// send pre-shutdown event
-	getSystem<eventSystem>()->QueueEvent(new preShutdownEvent());
-	getSystem<eventSystem>()->onUpdate(); // force all events to process
-	getSystem<eventSystem>()->onUpdate(); // ... just in case
+	EVENT_BUS.fire(new preShutdownEvent(), nullptr, true);
+
 	// disable all systems
 	for(auto l_bundle : m_active_system_bundles)
 	{
@@ -236,7 +237,7 @@ void systemManagerSTA::activateSystemBundle(const std::string& p_system_bundle_n
       }
     }
   }
-  
+
 
 	// add system bundle to the active list
 	m_active_system_bundles.push_back(m_system_bundle_master[p_system_bundle_name]);
@@ -288,6 +289,12 @@ bool systemManagerSTA::alreadyActive(const systemBundle * p_bundle)
 
 void systemManagerSTA::sendMessage(std::string p_sender, std::string p_destination, unsigned int p_message_code, void * p_data)
 {
-	getSystem<messagingSystem>()->send(p_sender, p_destination, p_message_code, p_data);
+	auto* m = new message();
+	m->m_sender = p_sender;
+	m->m_destination = p_destination;
+	m->m_message_code = p_message_code;
+	m->m_data = p_data;
+
+	EVENT_BUS.fire(m);
 }
 

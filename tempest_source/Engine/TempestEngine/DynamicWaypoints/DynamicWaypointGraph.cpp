@@ -10,7 +10,13 @@
 /*
 Notes to future Alex:
 Clean up Create node set. It's ugly
-Think about pulling stuff out. This is getting bloated
+Helper functions are trying to do too much
+
+Fix invalidate connection. It's doing that dumb thing. You know.
+
+BUGS:
+Edge case stitching - need to connect the one it can see (Shouldn't it already?)
+-possibly do the expansion stitching (connect neighbors)
 */
 
 //======== Self Include ================================================================//
@@ -22,15 +28,26 @@ Think about pulling stuff out. This is getting bloated
 #include "GameObjectGatherer.hpp"
 #include "DebugLines.hpp"
 #include "TestingScript.hpp"
+#include "WaypointGraphPathfinder.hpp"
+#include "WaypointNode.hpp"
 //======== 3rd Party Includes ==========================================================//
 #include <Vector3.hpp>
 #include <Vector2.hpp>
 #include <random>
 //======== Types =======================================================================//
 
-//!<Contains intersection information when attempting to create new connections
+/*!***************************************************************************************
+\par struct: intersection
+\brief   Holds information regarding two connections intersecting
+*****************************************************************************************/
 struct intersection
 {
+	/*!***************************************************************************************
+	\brief  intersection constructor
+	\param oldCon - The connection that was being tested against
+	\param newCon - The connection that was looking for intersections
+	\param intersectionPoint_ - The point of intersection in world space
+	*****************************************************************************************/
 	intersection(nodeConnection oldCon, nodeConnection newCon, vector3 intersectPoint_)
 		: oldConnection(oldCon), newConnection(newCon), intersectPoint(intersectPoint_)
 	{
@@ -41,6 +58,11 @@ struct intersection
 	//!<The new connection that is being tested
 	nodeConnection newConnection;
 
+	/*!***************************************************************************************
+	\brief  comparison operator
+	\param other - The intersection to compare against
+	\return True if old and new connections match
+	*****************************************************************************************/
 	bool operator== (const intersection & other)
 	{
 		return (this->oldConnection == other.oldConnection && this->newConnection == other.newConnection);
@@ -51,11 +73,21 @@ struct intersection
 };
 
 //======== Defines =====================================================================//
-#define DEBUG_LINE_TAG "pathing"
+#define DEBUG_LINE_TAG "graph"
+#define PATH_LINE_TAG "pathing"
 
 //======== Static Declarations =========================================================//
 
 //======== Constructors & Destructor ===================================================//
+nodeConnection::nodeConnection(componentHandle<waypointNode> firstNode_, componentHandle<waypointNode> secondNode_, bool onObjectParameter_, bool isValid_) :
+	firstNode(firstNode_), secondNode(secondNode_), onObjectParameter(onObjectParameter_), isValid(isValid_)
+{
+	name = firstNode->debugName + " to " + secondNode->debugName;
+}
+
+connectedNode::connectedNode(componentHandle<waypointNode> node_, float cost_, bool sharesObjectParameter_)
+	: node(node_), cost(cost_), sharesObjectParameter(sharesObjectParameter_)
+{}
 
 //======== Getters & Setters ===========================================================//
 
@@ -69,50 +101,6 @@ bool nodeConnection::operator==(nodeConnection other) const
 }
 
 //======== Functionality ===============================================================//
-std::list<vector3> dynamicWaypointGraph::getPath(std::shared_ptr<gameObject> startObject,
-												std::shared_ptr<gameObject> endObject)
-{
-	//create waypointNodes for start/end
-	std::shared_ptr<gameObject> start = makeNodeGameobject(startObject->getSpace(), "darkgrey.mtl");
-	start->detatchFromParent();
-	std::shared_ptr<gameObject> end = start->cloneObject();
-
-	start->setName("Start Node");
-	end->setName("End Node");
-
-	start->getComponent<transform>()->setPosition(startObject->getComponent<transform>()->getGlobalPosition());
-	end->getComponent<transform>()->setPosition(endObject->getComponent<transform>()->getGlobalPosition());
-	
-	//"Create level path" with just the two nodes
-	nodeConnection newConnection = connectNodes(start->getComponent<waypointNode>(), end->getComponent<waypointNode>());
-	validConnections.push_back(newConnection);
-	validateConnection(newConnection);
-
-	//A* start to finish
-	//delete start/end nodes (unnecessary now)
-	//remember to remove nodeConnections to them as well
-	//return path
-
-	/* NOTES
-	void buildSubGraph(WaypointNode s, WaypointNode e, subGraph & g)
-
-	find intersections with s-e
-	if no intersections found
-		connect s-e, throw in subGraph
-		return
-	if intersections found
-		Attempt to connect based on intersection points
-		recurse on attempted connections
-	
-
-	--
-
-	current works because it's node set by node set
-	path fails because checks all and only fixes closest
-	*/
-	return std::list<vector3>(0);
-}
-
 void dynamicWaypointGraph::createLevelPath()
 {
 	GameObjectFiltering::componentTypeSet node_pattern;
@@ -126,7 +114,7 @@ void dynamicWaypointGraph::createLevelPath()
 		for (int j = i + 1; j < nodes.size(); ++j)
 		{
 			componentHandle<waypointNode> n2 = nodes[j]->getComponent<waypointNode>();
-			nodeConnection newConnection = connectNodes(n, n2);
+			nodeConnection newConnection = connectNodesWithConnection(n, n2);
 			validConnections.push_back(newConnection);
 			addDebugLine(newConnection);
 		}
@@ -227,9 +215,9 @@ void dynamicWaypointGraph::deleteRandomNodeSet()
 
 void dynamicWaypointGraph::testFunction()
 {
-	GameObjectFiltering::componentTypeSet script_pattern;
-	script_pattern.setType(testingScript::getType());
-	std::vector<std::shared_ptr<gameObject>> objects = getSystemManager()->getGameObjectGatherer()->getList(script_pattern);
+	GameObjectFiltering::componentTypeSet testScriptPattern;
+	testScriptPattern.setType(testingScript::getType());
+	std::vector<std::shared_ptr<gameObject>> objects = getSystemManager()->getGameObjectGatherer()->getList(testScriptPattern);
 
 	if (objects.size() < 2)
 	{
@@ -237,9 +225,247 @@ void dynamicWaypointGraph::testFunction()
 	}
 	else
 	{
-		getPath(objects[0], objects[1]);
+		systemBase * sys = getSystemManager()->getSystem("waypointGraphPathfindSystem");
+		if (sys != nullptr)
+		{
+			waypointGraphPathfinder * wgpf = dynamic_cast<waypointGraphPathfinder *>(sys);
+			vector3 pos1 = objects[0]->getComponent<transform>()->getGlobalPosition();
+			vector3 pos2 = objects[1]->getComponent<transform>()->getGlobalPosition();
+			std::shared_ptr<graphPath> path = wgpf->getPath(pos1, pos2);
+			std::list<vector3> resultingPath = path->points;
+
+			componentHandle<debugLines> pathLines = debugLines::getLinesByTag(objects[0], PATH_LINE_TAG);
+			std::vector<lineSegment> & lineBuffer = pathLines->getLineBuffer();
+			lineBuffer.clear();
+
+			if (path->isBad())
+				return;
+
+			vector3 color(1, 0, 1);
+			float weight(.1f);
+			
+			lineBuffer.push_back(lineSegment(objects[0]->getComponent<transform>()->getGlobalPosition(), resultingPath.front(), color, weight));
+			std::list<vector3>::iterator it = resultingPath.begin();
+			std::list<vector3>::iterator previous = it;
+			while (++it != resultingPath.end())
+			{
+				lineBuffer.push_back(lineSegment(*it, *previous, color, weight));
+				++previous;
+			}
+		}
+	}
+}
+
+std::pair<componentHandle<waypointNode>, componentHandle<waypointNode>> dynamicWaypointGraph::handlePathRequest(vector3 start, vector3 end)
+{
+	//Create a node at start and end points
+	std::shared_ptr graphSpace = getSystemManager()->getSystem<sceneSystem>()->getCurrentScene().lock()->getSpace("WaypointGraph");
+	if (graphSpace == nullptr)
+		graphSpace = getSystemManager()->getSystem<sceneSystem>()->getCurrentScene().lock()->createSpace("WaypointGraph");
+
+	std::shared_ptr<gameObject> startNode = makeNodeGameobject(&(*graphSpace), vector3(1, 1, 1), "solidblue.mtl");
+	std::shared_ptr<gameObject> endNode = startNode->cloneObject();
+	startNode->setName("StartNode");
+	endNode->setName("EndNode");
+
+	startNode->getComponent<transform>()->setPosition(start);
+	endNode->getComponent<transform>()->setPosition(end);
+
+	componentHandle<waypointNode> startWN = startNode->getComponent<waypointNode>();
+	componentHandle<waypointNode> endWN = endNode->getComponent<waypointNode>();
+	startWN->debugName = "StartPath";
+	endWN->debugName = "EndPath";
+
+	addPath(startWN, endWN);
+
+	return std::make_pair(startWN, endWN);
+}
+
+void dynamicWaypointGraph::addPath(componentHandle<waypointNode> start, componentHandle<waypointNode> end)
+{
+	nodeConnection newConnection(start, end);
+
+	std::list<intersection> intersections = findIntersections(newConnection);
+
+	vector3 startNodePos = getNodePosition(start);
+
+	//Base case - no intersections
+	if (intersections.size() == 0)
+	{
+		connectNodes(start, end, false);
+		validConnections.push_back(newConnection);
+		addDebugLine(newConnection);
+		return;
 	}
 
+	//connect start node to it's closest intersection
+	nodeConnection closestCon = getClosestIntersection(startNodePos, intersections);
+
+	//addPath(start, closestCon.firstNode);
+	//addPath(start, closestCon.secondNode);
+
+	//go left/right around intersecting object, node by node
+	//keep list of looked at to avoid double checking or reversing
+	std::list<componentHandle<waypointNode>> myObjectNodes = getObjectParameterNodes(closestCon.firstNode);
+
+	std::queue<componentHandle<waypointNode>> toCheck;
+	std::list<componentHandle<waypointNode>> lookedAt;
+	lookedAt.push_back(closestCon.firstNode);
+	lookedAt.push_back(closestCon.secondNode);
+	toCheck.push(closestCon.firstNode);
+	toCheck.push(closestCon.secondNode);
+
+	//We're looking for nodes on the parameter that we've not looked at yet
+	while (toCheck.empty() == false)
+	{
+		componentHandle<waypointNode> currentNode = toCheck.front();
+		toCheck.pop();
+
+		//Attempt to connect current to start
+		//If intersect with self, skip
+		nodeConnection startToCurrent(start, currentNode);
+
+		intersections = findIntersections(startToCurrent);
+
+		if (intersections.size() == 0)
+		{
+			connectNodes(start, currentNode, false);
+			validConnections.push_back(startToCurrent);
+			addDebugLine(startToCurrent);
+		}
+		else
+		{
+			closestCon = getClosestIntersection(getNodePosition(start), intersections);
+
+			//If closest Connection node exists in parameter list, it shares an object parameter
+			bool intersectsSelf = doesIntersectSelf(myObjectNodes, closestCon);
+
+			//Not intersecting self means you must recurse start-current
+			//as well as current-end
+			if (!intersectsSelf)
+			{
+				addPath(start, currentNode);
+			}
+		}
+
+		//Attempt to connect current to end
+		nodeConnection currentToEnd(currentNode, end);
+
+		intersections = findIntersections(currentToEnd);
+
+		//No intersections, connect and recursive connect to end
+		if (intersections.size() == 0)
+		{
+			addPath(currentNode, end);
+			continue;
+		}
+
+		closestCon = getClosestIntersection(getNodePosition(currentNode), intersections);
+
+		//If closest Connection node exists in parameter list, it shares an object parameter
+		bool intersectsSelf = doesIntersectSelf(myObjectNodes, closestCon);
+
+		//Not intersecting self means you must recurse start-current
+		//as well as current-end
+		if (!intersectsSelf)
+		{
+			addPath(start, currentNode);
+			addPath(currentNode, end);
+			continue;
+		}
+
+		//If closest connection is self, add neighbor to toCheck
+		//-Need to continue searching around this object
+
+		//Find next neighbor in line to attempt connection
+		std::vector<connectedNode>::iterator it = currentNode->connections.begin();
+
+		while (it != currentNode->connections.end())
+		{
+			if (it->sharesObjectParameter == true)
+			{
+				//Look for it in lookedAt
+				std::list<componentHandle<waypointNode>>::iterator j = lookedAt.begin();
+				while (j != lookedAt.end())
+				{
+					if (*j == it->node)
+						break;
+					++j;
+				}
+				//Not found in looked at, add to toCheck
+				if (j == lookedAt.end())
+				{
+					toCheck.push(it->node);
+					lookedAt.push_back(it->node);
+				}
+			}
+			++it;
+		}
+	}
+}
+
+bool dynamicWaypointGraph::doesIntersectSelf(std::list<componentHandle<waypointNode>> myObjectNodes, nodeConnection closestConnection)
+{
+	for (std::list<componentHandle<waypointNode>>::iterator it = myObjectNodes.begin(); it != myObjectNodes.end(); ++it)
+	{
+		if (*it == closestConnection.firstNode)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+std::list<componentHandle<waypointNode>> dynamicWaypointGraph::getObjectParameterNodes(componentHandle<waypointNode> node)
+{
+	std::list<componentHandle<waypointNode>> toReturn;
+
+	std::queue<componentHandle<waypointNode>> toCheck;
+	std::list<componentHandle<waypointNode>> seen;
+
+	toCheck.push(node);
+	seen.push_back(node);
+
+	//Build list based on neighbors that share an object parameter
+
+	while (toCheck.empty() == false)
+	{
+		componentHandle<waypointNode> current = toCheck.front();
+		std::string debugName = current->debugName;
+		toCheck.pop();
+		toReturn.push_back(current);
+
+		std::vector<connectedNode> & connections = current->connections;
+
+		for (std::vector<connectedNode>::iterator it = connections.begin(); it != connections.end(); ++it)
+		{
+			//If doesn't share parameter, skip it
+			if (it->sharesObjectParameter == false)
+				continue;
+
+			//If seen already, skip it
+			std::list<componentHandle<waypointNode>>::iterator j = seen.begin();
+			while (j != seen.end())
+			{
+				if (it->node == *j)
+					break;
+
+				++j;
+			}
+
+			if (j != seen.end())
+				continue;
+
+			std::string newName = it->node->debugName;
+
+			//new connected neighbor found
+			toCheck.push(it->node);
+			seen.push_back(it->node);
+		}
+	}
+
+	return toReturn;
 }
 
 //TODO: object/object overlap
@@ -291,8 +517,8 @@ void dynamicWaypointGraph::handleNodeSetCreation(componentHandle<waypointNodeSet
 			if (dot < 0)
 			{
 				//Connect second open path node to new object nodes
-				nodeConnection newConnectionOne = connectNodes(openConnection.secondNode, objectConnection.firstNode, false, true);
-				nodeConnection newConnectionTwo = connectNodes(openConnection.secondNode, objectConnection.secondNode, false, true);
+				nodeConnection newConnectionOne = connectNodesWithConnection(openConnection.secondNode, objectConnection.firstNode, false, true);
+				nodeConnection newConnectionTwo = connectNodesWithConnection(openConnection.secondNode, objectConnection.secondNode, false, true);
 
 				//Validate new paths
 				validateConnection(newConnectionOne);
@@ -302,8 +528,8 @@ void dynamicWaypointGraph::handleNodeSetCreation(componentHandle<waypointNodeSet
 			else
 			{
 				//Connect first open node to new object nodes 
-				nodeConnection newConnectionOne = connectNodes(openConnection.firstNode, objectConnection.firstNode, false, true);
-				nodeConnection newConnectionTwo = connectNodes(openConnection.firstNode, objectConnection.secondNode, false, true);
+				nodeConnection newConnectionOne = connectNodesWithConnection(openConnection.firstNode, objectConnection.firstNode, false, true);
+				nodeConnection newConnectionTwo = connectNodesWithConnection(openConnection.firstNode, objectConnection.secondNode, false, true);
 
 				//Valide new paths
 				validateConnection(newConnectionOne);
@@ -343,6 +569,7 @@ void dynamicWaypointGraph::handleNodeSetDeletion(componentHandle<waypointNodeSet
 	//list of all nodes that were connected to a deleted node
 	std::list<componentHandle<waypointNode>> detachedNodes;
 
+	//clear debug lines for each deleted node
 	for (int i = 0; i < deletedNodes.size(); ++i)
 	{
 		componentHandle<debugLines> dLines = debugLines::getLinesByTag(deletedNodes[i]->getGameObject().lock(), DEBUG_LINE_TAG);
@@ -386,10 +613,12 @@ void dynamicWaypointGraph::handleNodeSetDeletion(componentHandle<waypointNodeSet
 			{
 				detachedNodes.push_back(n1);
 				removeDebugLine(*toDelete);
+				removeNodeFromNodesConnections(n1, n2);
 			}
 			else //match1
 			{
 				detachedNodes.push_back(n2);
+				removeNodeFromNodesConnections(n2, n1);
 			}
 			validConnections.erase(toDelete);
 		}
@@ -459,18 +688,11 @@ void dynamicWaypointGraph::handleNodeSetDeletion(componentHandle<waypointNodeSet
 			++invalidCheck;
 	}
 
+	//Revalidate all connections that were invalidated by this node set
 	for (invalidCheck = revalidate.begin(); invalidCheck != revalidate.end(); ++invalidCheck)
 	{
+		connectNodes(invalidCheck->firstNode, invalidCheck->secondNode, invalidCheck->onObjectParameter);
 		validConnections.push_back(*invalidCheck);
-		/*
-		Required to be in validConnections before validating
-		This is because validateConnection may invalidate it if intersections are found,
-		which checks for it in validConnection list before adding to invalid
-		This was done to prevent duplicate connections in invalidConnections
-
-		Alternative fix - find how duplicates are being added to invalid connections,
-		and fix that
-		*/
 		validateConnection(*invalidCheck);
 	}
 }
@@ -480,7 +702,7 @@ void dynamicWaypointGraph::createNodeSet(componentHandle<waypointNodeSet> set)
 {
 	//Make new node
 	std::shared_ptr<gameObject> setObject = set->getGameObject().lock();
-	std::shared_ptr<gameObject> node1 = makeNodeGameobject(setObject->getSpace());
+	std::shared_ptr<gameObject> node1 = makeNodeGameobject(setObject->getSpace(), vector3(.25f, .25f, .25f));
 
 
 	//Prefab made here
@@ -539,14 +761,14 @@ void dynamicWaypointGraph::createNodeSet(componentHandle<waypointNodeSet> set)
 	connectNodeSet(set);
 }
 
-std::shared_ptr<gameObject> dynamicWaypointGraph::makeNodeGameobject(space * s, std::string materialName) const
+std::shared_ptr<gameObject> dynamicWaypointGraph::makeNodeGameobject(space * s, vector3 scale, std::string materialName) const
 {
 	std::shared_ptr<gameObject> toReturn = s->instantiateGameObject("Waypoint Graph Node");
 	componentHandle<renderer> l_renderer_comp = toReturn->addComponent<renderer>();
 	l_renderer_comp->setPrimitiveType(CUBE_FILE);
 	l_renderer_comp->setProgramType(programType::enm_forward);
 	toReturn->getComponent<renderer>()->setMaterialName(materialName);
-	toReturn->getComponent<transform>()->setScale(vector3(.25, .25, .25));
+	toReturn->getComponent<transform>()->setScale(scale);
 	toReturn->addComponent<waypointNode>();
 
 	return toReturn;
@@ -556,7 +778,7 @@ bool dynamicWaypointGraph::nodesAreConnected(componentHandle<waypointNode> n1, c
 {
 	for (int i = 0; i < n1->connections.size(); ++i)
 	{
-		if (n1->connections[i].first == n2)
+		if (n1->connections[i].node == n2)
 			return true;
 	}
 	return false;
@@ -655,7 +877,7 @@ void dynamicWaypointGraph::attemptConnectionAndValidation(componentHandle<waypoi
 	if (nodesAreConnected(n1, n2))
 		return;
 
-	nodeConnection newConnection = connectNodes(n1, n2, false, true);
+	nodeConnection newConnection = connectNodesWithConnection(n1, n2, false, true);
 	validateConnection(newConnection);
 }
 
@@ -866,17 +1088,25 @@ vector2 dynamicWaypointGraph::lineIntersectionPoint(vector2 a, vector2 b, vector
 	return vector2(x, y);
 }
 
-nodeConnection dynamicWaypointGraph::connectNodes(componentHandle<waypointNode> a, componentHandle<waypointNode> b, bool isObjectPath, bool isValid)
+nodeConnection dynamicWaypointGraph::connectNodesWithConnection(componentHandle<waypointNode> a, componentHandle<waypointNode> b, bool isObjectPath, bool isValid)
 {
 	nodeConnection newConnection = nodeConnection(a, b, isObjectPath, isValid);
+	connectNodes(a, b, isObjectPath);
+	return newConnection;
+}
+
+void dynamicWaypointGraph::connectNodes(componentHandle<waypointNode> a, componentHandle<waypointNode> b, bool sharesParameter)
+{
+	std::string namea = a->debugName;
+	std::string nameb = b->debugName;
+	if (nodesAreConnected(a, b))
+		return;
 
 	vector3 diffVector = getNodePosition(a) - getNodePosition(b);
-	diffVector.y = 0;
-	float cost = diffVector.distanceSquared();
+	float cost = diffVector.distance();
 
-	a->connections.push_back(std::make_pair(b, cost));
-	b->connections.push_back(std::make_pair(a, cost));
-	return newConnection;
+	a->connections.push_back(connectedNode(b, cost, sharesParameter));
+	b->connections.push_back(connectedNode(a, cost, sharesParameter));
 }
 
 void dynamicWaypointGraph::invalidateConnection(nodeConnection & nc)
@@ -893,11 +1123,11 @@ void dynamicWaypointGraph::invalidateConnection(nodeConnection & nc)
 		}
 	}
 
-	std::vector<std::pair<componentHandle<waypointNode>, float>>::iterator conWalker;
+	std::vector<connectedNode>::iterator conWalker;
 	//clear connection from first node
 	for (conWalker = nc.firstNode->connections.begin(); conWalker != nc.firstNode->connections.end(); ++conWalker)
 	{
-		if (conWalker->first == nc.secondNode)
+		if (conWalker->node == nc.secondNode)
 		{
 			nc.firstNode->connections.erase(conWalker);
 			break;
@@ -906,7 +1136,7 @@ void dynamicWaypointGraph::invalidateConnection(nodeConnection & nc)
 	//clear connection from second node
 	for (conWalker = nc.secondNode->connections.begin(); conWalker != nc.secondNode->connections.end(); ++conWalker)
 	{
-		if (conWalker->first == nc.firstNode)
+		if (conWalker->node == nc.firstNode)
 		{
 			nc.secondNode->connections.erase(conWalker);
 			break;
@@ -925,7 +1155,7 @@ void dynamicWaypointGraph::connectNodeSet(componentHandle<waypointNodeSet> nodeS
 		if (it2 == nodeSet->nodes.end())
 			it2 = nodeSet->nodes.begin();
 
-		nodeConnection newConnection = connectNodes(*it, *it2, true, true);
+		nodeConnection newConnection = connectNodesWithConnection(*it, *it2, true, true);
 		validConnections.push_back(newConnection);
 
 	    addDebugLine(newConnection, vector3(1, 0, 0));
@@ -937,27 +1167,40 @@ void dynamicWaypointGraph::deleteConnection(const nodeConnection & c)
 	validConnections.remove(c);
 	invalidConnections.remove(c);
 
-	componentHandle<waypointNode> node = c.firstNode;
-
 	//Tell the nodes they are no longer connected
-	std::vector<std::pair<componentHandle<waypointNode>, float>>::iterator it;
-	for (it = node->connections.begin(); it != node->connections.end(); ++it)
+	removeNodeFromNodesConnections(c.firstNode, c.secondNode);
+	removeNodeFromNodesConnections(c.secondNode, c.firstNode);
+}
+
+void dynamicWaypointGraph::removeNodeFromNodesConnections(componentHandle<waypointNode> toRemoveFrom, componentHandle<waypointNode> toRemove) const
+{
+	std::vector<connectedNode>::iterator it;
+	for (it = toRemoveFrom->connections.begin(); it != toRemoveFrom->connections.end(); ++it)
 	{
-		if (it->first == c.secondNode)
+		if (it->node == toRemove)
 		{
-			node->connections.erase(it);
+			toRemoveFrom->connections.erase(it);
 			break;
 		}
 	}
-	node = c.secondNode;
-	for (it = node->connections.begin(); it != node->connections.end(); ++it)
+}
+
+nodeConnection dynamicWaypointGraph::getClosestIntersection(vector3 position, std::list<intersection> intersections)
+{
+	float closest = std::numeric_limits<float>::max();
+	nodeConnection closestCon = intersections.front().oldConnection;
+
+	for (std::list<intersection>::iterator it = intersections.begin(); it != intersections.end(); ++it)
 	{
-		if (it->first == c.firstNode)
+		float newDist = (it->intersectPoint - position).distanceSquared();
+		if (newDist < closest)
 		{
-			node->connections.erase(it);
-			break;
+			closest = newDist;
+			closestCon = it->oldConnection;
 		}
 	}
+
+	return closestCon;
 }
 
 void dynamicWaypointGraph::removeDebugLine(nodeConnection nc)

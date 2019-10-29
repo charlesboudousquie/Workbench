@@ -113,7 +113,7 @@ public:
 	}
 
 
-    void RemoveAllComponents();
+        void RemoveAllComponents();
 
 	/*!*******************************************************************************
 	\brief  Retrieves the first component of the specified type
@@ -195,18 +195,18 @@ public:
 		return component_list.getComponentCount<T>();
 	}
 
-    /*!*******************************************************************************
+        /*!*******************************************************************************
         \brief  Tells you if the gameobject even has a parent.
         \return true if parent exists
         *********************************************************************************/
-    bool hasParent() const;
+        bool hasParent() const;
 
-	/*!*******************************************************************************
+		/*!*******************************************************************************
 		\brief  Retrieves the reference of the parent game object
 		\return std::weak_ptr<gameObject> - Reference to the parent game object, may not 
 		        be valid (if no parent)
 		*********************************************************************************/
-	std::weak_ptr<gameObject> getParent() const;
+		std::weak_ptr<gameObject> getParent() const;
 
 	/*!*******************************************************************************
 	\brief  Makes the game object a top-level object with no parent

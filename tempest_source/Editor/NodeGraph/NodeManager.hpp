@@ -28,7 +28,7 @@ public:
 
 	void reset();
 
-	void addNode(EditorNode * p_node, int p_id /*= 0*/);
+	void addNode(EditorNode * p_node, int p_id = 0);
 
 	void setSelectedNodeId(int p_node_id);
 
@@ -47,9 +47,12 @@ public:
 
   void setActiveNodeData();
 
-  void linkNodes(int p_output_id, int p_input_id);
+  void linkNodes(int p_output_id, int p_input_id, int p_output_slot = 0, int p_input_slot = 0);
 
   void removeLink(int p_output_id, int p_input_id);
+
+  bool removeLinkFromOutputSlot(int p_output_id, int p_output_slot);
+  bool removeLinkFromInputSlot(int p_input_id, int p_input_slot);
 
   EditorNode * getNode(int p_node_id);
 
@@ -57,12 +60,19 @@ public:
 
   void findFreeLinkSlots(int p_output_id, int p_input_id, int & p_output_slot, int & p_input_slot);
 
-  void serializeNodes(const std::string & p_path, const std::string & p_graph_name);
+  bool checkOutputSlotTaken(int p_output_id, int p_output_slot);
+  bool checkInputSlotTaken(int p_input_id, int p_input_slot);
+
+  bool serializeNodes(const std::string & p_path, const std::string & p_graph_name);
 
   void readFromFile(const std::string & p_file_name);
 
   // create an id that is not currently in use with the node manager
-  int createUniqueID();
+  int createUniqueID() const;
+
+  bool validateGraph();
+
+  void setEditorNodesScale(float p_scalar, float p_difference);
 
 private:
 	int m_num_nodes;
@@ -76,5 +86,6 @@ private:
 	//List of types of nodes and their names
 	//Key = behavior tree, script, shader, etc. pair = class name, friendly name (can be the same)
 	std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> m_node_factory_list;
+
   Editor::EditorLogger & m_logger;
 };

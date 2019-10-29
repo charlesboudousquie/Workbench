@@ -886,9 +886,7 @@ void sceneManipulator::dynamicWaypointGraphCreatePath()
 {
 	dynamicWaypointGraph * dwg = m_system_manager->getSystem<dynamicWaypointGraph>();
 	if (dwg != nullptr)
-    {
 		dwg->createLevelPath();
-    }
 }
 
 void sceneManipulator::dynamicWaypointGraphCreateSetPaths()
@@ -917,4 +915,11 @@ void sceneManipulator::dynamicWaypointGraphDeleteRandomNodeSet()
 	dynamicWaypointGraph * dwg = m_system_manager->getSystem<dynamicWaypointGraph>();
 	if (dwg != nullptr)
 		dwg->deleteRandomNodeSet();
+}
+
+void sceneManipulator::dynamicWaypointGraphTestFunction()
+{
+	dynamicWaypointGraph * dwg = m_system_manager->getSystem<dynamicWaypointGraph>();
+	if (dwg != nullptr)
+		dwg->testFunction();
 }

@@ -9,7 +9,6 @@
 #pragma once
 
 //========1st Party Includes============================================================//
-#include "../Events/EventSystem.hpp"
 #include "../SceneManagement/GameObject.hpp"
 #include "../Scripting/ScriptingSystem.hpp"
 
@@ -29,7 +28,7 @@ class systemManagerInterface;
 \par class: scriptCPP
 \brief   A script component representing C++ code
 *****************************************************************************************/
-class scriptCPP : public componentCRTP<scriptCPP>
+class scriptCPP : public componentCRTP<scriptCPP>, public EventSystem3::EventHandler
 {
 	////////========================================================================////////
 	////////   Public                                                               ////////
@@ -83,18 +82,6 @@ public:
 	*****************************************************************************************/
 	bool isRunning() const;
 
-	//template <typename T>
-	void sendEvent(EventBase* p_event)
-	{
-		getSystemManager()->getSystem<eventSystem>()->QueueEvent(p_event);
-	}
-
-	template <typename ClassType, typename EventType, void (ClassType::*Function)(EventType*)>
-	void registerEventCallback()
-	{
-		getSystemManager()->getSystem<eventSystem>()->RegisterEventCallback<ClassType, EventType, Function>(static_cast<ClassType*>(this));
-	}
-
 	//virtual std::string const sub_type() const = 0;
 
 
@@ -117,7 +104,7 @@ protected:
 				  is empty, making it optional.
 	*****************************************************************************************/
 	virtual void onShutdown() {} // default no-op behavior
-	
+
 	/*!***************************************************************************************
 	\brief  Retrieves the scripting system this script belongs to.
 	\return scriptingSystem * - The parent scripting system.

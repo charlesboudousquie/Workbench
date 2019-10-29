@@ -13,7 +13,9 @@
 //========1st Party Includes============================================================//
 #include "Engine.hpp"
 #include "SystemBundle.hpp"
-#include "Messaging/MessagingSystem.hpp"
+
+#include "Message.hpp"
+#include "EventBus.hpp"
 
 #include <cassert>
 
@@ -186,7 +188,13 @@ void systemManager::suspendBundle(const std::string& p_bundle_name)
 
 void systemManager::sendMessage(std::string p_sender, std::string p_destination, unsigned p_message_code, void* p_data)
 {
-	getSystem<messagingSystem>()->send(p_sender,p_destination,p_message_code,p_data);
+	auto* m = new message();
+	m->m_sender = p_sender;
+	m->m_destination = p_destination;
+	m->m_message_code = p_message_code;
+	m->m_data = p_data;
+
+	EVENT_BUS.fire(m);
 }
 
 ///////============================================================================///////
@@ -230,8 +238,8 @@ void systemManager::sendMessage(std::string p_sender, std::string p_destination,
 				auto l_bundle = m_sys_bndl_mast[p_name];
 				l_bundle->task().sendSuspend();
 				m_active_system_bundles.erase(
-					std::find(m_active_system_bundles.begin(), 
-						      m_active_system_bundles.end(), 
+					std::find(m_active_system_bundles.begin(),
+						      m_active_system_bundles.end(),
 						      l_bundle.get()));
 			}
 		}

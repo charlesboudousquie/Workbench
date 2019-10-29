@@ -2,7 +2,7 @@
 \file       NodeFactory.cpp
 \author     Ryan Booth
 \date       9/20/19
-\copyright  All content Â© 2018-2019 DigiPen (USA) Corporation, all rights reserved.
+\copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par
 \brief
 *****************************************************************************************/
@@ -16,57 +16,21 @@
 #include "Nodes/BaseNode1.hpp"
 #include "Nodes/BaseNode2.hpp"
 
-// leaves
-#include "Nodes/Behaviors/DefaultLeaf.hpp"
-#include "Nodes/Behaviors/JumpUp.hpp"
-
-// decorators
-#include "Nodes/Behaviors/Inverter.hpp"
-#include "Nodes/Behaviors/Repeater.hpp"
-#include "Nodes/Behaviors/RepeatUntilN.hpp"
-#include "Nodes/Behaviors/RepeatUntilFailure.hpp"
-#include "Nodes/Behaviors/RepeatUntilSuccess.hpp"
-#include "Nodes/Behaviors/ReturnTrue.hpp"
-#include "Nodes/Behaviors/Timer.hpp"
-
-//composites
-#include "Nodes/Behaviors/Selector.hpp"
-#include "Nodes/Behaviors/Sequencer.hpp"
-
 const std::string l_fileName("../../Samples/Assets/Nodes.def");
 
 std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> NodeFactory::m_node_factory_list;
 
-static std::map<std::string, std::function<typeRT()>> renderTypes
-{
-// leaves
-{"DefaultLeaf", DefaultLeaf::onRender},
-{"JumpUp", JumpUp::onRender},
-
-// composites
-{"Selector", Selector::onRender},
-{"Sequencer", Sequencer::onRender},
-
-// decorators
-{"Inverter",Inverter::onRender},
-{"Repeater", Repeater::onRender},
-{"RepeatUntilN", RepeatUntilN::onRender},
-{"RepeatUntilFailure",RepeatUntilFailure::onRender},
-{"RepeatUntilSuccess", RepeatUntilSuccess::onRender},
-{"ReturnTrue", ReturnTrue::onRender},
-{"Timer", Timer::onRender},
-};
-
-
 typeRT NodeFactory::getNodeTypeRT(const std::pair<std::string, std::string> & p_node_type)
 {
-    // if type is known in map
-    if (renderTypes.find(p_node_type.first) != renderTypes.end())
-    {
-        return renderTypes[p_node_type.first]();
-    }
+  if(p_node_type.first == "BaseNode1")
+  {
+    return BaseNode1::onRender();
+  }
+  else if (p_node_type.first == "BaseNode2")
+  {
+    return BaseNode2::onRender();
+  }
 
-    // return nothing
   return typeRT();
 }
 
@@ -141,4 +105,3 @@ std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>
 
   return m_node_factory_list;
 }
-

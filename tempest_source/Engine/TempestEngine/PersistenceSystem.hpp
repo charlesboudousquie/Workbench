@@ -18,6 +18,8 @@
 #include "SceneManagement/SceneSystem.hpp"
 #include <Reflection.hpp>
 
+#include "Message.hpp"
+
 //========Forward Deceleration==========================================================//
 class jsonSerialization;
 

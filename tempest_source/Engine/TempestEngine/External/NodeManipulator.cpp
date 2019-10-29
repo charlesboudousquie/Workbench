@@ -10,10 +10,11 @@
 #include "NodeManipulator.hpp"
 #include "../Nodes/NodeFactory.hpp"
 
-#include "BehaviorTreeManager.hpp"
-
 nodeManipulator::nodeManipulator(engine* p_engine, systemManagerInterface* p_system_manager) : m_engine(p_engine), m_system_manager(p_system_manager)
-{}
+{
+
+}
+
 
 typeRT nodeManipulator::createRenderedNode(const std::pair<std::string, std::string> & p_node_type)
 {
@@ -28,11 +29,3 @@ std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>
 {
   return NodeFactory::getNodeDefinitions();
 }
-
-
-
-
-
-
-
-

@@ -48,7 +48,6 @@ target_link_libraries(AudioTool
     PRIVATE Configuration
     PRIVATE AudioEngine
     PRIVATE ${GLFW_LIBNAME}
-    PRIVATE EventCore
 )
 
 if(UNIX)

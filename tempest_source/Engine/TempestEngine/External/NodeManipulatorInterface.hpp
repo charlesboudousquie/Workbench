@@ -20,5 +20,4 @@ public:
   virtual std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> getNodeDefinitions() = 0;
 
   virtual typeRT createRenderedNode(const std::pair<std::string, std::string> & p_node_type) = 0;
-
 };

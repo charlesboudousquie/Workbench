@@ -27,6 +27,5 @@ class assetManipulatorInterface
 public:
     virtual const std::vector<std::wstring> & assetList() = 0;
     virtual std::string stringFromWide(const std::wstring& p_convert) = 0;
-    virtual void reloadAssets() = 0;
 };
 

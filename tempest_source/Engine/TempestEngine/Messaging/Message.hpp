@@ -13,6 +13,7 @@
 //========3rd Party Includes============================================================//
 #include <functional>
 #include <string>
+#include "EventBase.hpp"
 
 //========Forward declarations==========================================================//
 //struct message;
@@ -28,7 +29,7 @@
 \brief   This is an envelope for containing a message, the source and destination and its result.
 *****************************************************************************************/
 //template <typename T>
-struct message
+struct message: public EventSystem3::EventBase
 {
 	////////========================================================================////////
 	////////   Public                                                               ////////

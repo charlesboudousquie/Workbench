@@ -2,7 +2,7 @@
 \file       InspectorRenderer.cpp
 \author     Aaron Damyen
 \date       3/3/2019
-\copyright  All content ï¿½ 2018-2019 DigiPen (USA) Corporation, all rights reserved.
+\copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
 \brief  This is the interface for the renderer for the inspector window
 *****************************************************************************************/
@@ -25,25 +25,24 @@
 #include <Color4Serialization.hpp>
 #include <EngineRunner.hpp>
 #include <Engine.hpp>
-#include "EditorObject.hpp"
+
 
 #include "UndoRedo.hpp"
 #include "ObjectCommand.hpp"
 
-
-Editor::inspectorRenderer::inspectorRenderer(editorWindow * p_parent_window)
-	: renderableBase(p_parent_window), m_inside_special_renderer(false)
+Editor::inspectorRenderer::inspectorRenderer(editorWindow * p_parent_window, engineController * p_engine_controller, hierarchySelectionKeeper * p_selection, styleKeeper * p_styles)
+	: renderableBase(p_parent_window), m_engine_controller{p_engine_controller}, m_selection{ p_selection }, m_styles{ p_styles }, m_inside_special_renderer(false)
 {
 	m_remove_handler = [](std::string p_component_name) { /* do nothing */ };
 
-	getStyleKeeper().setStyle("*", "id", "readonly", 1);
-  getStyleKeeper().setStyle("*", "subType", "readonly", 1);
+	m_styles->setStyle("*", "id", "readonly", 1);
+  m_styles->setStyle("*", "subType", "readonly", 1);
 
   //Special Renderers
-  m_component_renderers["class button"] = new buttonRenderer(p_parent_window);
-  m_component_renderers["class rigidBody"] = new rigidBodyRenderer(p_parent_window);
-  m_component_renderers["class renderer"] = new rendererRenderer(p_parent_window);
-  m_component_renderers["class inputComponent"] = new inputRenderer(p_parent_window);
+  m_component_renderers["class button"] = new buttonRenderer(p_parent_window, p_parent_window->getEditorState(), p_engine_controller, p_styles, p_selection);
+  m_component_renderers["class rigidBody"] = new rigidBodyRenderer(p_parent_window, p_parent_window->getEditorState(), p_engine_controller, p_styles, p_selection);
+  m_component_renderers["class renderer"] = new rendererRenderer(p_parent_window, p_parent_window->getEditorState(), p_engine_controller, p_styles, p_selection);
+  m_component_renderers["class inputComponent"] = new inputRenderer(p_parent_window, p_parent_window->getEditorState(), p_engine_controller, p_styles, p_selection);
 }
 
 Editor::inspectorRenderer::~inspectorRenderer()
@@ -72,98 +71,69 @@ void Editor::inspectorRenderer::setRemoveHandler(std::function<void(std::string)
 	m_remove_handler = p_function;
 }
 
-bool Editor::inspectorRenderer::renderGameObject(typeRT & p_type_data, objID p_editor_object_id)
+bool Editor::inspectorRenderer::renderGameObject(typeRT & p_type_data)
 {
   EditorLogger & l_log = getLogger();
-
-  EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
-  EditorObject * l_editor_object = l_editor_object_manager.getEditorObject(p_editor_object_id);
-
-  if (getSelectionKeeper().isGameObjectSelected())
+  if (m_selection->isGameObjectSelected())
   {
-    std::string l_name(getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->getObjectName(getSelectionKeeper().getSelectionId()));
+    std::string l_name(m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->getObjectName(m_selection->getSelectionId()));
     //Max length for gameObjectName
     l_name.reserve(40);
 
+    // create command for undo redo operations
+    CommandPtr command = std::make_shared<ObjectDataChangeCommand>();
+    command->Init(m_engine_controller, m_selection->getSelectionId());
+
     if (ImGui::InputText("<- Name", &l_name, ImGuiInputTextFlags_EnterReturnsTrue))
     {
-      // create command for undo redo operations
-      CommandPtr command = std::make_shared<ObjectDataChangeCommand>();
-      command->Init(&getEngineController(), l_editor_object);
-
-      auto l_selection_keeper = getSelectionKeeper();
-
-      l_log.AddLog("[EDITOR] Game Object: %s name changed to: %s.\n", getSelectionKeeper().getSelectionName().c_str(), l_name.c_str());
-      getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->setGameObjectName(l_selection_keeper.getSelectionId(), std::string(l_name.c_str()));
-
-      //Ask for typeRT from engine to override ours
-      typeRT l_new_data = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->getTypeRT(l_selection_keeper.getSelectionId());
-      l_editor_object->setData(l_new_data);
-    
+      l_log.AddLog("[EDITOR] Game Object: %s name changed to: %s.\n", m_selection->getSelectionName().c_str(), l_name.c_str());
+<<<<<<< HEAD
+      m_engine_controller->getEngine()->getSceneManipulator().lock()->setGameObjectName(m_selection->getSelectionId(), std::string(l_name.c_str()));
+      
       // record change in game object's name
       command->Record();
-      UndoRedoManager::GetInstance().RecordState(command, &getEngineController());
+      UndoRedoManager::GetInstance().RecordState(command, m_engine_controller);
+=======
+      m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->setGameObjectName(m_selection->getSelectionId(), std::string(l_name.c_str()));
+>>>>>>> master
     }
 
     // create command to record change done to object inside inspector
     CommandPtr command2 = std::make_shared<ObjectDataChangeCommand>();
-    command2->Init(&getEngineController(), l_editor_object);
-    bool ObjectChanged = render("*", p_type_data, p_editor_object_id);
+    command2->Init(m_engine_controller, m_selection->getSelectionId());
+    bool ObjectChanged = render("*", p_type_data);
     // if object changed and it is actually 
-    if (ObjectChanged == true && getSelectionKeeper().isGameObjectSelected())
+    if (ObjectChanged == true && m_selection->isGameObjectSelected())
     {
         command2->Record();
-        UndoRedoManager::GetInstance().RecordState(command2, &getEngineController());
+        UndoRedoManager::GetInstance().RecordState(command2, m_engine_controller);
     }
 
     return ObjectChanged;
 
   }
-
-  return false;
-}
-
-bool Editor::inspectorRenderer::renderScene(typeRT& p_type_data, objID p_editor_object)
-{
-  EditorLogger & l_log = getLogger();
-
-  bool l_object_changed = render("*", p_type_data, p_editor_object);
-
-  return l_object_changed;
-}
-
-bool Editor::inspectorRenderer::renderSpace(typeRT& p_type_data, objID p_editor_object)
-{
-  EditorLogger & l_log = getLogger();
-
-  bool l_object_changed = render("*", p_type_data, p_editor_object);
-
-  return l_object_changed;
 }
 
 void Editor::inspectorRenderer::beginStyle(const std::string& p_current_component_type, const std::string& p_variable_name)
 {
-	unsigned int l_disabled = getStyleKeeper().getStyle(p_current_component_type, p_variable_name, "readonly");
+	unsigned int l_disabled = m_styles->getStyle(p_current_component_type, p_variable_name, "readonly");
 	if(l_disabled == 1)
 		startDisabled();
 }
 
 void Editor::inspectorRenderer::endStyle(const std::string& p_current_component_type, const std::string& p_variable_name)
 {
-	unsigned int l_disabled = getStyleKeeper().getStyle(p_current_component_type, p_variable_name, "readonly");
+	unsigned int l_disabled = m_styles->getStyle(p_current_component_type, p_variable_name, "readonly");
 	if (l_disabled == 1)
 		endDisabled();
 }
 
-bool Editor::inspectorRenderer::render(const std::string & p_current_component_type, typeRT & p_type_data, objID p_editor_object)
+bool Editor::inspectorRenderer::render(const std::string & p_current_component_type, typeRT & p_type_data)
 {
 	bool l_changed = false;
   Editor::EditorLogger & l_log = getLogger();
 
-  auto l_scene_manipulator = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock();
-
-  EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
-  EditorObject * l_editor_object = l_editor_object_manager.getEditorObject(p_editor_object);
+  auto sceneManip = m_engine_controller->getEngine()->getSceneManipulator().lock();
 
 	if (p_type_data.getTypeName() == "bool")
 	{
@@ -269,11 +239,9 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 	{
 		for (auto & member : p_type_data.members())
 		{
-			if (render(p_current_component_type, member.second, p_editor_object))
+			if (render(p_current_component_type, member.second))
 			{
 				l_changed = true;
-
-        break;
 			}
 		}
 	}
@@ -426,11 +394,8 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 	{
 		for (auto & l_component : p_type_data.array())
 		{
-			if (render(p_current_component_type, l_component, p_editor_object))
-			{
-        l_changed = true;
-        break;
-			}
+			if (render(p_current_component_type, l_component))
+				l_changed = true;
 		}
 
     //Add Parent Code
@@ -438,26 +403,28 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
     std::string l_buffer;
     if (ImGui::InputText("Add Parent", &l_buffer, ImGuiInputTextFlags_EnterReturnsTrue))
     {
-      objID l_myID = getSelectionKeeper().getSelectionId();
+      objID l_myID = m_selection->getSelectionId();
 
       //Find the button with the given name
-      objID l_parent_id = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->getObjectID(std::string(l_buffer.c_str()));
+<<<<<<< HEAD
+      objID l_parent = sceneManip->getObjectID(std::string(l_buffer.c_str()));
 
-      if (l_parent_id != 0)
+      if (l_parent != 0)
       {
-        auto newCommand = std::make_shared<ObjectAddParentCommand>();
-        newCommand->Init(&getEngineController(), l_editor_object);
-        newCommand->SetParentID(l_parent_id);
+          auto newCommand = std::make_shared<ObjectAddParentCommand>();
+          newCommand->Init(m_engine_controller, m_selection->getSelectionId());
+          newCommand->SetParentID(l_parent);
 
-        l_scene_manipulator->addParentToGameObject(l_parent_id, l_myID);
+          sceneManip->addParentToGameObject(l_parent, l_myID);
 
-        //Ask for typeRT from engine to override parents new typeRT containing the child
-        typeRT l_new_data = l_scene_manipulator->getTypeRT(l_parent_id);
-        EditorObject * l_parent_object = l_editor_object_manager.getEditorObject(l_parent_id);
+          UndoRedoManager::GetInstance().RecordState(newCommand,m_engine_controller);
+=======
+      objID l_parent = m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->getObjectID(std::string(l_buffer.c_str()));
 
-        l_parent_object->setData(l_new_data);
-
-        UndoRedoManager::GetInstance().RecordState(newCommand, &getEngineController());
+      if (l_parent != 0)
+      {
+        m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->addParentToGameObject(l_parent, l_myID);
+>>>>>>> master
       }
       else
       {
@@ -468,26 +435,25 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
     //Remove Parent code
     if(ImGui::Button("Remove Parent"))
     {
-      objID l_parent_id = l_scene_manipulator->getParentID(getSelectionKeeper().getSelectionId());
+<<<<<<< HEAD
+        objID parentID = sceneManip->getParentID(m_selection->getSelectionId());
 
-      if (l_parent_id != 0)
-      {
-        auto newCommand = std::make_shared<ObjectRemoveParentCommand>();
-        newCommand->Init(&getEngineController(), l_editor_object);
-        // make sure parent ID is recorded
-        newCommand->SetParentID(l_scene_manipulator->getParentID(getSelectionKeeper().getSelectionId()));
+        if (parentID != 0)
+        {
+            auto newCommand = std::make_shared<ObjectRemoveParentCommand>();
+            newCommand->Init(m_engine_controller, m_selection->getSelectionId());
+            // make sure parent ID is recorded
+            newCommand->SetParentID(sceneManip->getParentID(m_selection->getSelectionId()));
 
-        l_log.AddLog("[EDITOR] Removed parent from object: %s.\n", getSelectionKeeper().getSelectionName().c_str());
-        l_scene_manipulator->removeParent(getSelectionKeeper().getSelectionId());
+            l_log.AddLog("[EDITOR] Removed parent from object: %s.\n", m_selection->getSelectionName().c_str());
+            sceneManip->removeParent(m_selection->getSelectionId());
 
-        //Ask for typeRT from engine to override parents new typeRT (now missing the child)
-        typeRT l_new_data = l_scene_manipulator->getTypeRT(l_parent_id);
-        EditorObject * l_parent_object = l_editor_object_manager.getEditorObject(l_parent_id);
-
-        l_parent_object->setData(l_new_data);
-
-        UndoRedoManager::GetInstance().RecordState(newCommand, &getEngineController());
-      }
+            UndoRedoManager::GetInstance().RecordState(newCommand, m_engine_controller);
+        }
+=======
+      l_log.AddLog("[EDITOR] Removed parent from object: %s.\n", m_selection->getSelectionName().c_str());
+      m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->removeParent(m_selection->getSelectionId());
+>>>>>>> master
     }
 
     //Move Space code
@@ -497,74 +463,57 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 
     if (ImGui::InputText("Move to Space", &l_space, ImGuiInputTextFlags_EnterReturnsTrue))
     {
-      auto moveCommand = std::make_shared<ObjectMoveToSpaceCommand>();
-      moveCommand->Init(&getEngineController(), l_editor_object);
+<<<<<<< HEAD
+        auto moveCommand = std::make_shared<ObjectMoveToSpaceCommand>();
+        moveCommand->Init(m_engine_controller, m_selection->getSelectionId());
 
-      //get old space id
-      objID l_old_space_id = l_scene_manipulator->getSpaceIDForObject(getSelectionKeeper().getSelectionId());
-      moveCommand->SetOldSpace(l_old_space_id);
+        //get old space id
+        objID oldSpace = sceneManip->getSpaceIDForObject(m_selection->getSelectionId());
+        moveCommand->SetOldSpace(oldSpace);
 
-      // get new space id
-      objID l_new_space_id = l_scene_manipulator->getSpaceIDFromName(l_space);
+        // get new space id
+        objID newSpace = sceneManip->getSpaceIDFromName(l_space);
 
-      if (l_new_space_id != 0)
-      {
-        moveCommand->SetNewSpace(l_new_space_id);
+        if (newSpace != 0)
+        {
+            moveCommand->SetNewSpace(newSpace);
 
-        //sceneManip->moveObjectToSpace(m_selection->getSelectionId(), std::string(l_space.c_str()));
-        l_scene_manipulator->moveObjectToSpace(getSelectionKeeper().getSelectionId(), l_new_space_id);
+            //sceneManip->moveObjectToSpace(m_selection->getSelectionId(), std::string(l_space.c_str()));
+            sceneManip->moveObjectToSpace(m_selection->getSelectionId(), newSpace);
 
-        //Need to ask engine for two new typeRTs, one for the old and one for the new space
-        typeRT l_old_space_data = l_scene_manipulator->getTypeRT(l_old_space_id);
-        typeRT l_new_space_data = l_scene_manipulator->getTypeRT(l_new_space_id);
-
-        EditorObject * l_old_space_object = l_editor_object_manager.getEditorObject(l_old_space_id);
-        EditorObject * l_new_space_object = l_editor_object_manager.getEditorObject(l_new_space_id);
-
-        l_old_space_object->setData(l_old_space_data);
-        l_new_space_object->setData(l_new_space_data);
-
-        UndoRedoManager::GetInstance().RecordState(moveCommand, &getEngineController());
-      }
+            UndoRedoManager::GetInstance().RecordState(moveCommand, m_engine_controller);
+        }
+=======
+      m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->moveObjectToSpace(m_selection->getSelectionId(), std::string(l_space.c_str()));
+>>>>>>> master
     }
 
     //Delete GameObject code
     if(ImGui::Button("Delete GameObject"))
     {
-      auto l_selection_keeper = getSelectionKeeper();
-      objID l_object_id = l_selection_keeper.getSelectionId();
+        auto deleteCommand = std::make_shared<ObjectDeleteCommand>();
+        deleteCommand->Init(m_engine_controller, m_selection->getSelectionId());
+        deleteCommand->SetObjectSelector(m_selection);
+        objID spaceID = m_engine_controller->getEngine()->getSceneManipulator().lock()->getSpaceIDForObject(m_selection->getSelectionId());
+        deleteCommand->SetSpace(spaceID);
 
-      auto deleteCommand = std::make_shared<ObjectDeleteCommand>();
-      deleteCommand->Init(&getEngineController(), l_editor_object);
-      deleteCommand->SetObjectSelector(&l_selection_keeper);
-      objID l_space_id = l_scene_manipulator->getSpaceIDForObject(l_object_id);
-      deleteCommand->SetSpace(l_space_id);
+      l_log.AddLog("[EDITOR] Deleted Game Object: %s.\n", m_selection->getSelectionName().c_str());
+      m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->removeGameObject(m_selection->getSelectionId());
+      m_selection->clearSelection();
 
-      l_log.AddLog("[EDITOR] Deleted Game Object: %s.\n", l_selection_keeper.getSelectionName().c_str());
-      l_scene_manipulator->removeGameObject(l_object_id);
-      getSelectionKeeper().clearSelection();
+      UndoRedoManager::GetInstance().RecordState(deleteCommand, m_engine_controller);
 
-      //Need to delete EditorObject of the same id
-      l_editor_object_manager.removeEditorObject(l_object_id);
-
-      //Need to get the new space data from engine (since its now missing an object)
-      typeRT l_space_data = l_scene_manipulator->getTypeRT(l_space_id);
-      EditorObject * l_space_object = l_editor_object_manager.getEditorObject(l_space_id);
-      l_space_object->setData(l_space_data);
-
-      UndoRedoManager::GetInstance().RecordState(deleteCommand, &getEngineController());
-
-      return true;
+      return false;
     }
 	}
 	else if (p_type_data.getTypeName() == p_type_data.getVariableName() && p_type_data.getTypeName() != "") // assume it is a component
 	{
-	  bool l_removed = false;
+	bool l_removed = false;
 		if (ImGui::TreeNode(p_type_data.getTypeName().c_str()))
 		{
 			if (p_type_data.getVariableName() == "class transform")
 			{
-				getTopWindow()->getGizmoRenderer().renderProperties();
+				getTopWindow()->getGizmoRenderer()->renderProperties();
 			}
 			else
 			{
@@ -572,7 +521,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
         auto l_componentRenderer = m_component_renderers.find(p_type_data.getVariableName());
         if (l_componentRenderer != m_component_renderers.end())
         {
-          l_changed = l_componentRenderer->second->render(p_type_data, p_editor_object);
+          l_changed = l_componentRenderer->second->render(p_type_data);
 
           m_inside_special_renderer = true;
           m_current_special_renderer = p_type_data.getVariableName();
@@ -596,69 +545,53 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
             }
           }
           //Try to render it as normal
-          if (render(p_type_data.getVariableName(), member.second, p_editor_object))
+          if (render(p_type_data.getVariableName(), member.second))
           {
             l_changed = true;
           }
         }
 
-        auto l_engine_runner = getEngineController().getEngineRunner()->getEngine()->getEngineMetadataManipulator();
+		
 				// engine will tell us if the component type is removable (if engine doesn't know, then we don't allow removal)
-				bool l_removable = l_engine_runner.lock()->hasComponentType(p_type_data.getTypeName())
-					&& l_engine_runner.lock()->getComponentType(p_type_data.getTypeName()).allowEditorRemove;
-
+				bool l_removable = m_engine_controller->getEngineRunner()->getEngine()->getEngineMetadataManipulator().lock()->hasComponentType(p_type_data.getTypeName())
+					&& m_engine_controller->getEngineRunner()->getEngine()->getEngineMetadataManipulator().lock()->getComponentType(p_type_data.getTypeName()).allowEditorRemove;
 				if (l_removable)
 				{
 					if (ImGui::Button("Remove"))
 					{
-            std::string l_variable_name = p_type_data.getVariableName();
-						m_remove_handler(l_variable_name);
-
-            //Need to get new typeRT from engine
-            typeRT l_new_data = l_scene_manipulator->getTypeRT(l_editor_object->getObjectID());
-            l_editor_object->setData(l_new_data);
+						m_remove_handler(p_type_data.getVariableName());
 
 						l_removed = true;
 
-            l_log.AddLog("[EDITOR] Removed component: %s\n from object: %s.\n", l_variable_name.c_str(), getSelectionKeeper().getSelectionName().c_str());
+            l_log.AddLog("[EDITOR] Removed component: %s\n from object: %s.\n", p_type_data.getVariableName().c_str(), m_selection->getSelectionName().c_str());
 					}
 				}
 			}
 			ImGui::TreePop();
 
 			if (l_removed)
-				return true;
+				return false;
 		}
 	}
 	else
 	{
-    auto l_selection_keeper = getSelectionKeeper();
-
-    if (l_selection_keeper.isSpaceSelected())
+    if (m_selection->isSpaceSelected())
     {
-      std::string l_name(l_scene_manipulator->getSpaceName(l_selection_keeper.getSelectionId()));
+      std::string l_name(m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->getSpaceName(m_selection->getSelectionId()));
       //Max length for space Name
       l_name.reserve(40);
 
       if (ImGui::InputText("<- Name", &l_name, ImGuiInputTextFlags_EnterReturnsTrue))
       {
-        l_log.AddLog("[EDITOR] Space: %s name changed to: %s.\n", l_selection_keeper.getSelectionName().c_str(), l_name.c_str());
-        l_scene_manipulator->setSpaceName(l_selection_keeper.getSelectionId(), std::string(l_name.c_str()));
-
-        //Need to get new typeRT from engine
-        typeRT l_new_data = l_scene_manipulator->getTypeRT(l_editor_object->getObjectID());
-        l_editor_object->setData(l_new_data);
+        l_log.AddLog("[EDITOR] Space: %s name changed to: %s.\n", m_selection->getSelectionName().c_str(), l_name.c_str());
+        m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->setSpaceName(m_selection->getSelectionId(), std::string(l_name.c_str()));
       }
 
       if(ImGui::Button("Delete Space"))
       {
-        l_log.AddLog("[EDITOR] Deleted Space: %s.\n", l_selection_keeper.getSelectionName().c_str());
-        l_scene_manipulator->deleteSpace(l_selection_keeper.getSelectionId());
-        l_selection_keeper.clearSelection();
-
-        //Need to delete associated Editor Object (us)
-        l_editor_object_manager.removeEditorObject(l_editor_object->getObjectID());
-
+        l_log.AddLog("[EDITOR] Deleted Space: %s.\n", m_selection->getSelectionName().c_str());
+        m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->deleteSpace(m_selection->getSelectionId());
+        m_selection->clearSelection();
         return false;
       }
 
@@ -674,20 +607,16 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
       }
       
     }
-    else if(l_selection_keeper.isSceneSelected())
+    else if(m_selection->isSceneSelected())
     {
-      std::string l_name(l_scene_manipulator->getSceneName(l_selection_keeper.getSelectionId()));
+      std::string l_name(m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->getSceneName(m_selection->getSelectionId()));
       //Max length for scene Name
       l_name.reserve(40);
 
       if (ImGui::InputText("<- Name", &l_name, ImGuiInputTextFlags_EnterReturnsTrue))
       {
-        l_log.AddLog("[EDITOR] Scene: %s name changed to: %s.\n", l_selection_keeper.getSelectionName().c_str(), l_name.c_str());
-        l_scene_manipulator->setSceneName(l_selection_keeper.getSelectionId(), std::string(l_name.c_str()));
-
-        //Need to get new typeRT from engine
-        typeRT l_new_data = l_scene_manipulator->getTypeRT(l_editor_object->getObjectID());
-        l_editor_object->setData(l_new_data);
+        l_log.AddLog("[EDITOR] Scene: %s name changed to: %s.\n", m_selection->getSelectionName().c_str(), l_name.c_str());
+        m_engine_controller->getEngineRunner()->getEngine()->getSceneManipulator().lock()->setSceneName(m_selection->getSelectionId(), std::string(l_name.c_str()));
       }
     }
     else

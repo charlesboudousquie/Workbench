@@ -27,12 +27,12 @@
 #include <filesystem>
 #include <vector>
 #include <stdexcept>
-#include "../Messaging/MessagingSystem.hpp"
 #include "../Components/Renderer.hpp"
 #include "../Components/Camera.hpp"
 #include "../Components/Skybox.hpp"
 #include "../Components/Light.hpp"
 #include <algorithm>
+#include "EventBus.hpp"
 
 ////////==========================================================================////////
 ////////  Class(sceneSystem)                                                      ////////
@@ -98,7 +98,7 @@ void sceneSystem::reset()
   l_light_comp->setDiffuseColor(color(1.0f, 1.0f, 1.0f));
   componentHandle<light> l_light = l_light_object->getComponent<light>();
   l_light->setIntensity(1.5f);
-	
+
     //l_camera_object->addComponent(new renderer(primitiveType::enm_cube, programType::enm_forward));
 
 	//l_camera_object->addComponent(new renderer(primitiveType::enm_cube, programType::enm_forward));
@@ -158,17 +158,14 @@ void sceneSystem::onUpdate()
 
 void sceneSystem::setmCurrentScene(std::shared_ptr<scene> p_new_scene)
 {
-	getSystemManager()->getSystem<eventSystem>()->QueueEvent(new levelUnloadEvent(m_current_scene));
-	getSystemManager()->getSystem<eventSystem>()->onUpdate();
+    EVENT_BUS.fire(new levelUnloadEvent(m_current_scene), nullptr, true);
 	m_current_scene = p_new_scene;
-	getSystemManager()->getSystem<eventSystem>()->QueueEvent(new levelLoadEvent(m_current_scene));
-	getSystemManager()->getSystem<eventSystem>()->onUpdate();
+    EVENT_BUS.fire(new levelLoadEvent(m_current_scene), nullptr, true);
 }
 
 void sceneSystem::resetmCurrentScene()
 {
-	getSystemManager()->getSystem<eventSystem>()->QueueEvent(new levelUnloadEvent(m_current_scene));
-	getSystemManager()->getSystem<eventSystem>()->onUpdate();
+    EVENT_BUS.fire(new levelUnloadEvent(m_current_scene), this, true);
 	m_current_scene.reset();
 }
 

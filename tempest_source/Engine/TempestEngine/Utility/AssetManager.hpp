@@ -212,13 +212,6 @@ public:
 	\brief initialize the asset manager, searches asset path for loadable assets
 	*****************************************************************************************/
 	static void init(const std::string & p_asset_path);
-
-    /*!***************************************************************************************
-    \brief refreshes asset list using the current asset path
-    *****************************************************************************************/
-    static void reload();
-
-
 	/*!***************************************************************************************
 	\brief shutdown the asset manager, unloads ALL ASSETS
 	*****************************************************************************************/
@@ -238,21 +231,11 @@ public:
 	\param p_asset asset to unload
 	*****************************************************************************************/
 	static void unloadAsset(asset& p_asset);
-
 	/*!***************************************************************************************
 	\brief gets a list of all asset names in the asset directory and subdirectories
 	\return wide string vector of asset names (with path relative to asset directory)
 	*****************************************************************************************/
 	static const std::vector<std::wstring>& assetList();
-
-    /*!***************************************************************************************
-    \brief gets a list of all asset names in the asset directory and subdirectories
-           that have a specific file extension
-    \param fileExtensionFilter - string filter to remove file with said extension from returned list
-    \return string vector of asset names (with path relative to asset directory)
-    *****************************************************************************************/
-    static std::vector<std::string> assetList(std::string fileExtensionFilter);
-
 	/*!***************************************************************************************
 	\brief gets an assetHandle
 	\param p_name name of asset
@@ -294,9 +277,6 @@ private:
 	static std::map<std::wstring, fileLoader*> m_typeToLoader; //!< filename extention to loader map
 	static fileLoader* m_fallbackLoader; //!< uses this loader if no fileLoader matches an extention in the map
 	static logger log; //!< logger
-
-    static std::string m_asset_path; //!< asset path we are currently using
-
 };
 
 //template functions

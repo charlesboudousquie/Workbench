@@ -45,12 +45,20 @@ namespace Editor
 
     void setDirty(bool p_dirty);
 
+    bool getNeedsUpdate() const { return m_needs_update; }
+
+    void setNeedsUpdate(bool p_needs_update);
+
+    const std::string & getObjectName() { return m_object_name; }
+
   private:
     EditorObjectType m_object_type;
     typeRT m_data;
     objID m_object_id;
+    std::string m_object_name;
 
     bool m_dirty;
+    bool m_needs_update;
   };
 }
 

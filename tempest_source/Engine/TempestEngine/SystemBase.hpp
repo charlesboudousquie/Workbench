@@ -14,6 +14,7 @@ within the engine.
 //======== 3rd Party Includes ==========================================================//
 #include <chrono>
 #include <string>
+#include "EventHandler.hpp"
 //#include <EventTemplate.hpp>
 //======== Types =======================================================================//
 
@@ -32,9 +33,11 @@ class preShutdownEvent;
 \par class: systemBase
 \brief   This is the base class for all engine systems.  Provides a common interface into the system.
 ***************************************************************************************/
-class systemBase
+class systemBase: public EventSystem3::EventHandler
 {
 	public:
+		systemBase();
+
 		/*!*******************************************************************************
 		\brief  Retrieves the type of component this instance is. SceneSystem requirement.
 		\return componentType - The type of this component.
@@ -102,6 +105,9 @@ class systemBase
 		*****************************************************************************************/
 		void updateDT(const HRC_time_point_t & p_current_time, float p_core_dt);
 
+		void handleLoadLevelEvent(levelLoadEvent & p_event);
+		void handleUnloadLevelEvent(levelUnloadEvent & p_event);
+		void handlePreShutdownEvent(preShutdownEvent & p_event);
 	protected:
 		/*!***************************************************************************************
 		\brief  Allows a system to specify it's own frame rate (default is 1/60 seconds)
@@ -117,7 +123,7 @@ class systemBase
 		/*!***************************************************************************************
 		\brief  Empty handling of the level loading message for systems that don't need to respond to it.
 		*****************************************************************************************/
-		virtual void onLevelLoad(const levelLoadEvent * /*p_event*/) {};
+		virtual void onLevelLoad(const levelLoadEvent & /*p_event*/) {};
 
 		/*!***************************************************************************************
 		\brief  Empty handling of the start frame message for systems that don't need to respond to it.
@@ -137,7 +143,7 @@ class systemBase
 		/*!***************************************************************************************
 		\brief  Empty handling of the level unloading message for systems that don't need to respond to it.
 		*****************************************************************************************/
-		virtual void onLevelUnload(const levelUnloadEvent * /*p_event*/) {};
+		virtual void onLevelUnload(const levelUnloadEvent & /*p_event*/) {};
 
 		/*!***************************************************************************************
 		\brief  Empty handling of the pre-shutdown message for systems that don't need to respond to it.
@@ -151,7 +157,7 @@ class systemBase
 		virtual void onShutdown();
 
 		/*!***************************************************************************************
-		\brief  Empty handling of the incoming message notification for systems that don't 
+		\brief  Empty handling of the incoming message notification for systems that don't
 		        need to respond to it.
 		*****************************************************************************************/
 		virtual void onHandleMessage(message & /*p_message*/) {}
@@ -164,13 +170,9 @@ class systemBase
 
 
 	private:
-						 
-		void setupEvents();
-		void teardownEvents();
-		void handleLoadLevelEvent(levelLoadEvent * p_event);
-		void handleUnloadLevelEvent(levelUnloadEvent * p_event);
-		void handlePreShutdownEvent(preShutdownEvent * p_event);
 
+		// void setupEvents();
+		// void teardownEvents();
 
 		systemManagerInterface* m_system_manager = nullptr; //!< System manager that owns this
 

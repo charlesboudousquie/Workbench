@@ -38,7 +38,7 @@ public:
 	void onStart() override;
 	void onUpdate() override;
 
-	void HandleEvent(testEvent* ThisEvent);
+	void HandleEvent(testEvent& ThisEvent);
 
 	//////==============================================================================//////
 	//////    (Non-)Static                                                              //////

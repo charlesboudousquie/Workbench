@@ -19,6 +19,8 @@ add_executable(UnitTests
     Vector2Tests.cpp
     Vector3Tests.cpp
     Vector4Tests.cpp
+    EventSystemTests.cpp
+    ZipTests.cpp
     )
 
 target_link_libraries(UnitTests
@@ -29,6 +31,7 @@ target_link_libraries(UnitTests
     PRIVATE MathSerialization
     PRIVATE TempestEngine
     PRIVATE BulletDynamics
+    PRIVATE EventSystem
 )
 
 # build up resources list

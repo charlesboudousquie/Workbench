@@ -10,7 +10,6 @@
 //========Self Include==================================================================//
 #include "InputComponent.hpp"
 #include "../Input/InputSystem.hpp"
-#include "../Messaging/MessageQueue.hpp"
 #include <algorithm>
 #include "../SceneManagement/GameObject.hpp"
 //========1st Party Includes============================================================//
@@ -424,7 +423,7 @@ void inputComponent::updateFromTypeRT(typeRT& p_type)
 		{
 			unsigned int scancode = l_entry.member("scancode").getUInt();
 			std::string name = l_entry.member("name").getString();
-			
+
 			addButtonMapping(scancode, name);
 			// scancodeToNameMap.insert_or_assign(scancode, name);
 			// nameToStatusMap.insert_or_assign(name, false);
@@ -505,7 +504,7 @@ bool inputComponent::getButtonState(std::string const& p_name)
 	}
 	else
 	{
-		
+
 	}
 	if(gpb != gamepadNameToStatusMap.end())
 	{

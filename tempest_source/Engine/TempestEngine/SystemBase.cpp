@@ -10,17 +10,22 @@
 #include "SystemBase.hpp"
 //======== 1st Party Includes ==========================================================//
 #include "SystemManagement/SystemManagerInterface.hpp"
-#include "Events/EventSystem.hpp"
+// #include "Events/EventSystem.hpp"
 #include "SceneManagement/SceneSystem.hpp"
 //======== 3rd Party Includes ==========================================================//
 #include <Logger.hpp>
 #include <typeindex>
 #include <thread>
 
-#include <EventTemplate.hpp>
+#include "Message.hpp"
+
+// #include <EventTemplate.hpp>
+#include "EventBase.hpp"
+#include "EventBus.hpp"
+#include "EventSubscribe.hpp"
 
 //======== Types =======================================================================//
-class preShutdownEvent : public EventTemplate<preShutdownEvent>
+class preShutdownEvent : public EventSystem3::EventBase
 {};
 
 //======== Defines =====================================================================//
@@ -34,12 +39,15 @@ class preShutdownEvent : public EventTemplate<preShutdownEvent>
 
 //======== Functionality ===============================================================//
 
+systemBase::systemBase(): EventHandler("systemBase") {
+    EH_INITIALIZE();
+}
+
 void systemBase::initialize(systemManagerInterface *p_system_manager)
 {
 	if (m_state != systemState::enm_Uninitialized)
 		logger("systemBase").error() << "Initializing a system that is already initialized: " << this->name();
 	m_system_manager = p_system_manager;
-	setupEvents();
 	onInitialize();
 	m_state = systemState::enm_Running;
 	updateDT(std::chrono::high_resolution_clock::now(), 0.0f);  // pump dt to clear out old initial value
@@ -73,7 +81,6 @@ void systemBase::shutdown()
 {
 	if(m_state != systemState::enm_Running)
 		logger("SystemBase").error() << "Shutting down " << this->name() << " on thread " << std::this_thread::get_id();
-	teardownEvents();
 	onShutdown();
 	m_state = systemState::enm_Uninitialized;
 	//logger("SystemBase").warn("System Shutdown!!!");
@@ -83,6 +90,7 @@ void systemBase::handleMessage(message& p_message)
 {
 	onHandleMessage(p_message);
 }
+SUBSCRIBE(message, &systemBase::handleMessage, EHCLASS(systemBase),);
 
 systemBase::systemState systemBase::getState()
 {
@@ -127,34 +135,25 @@ void systemBase::setDesiredFrameTime(float p_frame_time)
 	m_desired_frame_time = p_frame_time;
 }
 
-void systemBase::setupEvents()
+void systemBase::handleLoadLevelEvent(levelLoadEvent& p_event)
 {
-	auto l_event_sys = getSystemManager()->getSystem<eventSystem>();
-	if (l_event_sys)
-	{
-		l_event_sys->RegisterEventCallback<systemBase, levelLoadEvent, &systemBase::handleLoadLevelEvent>(this);
-		l_event_sys->RegisterEventCallback<systemBase, levelUnloadEvent, &systemBase::handleUnloadLevelEvent>(this);
-		l_event_sys->RegisterEventCallback<systemBase, preShutdownEvent, &systemBase::handlePreShutdownEvent>(this);
-	}
+	if(m_state == systemState::enm_Running)
+		onLevelLoad(p_event);
 }
+SUBSCRIBE(levelLoadEvent, &systemBase::handleLoadLevelEvent, EHCLASS(systemBase),);
 
-void systemBase::teardownEvents()
+void systemBase::handleUnloadLevelEvent(levelUnloadEvent& p_event)
 {
+	if(m_state == systemState::enm_Running)
+		onLevelUnload(p_event);
 }
+SUBSCRIBE(levelUnloadEvent, &systemBase::handleUnloadLevelEvent, EHCLASS(systemBase),);
 
-void systemBase::handleLoadLevelEvent(levelLoadEvent* p_event)
+void systemBase::handlePreShutdownEvent(preShutdownEvent& /*p_event*/)
 {
-	onLevelLoad(p_event);
+	if(m_state == systemState::enm_Running)
+		onPreShutdown();
 }
-
-void systemBase::handleUnloadLevelEvent(levelUnloadEvent* p_event)
-{
-	onLevelUnload(p_event);
-}
-
-void systemBase::handlePreShutdownEvent(preShutdownEvent* /*p_event*/)
-{
-	onPreShutdown();
-}
+SUBSCRIBE(preShutdownEvent, &systemBase::handlePreShutdownEvent, EHCLASS(systemBase),);
 
 //======== Helper Functions ============================================================//

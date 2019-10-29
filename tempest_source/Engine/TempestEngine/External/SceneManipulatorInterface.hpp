@@ -82,5 +82,6 @@ public:
   virtual void dynamicWaypointGraphStitchPaths() = 0;
   virtual void dynamicWaypointGraphClear() = 0;
   virtual void dynamicWaypointGraphDeleteRandomNodeSet() = 0;
+  virtual void dynamicWaypointGraphTestFunction() = 0;
 };
 

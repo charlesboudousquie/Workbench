@@ -4,7 +4,7 @@
 \date       10/29/2018
 \copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
-\brief 
+\brief
 ************************************************************************************************************/
 //========  Self Include  =================================================================================//
 #include "UISystem.hpp"
@@ -338,7 +338,7 @@ void uiSystem::onUpdate()
     //Get the current button position
     const vector3 l_buttonPosition = l_transform->getPosition();
     const vector3 l_buttonScale = l_transform->getScale();
-    //Test if the mouse is inside the button rectangle 
+    //Test if the mouse is inside the button rectangle
     if(isInsideRectangle(l_buttonPosition, l_buttonScale, l_mousePosition))
     {
       //Set pressed to true
@@ -352,7 +352,7 @@ void uiSystem::onUpdate()
 
 }
 
-void uiSystem::onLevelLoad(const levelLoadEvent * /*p_event*/)
+void uiSystem::onLevelLoad(const levelLoadEvent & /*p_event*/)
 {
   if(!m_init)
   {
@@ -374,7 +374,7 @@ void uiSystem::onLevelLoad(const levelLoadEvent * /*p_event*/)
     l_space->dontDeleteOnLoad();
     //Create the uiGameObject that will handle input
     std::shared_ptr<gameObject> l_uiFramework = l_space->instantiateGameObject();
-    //Create the input component 
+    //Create the input component
     componentHandle<inputComponent> l_input_component = l_uiFramework->addComponent<inputComponent>();
     //Mouse & Keyboard controls
     l_input_component->addButtonMapping('i', "up");
@@ -406,7 +406,7 @@ void uiSystem::onLevelLoad(const levelLoadEvent * /*p_event*/)
   resetCurrentButton();
 }
 
-void uiSystem::onLevelUnload(const levelUnloadEvent * /*p_event*/)
+void uiSystem::onLevelUnload(const levelUnloadEvent & /*p_event*/)
 {
   //cleanListOfButtons();
   m_init = false;
@@ -428,7 +428,7 @@ void uiSystem::addButton(button * p_button)
       //TODO: When this code is able to be merged in (MovingBetweenScenes) has the code
       /*if(p_button->isSelectable())
       {
-        
+
       }*/
       m_currentSelectedButton = l_newButtonID;
     }
@@ -519,7 +519,7 @@ void uiSystem::updateListOfButtons()
 {
   //Get the system manager
   systemManagerInterface * l_system = getSystemManager();
-  //Get all game objects with button components 
+  //Get all game objects with button components
   GameObjectFiltering::componentTypeSet l_set;
   l_set.setType(button::getType());
   auto l_list = l_system->getGameObjectGatherer()->getList(l_set);
@@ -554,7 +554,7 @@ bool uiSystem::isInsideRectangle(const vector3 & p_center, const vector3 & p_sca
 	vector2 l_AB;//				B																	A
 	l_AB.x = static_cast<float>((p_center.x + (p_scale.x / 2.0f)) - (p_center.x + (p_scale.x / 2.0f)));
 	l_AB.y = static_cast<float>((p_center.y + (p_scale.y / 2.0f)) - (p_center.y - (p_scale.y / 2.0f)));
-	
+
 	vector2 l_BC;//				C																	B
 	l_BC.x = static_cast<float>((p_center.x - (p_scale.x / 2.0f)) - (p_center.x + (p_scale.x / 2.0f)));
 	l_BC.y = static_cast<float>((p_center.y + (p_scale.y / 2.0f)) - (p_center.y + (p_scale.y / 2.0f)));

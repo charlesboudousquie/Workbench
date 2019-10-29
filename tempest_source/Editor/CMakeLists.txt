@@ -10,10 +10,6 @@ if(UNIX)
 endif()
 
 add_executable(Editor WIN32
-  
-
-
-    
     AnimatorRenderer.hpp AnimatorRenderer.cpp
     CSVParser.hpp CSVParser.cpp
     DataSelect.hpp DataSelect.cpp
@@ -46,15 +42,10 @@ add_executable(Editor WIN32
     Components/RendererRenderer.hpp Components/RendererRenderer.cpp
     Components/RigidBodyRenderer.h Components/RigidBodyRenderer.cpp
     Components/SampleRenderer.hpp Components/SampleRenderer.cpp
-    Components/AgentRenderer.hpp Components/AgentRenderer.cpp
 
     NodeGraph/NodeGraphWindow.hpp NodeGraph/NodeGraphWindow.cpp
     NodeGraph/NodeManager.hpp NodeGraph/NodeManager.cpp
     NodeGraph/EditorNode.hpp NodeGraph/EditorNode.cpp
-
-    NodeGraph/GraphTypeSelector.hpp NodeGraph/GraphTypeSelector.cpp
-    NodeGraph/AgentMenuSelection.hpp NodeGraph/AgentMenuSelection.cpp
-    NodeGraph/NGE_Watchdog.hpp NodeGraph/NGE_Watchdog.cpp
 
     Renderers/GizmoRenderer.hpp Renderers/GizmoRenderer.cpp
     Renderers/ToggleButton.hpp Renderers/ToggleButton.cpp
@@ -66,11 +57,16 @@ add_executable(Editor WIN32
     EditorInput.hpp EditorInput.cpp
     ObjectCommand.hpp ObjectCommand.cpp
     Command.hpp Command.cpp
+    #EditorEvent.hpp EditorEvent.cpp
+    #EditorEventSystem.hpp EditorEventSystem.cpp
+    #EventHandler.hpp
+    #UndoRedoEventHandler.hpp UndoRedoEventHandler.cpp
     )
 
 target_include_directories(Editor
     PRIVATE TempestEngine
     PRIVATE ImGui
+    PRIVATE ${LinuxWinDefs_INCLUDES}
 	PRIVATE ${RapidJSON_INCLUDE_DIRS}
 )
 
@@ -98,6 +94,7 @@ target_link_libraries(Editor
     PRIVATE ImGui_Stdlib
     PRIVATE ImGui_OpenGL3_GLFW_GLEW
     PRIVATE BulletDynamics
+    PRIVATE EventSystem
 )
 
 # build up resources list

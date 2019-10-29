@@ -14,13 +14,14 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include "Color4.hpp"
+#include "Color4Serialization.hpp"
 
-#include <iostream>
 const float c_field_width = 75.0f; //units = pixels
+const float c_scale_per_data = 25.5f; //How many pixels to increase the scale of node by per data value
 
 
 EditorNode::EditorNode() : m_id(0), m_depth(0), m_name(""), m_class_name(""), m_type_name(""), m_inputs(0), m_outputs(0), m_num_children(0), m_num_parents(0),
-m_position(0.0f, 0.0f), m_scale(190.0f, 90.0f), m_color(0.0f, 0.0f, 0.0f, 17.0f), m_active(false)
+m_position(0.0f, 0.0f), m_scale(190.0f, 90.0f), m_zoom_scalar(1.0f), m_color(0.0f, 0.0f, 0.0f, 17.0f), m_active(false)
 {
 
 }
@@ -37,29 +38,42 @@ void EditorNode::enableModifications()
   ImGui::PopStyleVar();
 }
 
-void EditorNode::render(bool p_engine_active)
+void EditorNode::render(bool p_engine_active, const ImVec2 & p_render_position)
 {
   bool l_changed = false;
 
   //Get a copy in case we change it
   typeRT l_type_data = m_render_data;
 
-  auto l_members = l_type_data.members();
+  auto & l_members = l_type_data.members();
 
   ImGui::BeginGroup(); // Lock horizontal position
 
+  ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.00f, 1.00f, 1.00f, 1.00f));
+
   if(l_members.find("Node Render Data") != l_members.end())
   {
-    typeRT l_node_render_data = l_type_data.member("Node Render Data");
+    typeRT & l_node_render_data = l_type_data.member("Node Render Data");
+
+    float l_current_render_scale = 0.0f;
+
+    //TODO: Remove this once we don't render the node id
+    l_current_render_scale += c_scale_per_data;
 
     for (auto & i_member : l_node_render_data.members())
     {
+      //If we would go over the scale.y, don't render this data value
+      if (l_current_render_scale > getScaleAfterZoom().y)
+      {
+        continue;
+      }
+
       typeRT & l_member = i_member.second;
 
       if (p_engine_active)
         disableModifications();
 
-      ImGui::PushItemWidth(c_field_width);
+      ImGui::PushItemWidth(c_field_width * m_zoom_scalar);
 
       if (l_member.getTypeName() == "bool")
       {
@@ -147,6 +161,8 @@ void EditorNode::render(bool p_engine_active)
         }
       }
 
+      l_current_render_scale += c_scale_per_data;
+
       if (p_engine_active)
         enableModifications();
 
@@ -154,11 +170,22 @@ void EditorNode::render(bool p_engine_active)
     }
   }
 
-  std::string l_name = m_name;
-  l_name.append(": ");
-  l_name.append(std::to_string(m_id));
+  if(m_zoom_scalar < 0.6f)
+  {
+    std::string l_name = std::to_string(m_id);
 
-  ImGui::Text("%s", l_name.c_str());
+    ImGui::Text("%s", l_name.c_str());
+  }
+  else
+  {
+    std::string l_name = m_name;
+    l_name.append(": ");
+    l_name.append(std::to_string(m_id));
+
+    ImGui::Text("%s", l_name.c_str());
+  }
+
+  ImGui::PopStyleColor();
 
   ImGui::EndGroup();
 
@@ -171,17 +198,19 @@ void EditorNode::render(bool p_engine_active)
 
 ImVec2 EditorNode::GetInputSlotPos(int slot_no) const
 {
-  return ImVec2(m_position.x, m_position.y + m_scale.y * ((float)slot_no + 1) / ((float)m_inputs + 1));
+  return ImVec2(m_position.x, m_position.y + getScaleAfterZoom().y * ((float)slot_no + 1) / ((float)m_inputs + 1));
 }
 
 ImVec2 EditorNode::GetOutputSlotPos(int slot_no) const
-{ 
-  return ImVec2(m_position.x + m_scale.x, m_position.y + m_scale.y * ((float)slot_no + 1) / ((float)m_outputs + 1));
+{
+  return ImVec2(m_position.x + getScaleAfterZoom().x, m_position.y + getScaleAfterZoom().y * ((float)slot_no + 1) / ((float)m_outputs + 1));
 }
 
 void EditorNode::setRenderData(const typeRT & p_render_data)
 {
   m_render_data = p_render_data;
+
+  setScaleBasedOnData();
 
   auto l_members = m_render_data.members();
 
@@ -199,13 +228,13 @@ void EditorNode::setRenderData(const typeRT & p_render_data)
     {
       setOutputs(l_non_render_data.member("Outputs").getInt());
     }
-  }
+    if (l_non_render_members.find("color4") != l_non_render_members.end())
+    {
+      color4 l_color = toColor4(l_non_render_data.member("color4"));
 
-  if(l_members.find("Color") != l_members.end())
-  {
-    color4 l_color = *reinterpret_cast<color4*>(m_render_data.member("Color").getRawData());
+      setColor(ImVec4(l_color.x, l_color.y, l_color.z, l_color.w));
+    }
 
-    setColor(ImVec4(l_color.x, l_color.y, l_color.z, l_color.w));
   }
 }
 
@@ -224,6 +253,30 @@ void EditorNode::removeNodeLink(NodeLink p_link)
 
       return;
     }
+  }
+}
+
+void EditorNode::setScaleBasedOnData()
+{
+  auto l_members = m_render_data.members();
+
+  if (l_members.find("Node Render Data") != l_members.end())
+  {
+    typeRT & l_node_render_data = m_render_data.member("Node Render Data");
+
+    float l_num_data_members = 0.0f;
+
+    for (auto & i_member : l_node_render_data.members())
+    {
+      l_num_data_members += 1.0f;
+    }
+
+    //TODO: Remove this once we don't have to display the node id anymore
+    l_num_data_members += 1.0f;
+
+    const float l_scale_y = c_scale_per_data * l_num_data_members;
+
+    m_scale.y = l_scale_y;
   }
 }
 

@@ -15,6 +15,7 @@
 //======== 3rd Party Includes ==========================================================//
 #include <list>
 #include <Vector3.hpp>
+#include <queue>
 //======== Types =======================================================================//
 /*!***************************************************************************************
 \par struct: nodeConnection
@@ -29,11 +30,7 @@ struct nodeConnection
 	\param onObjectParameter_ - If the connection is on an object parameter
 	\param isValid_ - If the path is being blocked or not
 	*****************************************************************************************/
-	nodeConnection(componentHandle<waypointNode> firstNode_, componentHandle<waypointNode> secondNode_, bool onObjectParameter_ = false, bool isValid_ = true) :
-		firstNode(firstNode_), secondNode(secondNode_), onObjectParameter(onObjectParameter_), isValid(isValid_)
-	{
-		name = firstNode->debugName + " to " + secondNode->debugName;
-	}
+	nodeConnection(componentHandle<waypointNode> firstNode_, componentHandle<waypointNode> secondNode_, bool onObjectParameter_ = false, bool isValid_ = true);
 
 	/*!***************************************************************************************
 	\brief  Compares a node connection with another based only on if the connected nodes match
@@ -42,6 +39,7 @@ struct nodeConnection
 	*****************************************************************************************/
 	bool operator==(nodeConnection other) const;
 
+	//!<Name kept for debugging purposes
 	std::string name;
 
 	//!<First node in the connection
@@ -89,14 +87,6 @@ class dynamicWaypointGraph : public systemBase
 		*****************************************************************************************/
 		void handleNodeSetCreation(componentHandle<waypointNodeSet> newSet);
 
-		/*!***************************************************************************************
-		\brief  Obtains a path from the start to end using the waypoint graph
-		\param startPosition - The start of the path
-		\param endPosition - The end of the path
-		\return Returns the optimal path to be followed from start to end
-		*****************************************************************************************/
-		std::list<vector3> getPath(std::shared_ptr<gameObject> startObject, std::shared_ptr<gameObject> endObject);
-
 		//TEST FUNCTIONS - will be rewritten/reworked later
 		void createLevelPath();
 		void createNodeSetPaths();
@@ -108,6 +98,21 @@ class dynamicWaypointGraph : public systemBase
 	protected:
 
 	private:
+		/*!***************************************************************************************
+		\brief Given two waypoint nodes, stitches them into the waypoint graph
+		\param start - The start waypoint node
+		\param end - The end waypoint node
+		*****************************************************************************************/
+		void addPath(componentHandle<waypointNode> start, componentHandle<waypointNode> end);
+
+		/*!***************************************************************************************
+		\brief Given two positions, create nodes and stitch them into the graph
+		\param start - The position of one node
+		\param end - The position of the other node
+		\return The two nodes created, to be used with pathfinding
+		*****************************************************************************************/
+		std::pair<componentHandle<waypointNode>, componentHandle<waypointNode>> handlePathRequest(vector3 start, vector3 end);
+
 		/*!***************************************************************************************
 		\brief  Handles disabling all connections with a given node
 		\param n - The node to invalidate connections to
@@ -208,8 +213,17 @@ class dynamicWaypointGraph : public systemBase
 		\param isObjectPath - If this object is 
 		\return The new node connection
 		*****************************************************************************************/
-		nodeConnection connectNodes(componentHandle<waypointNode> a, componentHandle<waypointNode> b,
-									bool isObjectPath = false, bool isValid = true);
+		nodeConnection connectNodesWithConnection(componentHandle<waypointNode> a, componentHandle<waypointNode> b,
+												  bool isObjectPath = false, bool isValid = true);
+
+
+		/*!***************************************************************************************
+		\brief  Tells two nodes they are connected, without creating a nodeConnection
+		\param a - The first node to connect
+		\param b - The second node to connect
+		\param sharesParameter - If the two objects are on the same parameter or not
+		*****************************************************************************************/
+		void connectNodes(componentHandle<waypointNode> a, componentHandle<waypointNode> b, bool sharesParameter);
 
 		/*!***************************************************************************************
 		\brief  Handles creation of a single waypoint node set
@@ -258,15 +272,42 @@ class dynamicWaypointGraph : public systemBase
 		void removeDebugLine(nodeConnection nc);
 		
 		/*!***************************************************************************************
-		\brief  Makes a node game object in the space given
+		\brief  Makes a node game object in the space given. Two exist because of how spaces are received
+				Getting space from gameobject gives space *, getting space from scene gives shared_ptr
 		\param s - The space of the node set to create the object
 		\param c - The color of the node. Default gray
 		\return Shared ptr to the new node
 		*****************************************************************************************/
-		std::shared_ptr<gameObject> makeNodeGameobject(space * s, std::string materialName = "solidred.mtl") const;
+		std::shared_ptr<gameObject> makeNodeGameobject(space * s, vector3 scale = vector3(1, 1, 1), std::string materialName = "solidred.mtl") const;
+
+		/*!***************************************************************************************
+		\brief  Helper function to remove a node from another nodes connections list
+		\param toRemoveFrom - The node to remove a connection from
+		\param toRemove - The node to look for in toRemoveFrom's connections list
+		*****************************************************************************************/
+		void removeNodeFromNodesConnections(componentHandle<waypointNode> toRemoveFrom, componentHandle<waypointNode> toRemove) const;
+
+		/*!***************************************************************************************
+		\brief  Helper function to get the closest intersection to a point from a list of intersections
+		\param position - The position to find the closest intersection to
+		\param intersections - The intersections to search through
+		\return The closest connection that was intersecting
+		*****************************************************************************************/
+		nodeConnection getClosestIntersection(vector3 position, std::list<intersection> intersections);
+
+		/*!***************************************************************************************
+		\brief  Helper function to get an object's parameter nodes (including merged node sets)
+		\param node - A node that is from the object's parameter
+		\return  List of all nodes in the object's parameter
+		*****************************************************************************************/
+		std::list<componentHandle<waypointNode>> getObjectParameterNodes(componentHandle<waypointNode> node);
+
+		bool doesIntersectSelf(std::list<componentHandle<waypointNode>> myObjectNodes, nodeConnection closestConnection);
 
 		//!<List of valid connections for path finding
 		std::list<nodeConnection> validConnections;
 		//!<List of currently invalid connections
 		std::list<nodeConnection> invalidConnections;
+
+		friend class waypointGraphPathfinder;
 };

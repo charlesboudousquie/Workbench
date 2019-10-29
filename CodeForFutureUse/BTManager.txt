@@ -6,37 +6,24 @@ new bug:
 
 
 
-problem:
- saving graph.bht.bht
- 
- places where name is edited
- 
- 1. saveGraph() // nodeGraphWindow.cpp
-       ".bht" is appended
- 2. onRender // agentRenderer
-    edits parentTree = whatever name is passed in
-    also displays list of BT files
-
-
-So how should this go?
-
-user should never have to type in ".bht"
-user should never see ".bht" on screen
-
-m_graph_name should NEVER have .bht extension
-
-
 
 places you have to edit when adding a new node
 {
-  BehaviorTreeBuilder --> constructor
+  BehaviorTreeBuilder --> constructor --> for creation of node
   
   Nodes.def in Samples/Assets/
   
-  NodeFactory.cpp
+  NodeFactory.cpp // onrender
 }
 
 
+objective:
+  modify timer node to read data from file for its max time.
+  
+  onrender is static so data saved to a particular node instance is
+  impossible right now.
+  
+  must modify nodeFactory
 
 
 
@@ -44,33 +31,106 @@ places you have to edit when adding a new node
 
 
 
-
-
-
-
-void findSubsetsSumMinDiff(int arr[], int n) 
+Timer
 {
-  Arrays.sort(arr);
-  int i=0, j=n-1;
-  int sum1=arr[i], sum2=arr[j];
-  ArrayList<integer> subSet1 = new ArrayList<integer>();
-  subSet1.add(arr[i]);
-  ArrayList<integer> subSet2 = new ArrayList<integer>();
-  subSet2.add(arr[j]);
-  while(j>i+1) 
-  {
 
-    if(sum1 == sum2) 
-    {
-      i++;
-      j--;
-      sum1 = sum1+arr[i];
-      sum2 = sum2+arr[j];
-      subSet1.add(arr[i]);
-      subSet2.add(arr[j]);
-    }
-    else if(sum1<sum2) 
-    {="" i++;="" subset1.add(arr[i]);="" sum1="sum1+arr[i];" }="" else="" {="" j--;="" subset2.add(arr[j]);="" sum2="sum2+arr[j];" }="" }="" system.out.println("subset1:="" "+subset1);="" system.out.println("subset2:="" "+subset2);="" }="" and="" easy="" enough="" approach!="">
+}
+
+
+Update from json // updateFromJSON
+update from typert // updateFromTypeRT
+give default typert // getStaticData
+
+updateFromJSON
+  *take in json object read relevant info aka maxTimer
+  
+updateFromTypeRT
+  *take in typeRT and choose what to update(maxTimer)
+
+getStaticData
+  * return typeRT data about node that never changes
+
+
+
+I need a way to map values from file to Node.
+However Behavior nodes are not created at the same time
+that EditorNodes are.
+
+What I know:
+  Id IS inside the json.
+  
+  EditorNode does store ID and other stuff.
+  There can be a static function that looks for maxTimer
+  inserts its value into typeRT, then hands that typeRT back to
+  EditorNode.
+  
+  Later on in the application
+  when user edits EditorNode, the new value is sent to Behavior.
+
+  typeRT data should contain "Node Render Data"
+  which should contain editable node data.
+  
+  add "maxTimer" to "Node Render Data".
+
+  Under EditorNode::Render
+    m_render_data is edited appropriately
+
+  How to Behavior's "data" with EditorNode's "m_render_data".
+  Probably through Id.
+  EditorNode and Behavior share EXACT same ID.
+  
+
+    
+  If creating from scratch
+    CreateEditorNodeFromScratch(...,)
+      EditorNode* newNode;
+      data = nodeManipulator->getStaticData(..)
+      newNode->setRenderedData(data)
+    
+  If creating from JSON
+    CreateEditorNode(...,JSON)
+      EditorNode* newNode;
+      data = getJSONData(..)
+      newNode->setRenderedData(data)
+    
+    
+Both of these are static functions
+{
+
+  NOTE: ONLY 1 of these is actually called
+
+  getJSONData(const rapidjson::Value &JSON)
+    return typeRT with maxTimer value from JSON
+  
+  getStaticData(...)
+    return unchanging typeRT with fake value for maxTimer
+
+}  
+
+
+if you change a node's internals and its not technically
+within the BTM, then what?
+
+well BTM is not running while you are editing nodes.
+also clicking save graph will actually change internals
+of node.
+
+BTM can be notified that user changed node,
+We know what graph we are working with : m_graph_name
+
+and we know the ID.
+THE id is not necessary.
+Just tell BTM to reload a certain tree.
+What will this do to the tree pointers?
+
+
+
+
+
+
+
+
+
 
 
 
@@ -107,10 +167,10 @@ Nodes to tackle:
     Nodes/Behaviors/Timer.hpp Nodes/Behaviors/Timer.cpp // test it
     Nodes/Behaviors/Inverter.hpp Nodes/Behaviors/Inverter.cpp // test it
     Nodes/Behaviors/Decorator.hpp Nodes/Behaviors/Decorator.cpp // check
-    Nodes/Behaviors/ReturnTrue.hpp Nodes/Behaviors/ReturnTrue.cpp // test ist
-    Nodes/Behaviors/RepeatUntilN.hpp Nodes/Behaviors/RepeatUntilN.cpp // test it
-    Nodes/Behaviors/RepeatUntilFailure.hpp Nodes/Behaviors/RepeatUntilFailure.cpp // test it
-    Nodes/Behaviors/RepeatUntilSuccess.hpp Nodes/Behaviors/RepeatUntilSuccess.cpp // test it
+    Nodes/Behaviors/ReturnTrue.hpp // test ist
+    Nodes/Behaviors/RepeatUntilN.hpp // test it
+    Nodes/Behaviors/RepeatUntilFailure.hpp // test it
+    Nodes/Behaviors/RepeatUntilSuccess.hpp // test it
 
     #Composites
     Nodes/Behaviors/Composite.hpp Nodes/Behaviors/Composite.cpp // check

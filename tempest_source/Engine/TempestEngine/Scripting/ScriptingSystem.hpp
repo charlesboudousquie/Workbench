@@ -64,7 +64,7 @@ protected:
 	*****************************************************************************************/
 	void onUpdate() override;
 
-	void onLevelUnload(const levelUnloadEvent * p_event) override;
+	void onLevelUnload(const levelUnloadEvent & p_event) override;
 
 	//////==============================================================================//////
 	//////    (Non-)Static                                                              //////

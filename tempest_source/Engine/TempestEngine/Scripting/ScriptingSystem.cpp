@@ -61,7 +61,7 @@ void scriptingSystem::onUpdate()
 		auto l_scripts = l_script_object->getComponents(scriptCPP::getType());
 		for(auto l_script_component : l_scripts)
 		{
-			componentHandle<scriptCPP> l_script_ptr = 
+			componentHandle<scriptCPP> l_script_ptr =
 				componentHandle<scriptCPP>::castHandle(*l_script_component);
 			if (l_script_ptr->isUnstarted())
 			{
@@ -72,13 +72,13 @@ void scriptingSystem::onUpdate()
 	}
 }
 
-void scriptingSystem::onLevelUnload(const levelUnloadEvent * p_event)
+void scriptingSystem::onLevelUnload(const levelUnloadEvent & p_event)
 {
 	for(auto i_scriptType: componentFactory::getScriptTypeDetails())
 	{
 		GameObjectFiltering::componentTypeSet l_set;
 		l_set.setType(i_scriptType.type);
-		auto l_list = getSystemManager()->getGameObjectGatherer()->getList(l_set, p_event->getScene());
+		auto l_list = getSystemManager()->getGameObjectGatherer()->getList(l_set, p_event.getScene());
 
 		for(auto & l_script_object : l_list)
 		{

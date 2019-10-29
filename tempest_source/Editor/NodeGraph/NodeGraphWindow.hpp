@@ -23,14 +23,11 @@
 class NodeManager;
 class EditorNode;
 
-
 namespace Editor
 {
   //======== Forward Declarations=======================================================//
   class editorWindow;
   class engineController;
-  class GraphTypeSelector;
-  class AgentMenuSelection;
 
   /*!***************************************************************************************
   \par class: nodeGraphWindow
@@ -46,7 +43,7 @@ namespace Editor
     \param p_engine_controller - reference to the editor's engine controller object
     \param p_selection - reference to the hierarchy selection manager
     *****************************************************************************************/
-    nodeGraphWindow(editorWindow * p_parent_editor, /*editorState * p_current_state,*/ engineController * p_engine_controller);
+    nodeGraphWindow(editorWindow * p_parent_editor, engineController * p_engine_controller);
 
     ~nodeGraphWindow();
 
@@ -63,6 +60,8 @@ namespace Editor
     void onRender() override;
 
   private:
+    editorWindow * m_editor_window;
+
     bool m_draw;
     bool m_show_grid;
     bool m_open_context_menu;
@@ -79,16 +78,19 @@ namespace Editor
     float m_node_slot_radius;
     ImVec2 m_node_window_padding;
 
+    float m_zoom_scalar;
+
     std::string m_graph_name;
 
-    bool m_open_graph_popup;
     bool m_open_graph;
 
-    editorWindow* m_editor_window;
+    bool m_dirty_graph;
 
-    GraphTypeSelector* g_type_selector;
-
-    AgentMenuSelection* agentMenuSelector;
+    ImVec2 m_connect_node_line_start;
+    //Output id, output slot
+    std::pair<int, int> m_output_link_node;
+    ImVec2 m_connect_node_line_end;
+    bool m_drawing_connect_line;
 
     std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> m_node_definitions;
 
@@ -96,19 +98,14 @@ namespace Editor
     void linkNodeMenu(std::unordered_map<int, EditorNode*>::iterator p_iterator_node, EditorNode* p_node);
     void decoupleNodeMenu(std::unordered_map<int, EditorNode*>::iterator p_iterator_node, EditorNode* p_node);
 
+    void centerGraphOnNode(const EditorNode * p_editor_node);
 
     void drawNodeLinks(ImDrawList* p_draw_list);
     void drawNodes(ImDrawList * p_draw_list);
     void graphNameRender();
     void openGraphButton();
-    void graphTypeMenu(); // 
-
+    void saveGraphButton();
     void renderGraphPopup();
-
-    void renderNodeList(); // render left hand side node list
-    void renderNodePopup(); // renders popup when user right clicks node
-
-    void decoupleNodeMenu(); // provides menu for decoupling node
   };
 
 

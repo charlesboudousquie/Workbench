@@ -26,4 +26,3 @@ private:
   engine * m_engine;
   systemManagerInterface * m_system_manager;
 };
-

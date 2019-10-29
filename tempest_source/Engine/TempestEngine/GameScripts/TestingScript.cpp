@@ -15,6 +15,7 @@
 #include "../TransformTestScript.hpp"
 #include "PlayerControllerScript.hpp"
 //========3rd Party Includes============================================================//
+#include "EventSubscribe.hpp"
 //========Types=========================================================================//
 //========Defines=======================================================================//
 //========Forward Deceleration==========================================================//
@@ -41,7 +42,7 @@
 
 void testingScript::onStart()
 {
-	registerEventCallback<testingScript, testEvent, &testingScript::HandleEvent>();
+	// registerEventCallback<testingScript, testEvent, &testingScript::HandleEvent>();
 }
 
 void testingScript::onUpdate()
@@ -82,10 +83,12 @@ testingScript::testingScript(typeRT p_data) : scriptCPP(p_data)
 {
 }
 
-void testingScript::HandleEvent(testEvent* ThisEvent)
+void testingScript::HandleEvent(testEvent& ThisEvent)
 {
-	if(ThisEvent->m_int == 5)
+	if(ThisEvent.m_int == 5)
 	{
 		//throw std::exception("error");
 	}
 }
+SUBSCRIBE(testEvent, &testingScript::HandleEvent, EHCLASS(testingScript),);
+

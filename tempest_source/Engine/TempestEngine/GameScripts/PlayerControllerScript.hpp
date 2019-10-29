@@ -12,6 +12,8 @@
 #include "../Components/RigidBody.hpp"
 #include <Vector3.hpp>
 
+#include <queue>
+
 class playerControllerScript: public scriptCPP
 {
 public:

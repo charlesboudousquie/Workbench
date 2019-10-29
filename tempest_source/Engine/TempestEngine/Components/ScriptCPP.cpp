@@ -11,7 +11,6 @@
 #include "ScriptCPP.hpp"
 //========1st Party Includes============================================================//
 #include "../Scripting/ScriptingSystem.hpp"
-#include "../Events/EventSystem.hpp"
 #include "../SceneManagement/SceneSystem.hpp"
 #include  "../SceneManagement/Scene.hpp"
 //========3rd Party Includes============================================================//
@@ -85,11 +84,15 @@ void scriptCPP::shutdown(scriptingSystem* p_parent_system, systemManagerInterfac
 //        (Conversion )Constructor / Operators / Getters & Setters / Helper Destructor  //
 //======================================================================================//
 
-scriptCPP::scriptCPP() : m_state{UNSTARTED}, m_dt{0}
-{ }
-
-scriptCPP::scriptCPP(typeRT& p_data)
+scriptCPP::scriptCPP() : EventSystem3::EventHandler("scriptCPP"), m_state{UNSTARTED}, m_dt{0}
 {
+    EH_INITIALIZE();
+}
+
+scriptCPP::scriptCPP(typeRT& p_data): EventSystem3::EventHandler("scriptCPP")
+{
+    EH_INITIALIZE();
+
 	m_state = UNSTARTED;
 	updateFromTypeRT(p_data);
 }

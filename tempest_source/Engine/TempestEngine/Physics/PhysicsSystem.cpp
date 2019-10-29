@@ -13,24 +13,24 @@
 #include "../SystemManager.hpp"
 #include "../GameObjectFiltering/GameObjectFilter.hpp"
 #include <Logger.hpp>
-#include "../Events/EventSystem.hpp"
-#include "../Events/CollisionEvent.hpp"
 #include "../SceneManagement/Transform.hpp"
 #include <Vector3.hpp>
+#include "EventBus.hpp"
+#include "../Events/CollisionEvent.hpp"
 
-static bool init = false;
+static bool physicsSystem_init = false;
 
 void physicsSystem::onInitialize()
 {
-	onLevelLoad(nullptr);
+	onLevelLoad();
 }
 
 void physicsSystem::onStartFrame()
 {
-  if (!init)
+  if (!physicsSystem_init)
   {
     addAllObjectsToBullet();
-    init = true;
+    physicsSystem_init = true;
   }
   else
   {
@@ -41,7 +41,7 @@ void physicsSystem::onStartFrame()
 
 void physicsSystem::onUpdate()
 {
-   
+
 }
 
 void physicsSystem::onEndFrame()
@@ -51,7 +51,7 @@ void physicsSystem::onEndFrame()
     return;
   }
 
-  //Update all physics objects that have dirty transforms 
+  //Update all physics objects that have dirty transforms
   GameObjectFiltering::componentTypeSet l_pattern3;
   l_pattern3.setType(rigidBody::getType());
   auto l_listRigidBody = getSystemManager()->getGameObjectGatherer()->getList(l_pattern3);
@@ -66,7 +66,7 @@ void physicsSystem::onEndFrame()
       vector3 l_transformVec = l_transform->getGlobalPosition();
       quaternion l_rotation = l_transform->getGlobalRotation();
       vector3 l_scale = l_transform->getGlobalScale();
-      
+
       //Position, rotation, scale
       bulletWrapper::updateTransform(l_rb->getHandle(), btVector3(l_transformVec.x , l_transformVec.y, l_transformVec.z),
                         btQuaternion(l_rotation.x, l_rotation.y, l_rotation.z, l_rotation.w), btVector3(l_scale.x, l_scale.y, l_scale.z));
@@ -76,25 +76,35 @@ void physicsSystem::onEndFrame()
 
 void physicsSystem::onShutdown()
 {
-	onLevelUnload(nullptr);
+	onLevelUnload();
 }
 
-void physicsSystem::onLevelLoad(const levelLoadEvent * /*p_event*/)
+void physicsSystem::onLevelLoad(const levelLoadEvent & /*p_event*/)
+{
+	onLevelLoad();
+}
+
+void physicsSystem::onLevelLoad()
 {
 	logger("physicsSystem").debug("onLevelLoad");
 	//m_bullet = new bulletWrapper();
 	m_globalGravity = vector3(0.0f, -400.0f, 0.0f);
-	init = false;
+	physicsSystem_init = false;
   initializeBullet();
 }
 
-void physicsSystem::onLevelUnload(const levelUnloadEvent * /*p_event*/)
+void physicsSystem::onLevelUnload(const levelUnloadEvent & /*p_event*/)
+{
+	onLevelUnload();
+}
+
+void physicsSystem::onLevelUnload()
 {
 	logger("physicsSystem").debug("onLevelUnload");
 
-	if(init == true)
+	if(physicsSystem_init == true)
   {
-    init = false;
+    physicsSystem_init = false;
     bulletWrapper::destroySimulator();
   }
 }
@@ -264,12 +274,12 @@ void physicsSystem::processCallback(btPersistentManifold* const& p_manifold, uns
   //CollisionStartedCallback
   if(p_type == 0)
   {
-    getSystemManager()->getSystem<eventSystem>()->QueueEvent(new collisionEvent("Collision Started", l_object1, l_object2, p_manifold->getNumContacts(), l_collisionPoints, l_collisionNormals));
+    EVENT_BUS.fire(new collisionEvent("Collision Started", l_object1, l_object2, p_manifold->getNumContacts(), l_collisionPoints, l_collisionNormals));
   }
   //CollisionEndedCallback
   else if(p_type == 1)
   {
-    getSystemManager()->getSystem<eventSystem>()->QueueEvent(new collisionEvent("Collision Ended", l_object1, l_object2, p_manifold->getNumContacts(), l_collisionPoints, l_collisionNormals));
+    EVENT_BUS.fire(new collisionEvent("Collision Ended", l_object1, l_object2, p_manifold->getNumContacts(), l_collisionPoints, l_collisionNormals));
   }
 
 }
@@ -284,7 +294,7 @@ void physicsSystem::initializeBullet()
 void physicsSystem::addAllObjectsToBullet()
 {
   //We have already added all our objects to bullet
-  if(init)
+  if(physicsSystem_init)
   {
     return;
   }

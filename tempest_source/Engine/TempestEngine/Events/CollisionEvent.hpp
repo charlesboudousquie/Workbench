@@ -7,12 +7,13 @@
 \brief
 *****************************************************************************************/
 #pragma once
-#include "../Events/EventSystem.hpp"
+// #include "../Events/EventSystem.hpp"
 #include <Vector3.hpp>
 #include <DataTypes.hpp>
+#include "EventBase.hpp"
 
 
-class collisionEvent : public EventTemplate<collisionEvent>
+class collisionEvent : public EventSystem3::EventBase
 {
 public:
   collisionEvent(std::string p_message, objID p_object1, objID p_object2, const int & p_numCollisions, std::vector<vector3> & p_collisionPoints, std::vector<vector3> & p_collisionNormals)
