@@ -24,7 +24,7 @@ void RepeatUntilSuccess::Update(float dt)
     if (childResult == BehaviorResult::SUCCESS)
     {
         task->SetResult(BehaviorResult::SUCCESS);
-        GiveToParent(task);
+        task->SetPhase(BehaviorPhase::DONE);
     }
     else if (childResult == BehaviorResult::FAILURE)
     {

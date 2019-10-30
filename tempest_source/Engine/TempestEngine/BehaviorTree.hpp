@@ -25,20 +25,13 @@ class BehaviorTree
     // main node of the tree
     BehaviorPtr root;
 
-    BehaviorTaskPtr task;
-
     // name of tree
     std::string name;
-
-    //void SetRoot(BehaviorPtr);
 
     // for each behavior set its parent tree to this
     void RecursiveSetParentTree(Behavior*);
 
 public:
-
-    BehaviorTaskPtr GetTask();
-    void SetTask(BehaviorTaskPtr);
 
     BehaviorPtr GetRoot();
 

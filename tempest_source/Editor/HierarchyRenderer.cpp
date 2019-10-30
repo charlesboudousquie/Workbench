@@ -77,7 +77,6 @@ void Editor::hierarchyRenderer::renderScene(std::shared_ptr<scene> p_scene)
 		ImGui::TreePop();
 	}
 
-  l_editor_object_manager.updateAllEditorObjectsThatNeedUpdateFromEngine();
 }
 
 void Editor::hierarchyRenderer::renderSpace(std::shared_ptr<space> p_space)

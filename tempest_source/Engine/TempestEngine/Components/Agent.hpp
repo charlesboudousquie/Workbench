@@ -10,14 +10,18 @@
 #include "Component.hpp"
 #include "QueryableInterface.hpp"
 
-#include <unordered_map>
-#include <any>
+#include <Blackboard.hpp>
 
 class BehaviorTree;
 typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
 
 class BehaviorTask;
 typedef std::shared_ptr<BehaviorTask> BehaviorTaskPtr;
+
+class gameObject;
+typedef std::shared_ptr<gameObject> GameObjectPtr;
+
+void IntroduceTaskToTree(GameObjectPtr parent, BehaviorTreePtr tree, BehaviorTaskPtr task);
 
 class Agent : public componentCRTP<Agent>, public queryableInterface
 {
@@ -30,10 +34,12 @@ class Agent : public componentCRTP<Agent>, public queryableInterface
 
     // local blackboard where agent can record any information
     // he needs to remember while traversing a Behavior Tree
-    std::unordered_map<const char*, std::any> blackboard;
+    Blackboard blackboard;
 
 public:
     Agent();
+
+    Blackboard& GetBlackboard();
 
     BehaviorTaskPtr GetTask();
 

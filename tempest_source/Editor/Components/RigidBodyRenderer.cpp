@@ -31,26 +31,28 @@ bool Editor::rigidBodyRenderer::onRender(typeRT & p_type_data, objID /* p_editor
   auto l_engine_controller = getEngineController();
   auto l_selection = getSelectionKeeper();
 
-  bool l_modified = false;
-
 
   if (ImGui::Checkbox("Self: World", &m_collisionLayerSelfWorld))
   {
     setCollisionLayers(m_collisionLayerSelfWorld);
+    //return true;
   }
   ImGui::SameLine();
   if (ImGui::Checkbox("Self: Player", &m_collisionLayerSelfPlayer))
   {
     setCollisionLayers(m_collisionLayerSelfPlayer);
+    //return true;
   }
   if (ImGui::Checkbox("Self: Enemy", &m_collisionLayerSelfEnemy))
   {
     setCollisionLayers(m_collisionLayerSelfEnemy);
+    //return true;
   }
   ImGui::SameLine();
   if (ImGui::Checkbox("Self: Trigger", &m_collisionLayerSelfTrigger))
   {
     setCollisionLayers(m_collisionLayerSelfTrigger);
+    //return true;
   }
 
   if (ImGui::Button("Update Collision Layer: Self"))
@@ -60,7 +62,7 @@ bool Editor::rigidBodyRenderer::onRender(typeRT & p_type_data, objID /* p_editor
     bool l_reset = false;
     setCollisionLayers(l_reset);
 
-    l_modified = true;
+    return true;
   }
 
   ImGui::Checkbox("Collides With: World", &m_collisionLayerWithWorld);
@@ -77,10 +79,12 @@ bool Editor::rigidBodyRenderer::onRender(typeRT & p_type_data, objID /* p_editor
     bool l_reset = false;
     setCollisionLayersWith(l_reset);
 
-    l_modified = true;
+    return true;
+
+    //return false;
   }
 
-  return l_modified;
+  return false;
 }
 
 void Editor::rigidBodyRenderer::setCollisionLayers(bool & p_collisionLayerToBeTrue)

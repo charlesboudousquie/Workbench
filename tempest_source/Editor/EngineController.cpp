@@ -90,12 +90,21 @@ void Editor::engineController::stop()
 		auto l_bundle_names = l_bundle_manip->getAllBundles();
 		for (auto l_bundle : l_bundle_names)
 		{
+            /*if (l_bundle == "BehaviorTreeManager")
+            {
+                continue;
+            }*/
+
 			if (l_bundle == "physics Bundle")
 			{
 				l_bundle_manip->disableBundle(l_bundle);
 			}
-			else if (l_bundle != "graphics & display")
+            
+            else if (l_bundle != "graphics & display")
+            {
 				l_bundle_manip->suspendBundle(l_bundle);
+            }
+            
 		}
 		m_is_playing = false;
 		restoreTemporaryScene();

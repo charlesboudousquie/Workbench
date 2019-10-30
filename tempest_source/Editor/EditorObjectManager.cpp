@@ -130,21 +130,6 @@ std::map<objID, Editor::EditorObject*> Editor::EditorObjectManager::getEditorObj
   return l_result;
 }
 
-void Editor::EditorObjectManager::updateAllEditorObjectsThatNeedUpdateFromEngine()
-{
-  for (auto i_object = m_objects.begin(); i_object != m_objects.end(); ++i_object)
-  {
-    if (i_object->second->getNeedsUpdate())
-    {
-      typeRT l_new_data = m_engine_controller.getEngineRunner()->getEngine()->getSceneManipulator().lock()->getTypeRT(i_object->second->getObjectID());
-      i_object->second->setData(l_new_data);
-
-      i_object->second->setNeedsUpdate(false);
-      i_object->second->setDirty(false);
-    }
-  }
-}
-
 void Editor::EditorObjectManager::updateEditorObjectFromEngine(objID p_object_id, const typeRT & p_data)
 {
   auto i_object = m_objects.find(p_object_id);

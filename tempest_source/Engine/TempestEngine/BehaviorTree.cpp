@@ -10,16 +10,6 @@
 #include "Nodes/Behaviors/Behavior.hpp"
 #include "Agent.hpp"
 
-BehaviorTaskPtr BehaviorTree::GetTask()
-{
-    return this->task;
-}
-
-void BehaviorTree::SetTask(BehaviorTaskPtr t)
-{
-    this->task = t;
-}
-
 void BehaviorTree::SetUpTree(BehaviorPtr root_, std::map<int, BehaviorPtr> nodes_)
 {
     root = root_;
@@ -45,7 +35,7 @@ std::string BehaviorTree::GetName()
 
 void BehaviorTree::RecursiveSetParentTree(Behavior* behavior)
 {
-    behavior->setParentTree(this);
+    //behavior->setParentTree(this);
 
     auto children = behavior->GetChildren();
 

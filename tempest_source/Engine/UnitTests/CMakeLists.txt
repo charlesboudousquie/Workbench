@@ -20,7 +20,6 @@ add_executable(UnitTests
     Vector3Tests.cpp
     Vector4Tests.cpp
     EventSystemTests.cpp
-    ZipTests.cpp
     )
 
 target_link_libraries(UnitTests

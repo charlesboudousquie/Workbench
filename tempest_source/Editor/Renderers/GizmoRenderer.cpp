@@ -14,7 +14,6 @@
 #include "../HierarchySelectionKeeper.hpp"
 #include "../ObjectCommand.hpp"
 #include "../UndoRedo.hpp"
-#include "../EditorWindow.hpp"
 //======== 3rd Party Includes ==========================================================//
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -111,8 +110,7 @@ void Editor::gizmoRenderer::setUsingGizmo(bool p_state)
     if (m_is_using_guizmo == false && p_state == true)
     {
         CommandPtr newCommand = std::make_shared<ObjectDataChangeCommand>();
-        EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
-        newCommand->Init(&getEngineController(), l_editor_object_manager.getEditorObject(getSelectionKeeper().getSelectionId()));
+        newCommand->Init(&getEngineController(), getSelectionKeeper().getSelectionId());
         UndoRedoManager::GetInstance().StoreCommand(newCommand);
         m_user_started_gizmo = true;
     }

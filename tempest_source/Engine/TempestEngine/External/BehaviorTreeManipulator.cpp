@@ -14,14 +14,7 @@
 BehaviorTreeManipulator::BehaviorTreeManipulator(systemManagerInterface * manager_) : m_system_manager(manager_)
 {}
 
-//void BehaviorTreeManipulator::AddAgentToTree(const std::string & treeName, /*componentHandle<Agent>*/GameObjectPtr agent )
-//{
-//    // get bt manager
-//    auto btManager = m_system_manager->getSystem<BehaviorTreeManager>();
-//    btManager->linkAgentComponentToTree(agent, treeName);
-//}
-
-int BehaviorTreeManipulator::getActiveNodeID(/*componentHandle<Agent>*/GameObjectPtr agent) const
+int BehaviorTreeManipulator::getActiveNodeID(GameObjectPtr agent) const
 {
     if (agent)
     {
@@ -39,4 +32,10 @@ std::vector<std::shared_ptr<gameObject>> BehaviorTreeManipulator::getObjectsWith
     // get bt manager
     auto btManager = m_system_manager->getSystem<BehaviorTreeManager>();
     return btManager->getAgentGameObjects();
+}
+
+void BehaviorTreeManipulator::markTreeChanged(const std::string& treeName)
+{
+    auto btManager = m_system_manager->getSystem<BehaviorTreeManager>();
+    btManager->MarkTreeAsChanged(treeName);
 }

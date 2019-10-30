@@ -2,10 +2,13 @@
 \file       NodeFactory.cpp
 \author     Ryan Booth
 \date       9/20/19
-\copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
+\copyright  All content Â© 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par
 \brief
 *****************************************************************************************/
+
+#include "rapidjson.h"
+#include "document.h"
 
 #include "NodeFactory.hpp"
 
@@ -16,23 +19,77 @@
 #include "Nodes/BaseNode1.hpp"
 #include "Nodes/BaseNode2.hpp"
 
+// leaves
+#include "Nodes/Behaviors/DefaultLeaf.hpp"
+#include "Nodes/Behaviors/JumpUp.hpp"
+
+// decorators
+#include "Nodes/Behaviors/Inverter.hpp"
+#include "Nodes/Behaviors/Repeater.hpp"
+#include "Nodes/Behaviors/RepeatUntilN.hpp"
+#include "Nodes/Behaviors/RepeatUntilFailure.hpp"
+#include "Nodes/Behaviors/RepeatUntilSuccess.hpp"
+#include "Nodes/Behaviors/ReturnTrue.hpp"
+#include "Nodes/Behaviors/Timer.hpp"
+
+//composites
+#include "Nodes/Behaviors/Selector.hpp"
+#include "Nodes/Behaviors/Sequencer.hpp"
+
 const std::string l_fileName("../../Samples/Assets/Nodes.def");
 
 std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> NodeFactory::m_node_factory_list;
 
+static std::map<std::string, std::function<typeRT()>> staticTypes
+{
+//// leaves
+//{"DefaultLeaf", DefaultLeaf::onRender},
+//{"JumpUp", JumpUp::onRender},
+//
+//// composites
+//{"Selector", Selector::onRender},
+//{"Sequencer", Sequencer::onRender},
+//
+//// decorators
+//{"Inverter",Inverter::onRender},
+//{"Repeater", Repeater::onRender},
+//{"RepeatUntilN", RepeatUntilN::onRender},
+//{"RepeatUntilFailure",RepeatUntilFailure::onRender},
+//{"RepeatUntilSuccess", RepeatUntilSuccess::onRender},
+//{"ReturnTrue", ReturnTrue::onRender},
+////{"Timer", Timer::getStaticData},
+};
+
+//static std::map<std::string, std::function<typeRT(const rapidjson::Value &)>> jsonTypes
+//{
+//    {"Timer", Timer::getJSONData}
+//};
+
+// function obsolete
 typeRT NodeFactory::getNodeTypeRT(const std::pair<std::string, std::string> & p_node_type)
 {
-  if(p_node_type.first == "BaseNode1")
-  {
-    return BaseNode1::onRender();
-  }
-  else if (p_node_type.first == "BaseNode2")
-  {
-    return BaseNode2::onRender();
-  }
+    // if type is known in map
+    if (staticTypes.find(p_node_type.first) != staticTypes.end())
+    {
+        return staticTypes[p_node_type.first]();
+    }
 
-  return typeRT();
+    // return nothing
+    throw std::exception("Node Factory creating node that has no getStaticData function");
 }
+
+//typeRT NodeFactory::getNodeTypeRTFromJSON(const std::pair<std::string, 
+//    std::string>& p_node_type, const rapidjson::Value & json_data)
+//{
+//    // if type is known in map
+//    if (jsonTypes.find(p_node_type.first) != jsonTypes.end())
+//    {
+//        return jsonTypes[p_node_type.first](json_data);
+//    }
+//
+//    // return nothing
+//    throw std::exception("Node Factory creating node that has no getJSONData function");
+//}
 
 void NodeFactory::parseNodesDefinitions()
 {
@@ -105,3 +162,4 @@ std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>
 
   return m_node_factory_list;
 }
+

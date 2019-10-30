@@ -12,7 +12,6 @@
 #include "UndoRedo.hpp"
 #include "GameObject.hpp"
 #include "HierarchySelectionKeeper.hpp"
-#include "EditorObject.hpp"
 
 #include "EngineRunner.hpp"
 #include "Engine.hpp"
@@ -23,16 +22,12 @@ void Editor::ObjectDataChangeCommand::undo()
 {
     GET_MANIPULATOR->applyTypeRT(id, beforeState);
     GET_MANIPULATOR->setGameObjectName(id, originalName);
-
-    m_editor_object->setData(beforeState);
 }
 
 void Editor::ObjectDataChangeCommand::redo()
 {
     GET_MANIPULATOR->applyTypeRT(id, afterState);
     GET_MANIPULATOR->setGameObjectName(id, newName);
-
-    m_editor_object->setData(afterState);
 }
 
 
@@ -69,8 +64,6 @@ void Editor::ObjectDeleteCommand::redo()
     // delete object again
     GET_MANIPULATOR->removeGameObject(id);
     objSelector->clearSelection();
-
-    //TODO: For now the EditorObject associated with this will be dangling since we directly delete it in engine.
 }
 
 void Editor::ObjectDeleteCommand::Record()
@@ -88,16 +81,12 @@ void Editor::ObjectRemoveParentCommand::undo()
 {
     // attach parent
     GET_MANIPULATOR->addParentToGameObject(parentID, id);
-
-    m_editor_object->setNeedsUpdate(true);
 }
 
 void Editor::ObjectRemoveParentCommand::redo()
 {
     // remove parent
     GET_MANIPULATOR->removeParent(id);
-
-    m_editor_object->setNeedsUpdate(true);
 }
 
 void Editor::ObjectAddParentCommand::SetParentID(objID parentObjectID)
@@ -108,15 +97,11 @@ void Editor::ObjectAddParentCommand::SetParentID(objID parentObjectID)
 void Editor::ObjectAddParentCommand::undo()
 {
     GET_MANIPULATOR->removeParent(id);
-
-    m_editor_object->setNeedsUpdate(true);
 }
 
 void Editor::ObjectAddParentCommand::redo()
 {
     GET_MANIPULATOR->addParentToGameObject(parentID, id);
-
-    m_editor_object->setNeedsUpdate(true);
 }
 
 
@@ -137,8 +122,6 @@ void Editor::ObjectMoveToSpaceCommand::undo()
 {
     //std::string oldSpaceName = GET_MANIPULATOR->getSpaceName(oldSpace);
     GET_MANIPULATOR->moveObjectToSpace(id, oldSpace);
-
-    m_editor_object->setNeedsUpdate(true);
 }
 
 /*!***************************************************************************************
@@ -148,8 +131,6 @@ void Editor::ObjectMoveToSpaceCommand::redo()
 {
     //std::string newSpaceName = GET_MANIPULATOR->getSpaceName(newSpace);
     GET_MANIPULATOR->moveObjectToSpace(id, newSpace);
-
-    m_editor_object->setNeedsUpdate(true);
 }
 
 

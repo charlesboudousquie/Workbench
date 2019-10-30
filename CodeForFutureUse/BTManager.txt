@@ -4,9 +4,6 @@ new bug:
   doing control z oustide of editor window causes crash
   due to m_editor_input being garbage.
 
-
-
-
 places you have to edit when adding a new node
 {
   BehaviorTreeBuilder --> constructor --> for creation of node
@@ -17,134 +14,44 @@ places you have to edit when adding a new node
 }
 
 
-objective:
-  modify timer node to read data from file for its max time.
-  
-  onrender is static so data saved to a particular node instance is
-  impossible right now.
-  
-  must modify nodeFactory
 
 
 
-
-
-
-
-Timer
-{
-
-}
-
-
-Update from json // updateFromJSON
-update from typert // updateFromTypeRT
-give default typert // getStaticData
-
-updateFromJSON
-  *take in json object read relevant info aka maxTimer
-  
-updateFromTypeRT
-  *take in typeRT and choose what to update(maxTimer)
-
-getStaticData
-  * return typeRT data about node that never changes
-
-
-
-I need a way to map values from file to Node.
-However Behavior nodes are not created at the same time
-that EditorNodes are.
-
-What I know:
-  Id IS inside the json.
-  
-  EditorNode does store ID and other stuff.
-  There can be a static function that looks for maxTimer
-  inserts its value into typeRT, then hands that typeRT back to
-  EditorNode.
-  
-  Later on in the application
-  when user edits EditorNode, the new value is sent to Behavior.
-
-  typeRT data should contain "Node Render Data"
-  which should contain editable node data.
-  
-  add "maxTimer" to "Node Render Data".
-
-  Under EditorNode::Render
-    m_render_data is edited appropriately
-
-  How to Behavior's "data" with EditorNode's "m_render_data".
-  Probably through Id.
-  EditorNode and Behavior share EXACT same ID.
+tasks:
+  make behaviors
   
 
-    
-  If creating from scratch
-    CreateEditorNodeFromScratch(...,)
-      EditorNode* newNode;
-      data = nodeManipulator->getStaticData(..)
-      newNode->setRenderedData(data)
-    
-  If creating from JSON
-    CreateEditorNode(...,JSON)
-      EditorNode* newNode;
-      data = getJSONData(..)
-      newNode->setRenderedData(data)
-    
-    
-Both of these are static functions
-{
-
-  NOTE: ONLY 1 of these is actually called
-
-  getJSONData(const rapidjson::Value &JSON)
-    return typeRT with maxTimer value from JSON
-  
-  getStaticData(...)
-    return unchanging typeRT with fake value for maxTimer
-
-}  
-
-
-if you change a node's internals and its not technically
-within the BTM, then what?
-
-well BTM is not running while you are editing nodes.
-also clicking save graph will actually change internals
-of node.
-
-BTM can be notified that user changed node,
-We know what graph we are working with : m_graph_name
-
-and we know the ID.
-THE id is not necessary.
-Just tell BTM to reload a certain tree.
-What will this do to the tree pointers?
 
 
 
 
 
+## within current branch, squashes all commits that are ahead of master down into one
+## useful if you merged with upstream in the middle of your commits (rebase could get very ugly if this is the case)
+ 
+## commit any working changes on branch "mybranchname", then...
+git checkout master
+git checkout -b mybranchname_temp
+git merge --squash mybranchname
+git commit -am "Message describing all squashed commits"
+git branch -m mybranchname mybranchname_unsquashed
+git branch -m mybranchname
+ 
+## optional, not recommended if you want to keep the unsquashed history around for a bit longer
+git branch -D mybranchname_unsquashed
+ 
+## if squashing already-pushed commits...
+git push --force
 
 
 
+Here is where BehaviorTree and master diverge
+a602f8ed1e31c1358c9d8fbb9d05f288464c892d
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+current hash right now in behavior tree
+75fe113de99f222ef8fcfdd0937e387cc29606c5
 
 
 
@@ -226,6 +133,25 @@ m_editor_window->getProjectFilePath() produces:
    
    add on Assets/graphs/ + filename to get FULL path
    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

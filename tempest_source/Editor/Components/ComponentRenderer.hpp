@@ -14,7 +14,8 @@ class typeRT;
 
 typedef unsigned long objID;
 
-namespace Editor {
+namespace Editor 
+{
   class hierarchySelectionKeeper;
   class styleKeeper;
   class editorWindow;

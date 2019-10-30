@@ -77,10 +77,6 @@ namespace Editor
 		{
 			getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->dynamicWaypointGraphDeleteRandomNodeSet();
 		}
-		if (ImGui::Button("BIG RED BUTTON"))
-		{
-			getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->dynamicWaypointGraphTestFunction();
-		}
 	}
 
 }

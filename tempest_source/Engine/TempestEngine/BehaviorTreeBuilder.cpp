@@ -154,6 +154,7 @@ void CreateNodes(const rapidjson::Value & l_graph, std::map<int, std::vector<int
 
             // create Behavior based on name
             BehaviorPtr behavior = nodeMap[name]();
+            behavior->SetName(name);
 
             // set behaviors id
             behavior->setId(id);
@@ -182,6 +183,10 @@ void CreateNodes(const rapidjson::Value & l_graph, std::map<int, std::vector<int
                 // store nodelink in nodelink list
                 nodeLinks[id] = children;
             }
+
+
+            // set special data of node (if any)
+            behavior->updateFromFile(node);
         }
     }
 }

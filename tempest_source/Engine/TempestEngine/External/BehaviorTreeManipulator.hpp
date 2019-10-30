@@ -18,13 +18,15 @@ public:
 
     BehaviorTreeManipulator(systemManagerInterface*);
 
-    //void AddAgentToTree(const std::string& treeName, /*componentHandle<Agent>*/GameObjectPtr agent) override;
-
     // get active node in BehaviorManager system
-    int getActiveNodeID(/*componentHandle<Agent>*/GameObjectPtr agent) const override;
+    int getActiveNodeID(GameObjectPtr agent) const override;
 
     // get all game objects that have an agent component
-    std::vector<std::shared_ptr<gameObject>> getObjectsWithAgents();
+    std::vector<std::shared_ptr<gameObject>> getObjectsWithAgents() override;
+
+    // call this when user edits the variables of a Behavior Node
+    // while using the Node Graph Editor
+    void markTreeChanged(const std::string&) override;
 
 };
 

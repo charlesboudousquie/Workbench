@@ -16,14 +16,22 @@ BehaviorType Composite::GetType()
 BehaviorPtr Composite::getCurrentChild()
 {
     auto task = GetTask();
-    return childNodes[task->GetChildIndex()];
+    // if task has some history then we can access child nodes
+    if (task->NoHistory() == false)
+    {
+        return childNodes[task->GetChildIndex()];
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 typeRT Composite::compositeOnRender()
 {
     // final typert data to return
     typeRT l_data;
-    
+
     // typeRT data that is not displayed but does affect functionality of node
     std::vector<typeRT> l_non_render_members;
 
@@ -61,16 +69,16 @@ typeRT Composite::compositeOnRender()
 
 void Composite::Init()
 {
+#ifdef DEBUGGING_NODES
+    printDebug(DEBUG_MESSAGE_TYPE::INIT);
+#endif
+
     assert(!childNodes.empty());
+    assert(GetTask()->GetChildIndex() == 0);
     // set our phase to progressing
     GetTask()->SetPhase(BehaviorPhase::PROGRESSING);
     // give task to child
     Behavior::GiveToChild(GetTask());
-}
-
-void Composite::Exit()
-{
-    Behavior::Exit();
 }
 
 Composite::Composite()
@@ -84,8 +92,6 @@ std::vector<BehaviorPtr> Composite::GetChildren()
 void Composite::addChild(BehaviorPtr newChild)
 {
     childNodes.push_back(newChild);
-
-    //newChild->setParent(this);
 }
 
 void Composite::removeChild(BehaviorPtr child)

@@ -15,6 +15,12 @@ typeRT Sequencer::onRender()
 
 void Sequencer::Update(float dt)
 {
+#ifdef DEBUGGING_NODES
+    printDebug(DEBUG_MESSAGE_TYPE::UPDATE);
+
+    //BehaviorLogger::GetInstance().addMessage("[DEBUG] Updating Behavior: " + this->getName());
+#endif
+
     auto task = GetTask();
     auto result = task->GetResult();
     
@@ -28,7 +34,7 @@ void Sequencer::Update(float dt)
         if (task->GetChildIndex() == this->childNodes.size())
         {
             task->SetResult(BehaviorResult::SUCCESS);
-            GiveToParent(task);
+            task->SetPhase(BehaviorPhase::DONE);
         }
         // if we are not done then we send it back down to the next child
         else
@@ -39,7 +45,7 @@ void Sequencer::Update(float dt)
     else if (result == BehaviorResult::FAILURE)
     {
         task->SetResult(BehaviorResult::FAILURE);
-        GiveToParent(task);
+        task->SetPhase(BehaviorPhase::DONE);
     }
 }
 

@@ -29,6 +29,6 @@ public:
     // no children should ever be added to leaf node
     void addChild(BehaviorPtr)override;
 
-    virtual void Exit() override;
+    //virtual void Exit() override;
 };
 

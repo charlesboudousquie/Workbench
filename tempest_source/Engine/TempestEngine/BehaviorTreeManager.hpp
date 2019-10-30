@@ -12,7 +12,6 @@
 
 class BehaviorTree;
 class BehaviorTreeBuilder;
-//class BehaviorTreeDataBase;
 
 class gameObject;
 typedef std::shared_ptr<gameObject> GameObjectPtr;
@@ -21,20 +20,19 @@ class BehaviorTreeManager final : public systemBase
 {
     typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
     typedef std::shared_ptr<BehaviorTreeBuilder> BehaviorTreeBuilderPtr;
-    //typedef std::shared_ptr<BehaviorTreeDataBase> BehaviorTreeDataBasePtr;
 
     // there should only be 1 tree builder
     BehaviorTreeBuilderPtr builder;
-    //BehaviorTreeDataBasePtr dataBase;
 
     std::unordered_map<std::string, BehaviorTreePtr> trees;
 
-    // add any new actors that were recently created
-    // and remove any actors that have been removed from the scene
-    //void UpdateActors();
+    // trees that need to be reloaded, because user modified them
+    std::set<std::string> treesToReload;
 
     // gets tree if it exists otherwise returns nullptr
     BehaviorTreePtr GetTree(const std::string&);
+
+    void ReloadTrees();
 
 public:
 
@@ -73,8 +71,9 @@ public:
     // returns id of node that an agent is working on
     int getCurrentNodeID(GameObjectPtr);
 
-    // remove actor from manager
-    //void RemoveActor(GameObjectPtr);
+    // if user has modified a graph then we will have to reload
+    // when running the game again
+    void MarkTreeAsChanged(const std::string&);
 };
 
 

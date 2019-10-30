@@ -24,8 +24,6 @@ protected:
 
     void Init() override;
 
-    void Exit() override;
-
     // TODO figure out how iterator will not be violated when adding or removing nodes from vector!!!
     std::vector<BehaviorPtr> childNodes;
 

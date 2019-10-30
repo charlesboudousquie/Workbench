@@ -18,7 +18,7 @@ class behaviorTreeManipulatorInterface
 {
 
 public:
-    //virtual void AddAgentToTree(const std::string& treeName, GameObjectPtr agent/*componentHandle<Agent> agent*/) = 0;
-    virtual int getActiveNodeID(/*componentHandle<Agent>*/GameObjectPtr agent) const = 0;
+    virtual int getActiveNodeID(GameObjectPtr agent) const = 0;
     virtual std::vector<std::shared_ptr<gameObject>> getObjectsWithAgents() = 0;
+    virtual void markTreeChanged(const std::string&) = 0;
 };

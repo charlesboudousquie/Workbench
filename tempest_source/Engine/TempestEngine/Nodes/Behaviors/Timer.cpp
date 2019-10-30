@@ -10,17 +10,68 @@
 #include "Timer.hpp"
 #ifndef TESTING_NODES
 
-typeRT Timer::onRender()
+typeRT Timer::getRenderData()
 {
-    return Decorator::decoratorOnRender(); // change this
+    // get default data
+    auto defaultRenderData = Decorator::decoratorOnRender();
+
+    // add specialized data
+    typeRT l_max_time("Max Time", float(-1));
+    defaultRenderData.member("Node Render Data").insertMember(l_max_time);
+
+    // return combined typeRT data
+    return defaultRenderData;
+}
+
+void Timer::fillSpecialRenderData(const rapidjson::Value & JSON, typeRT &data)
+{
+    assert(data.getVariableName() == "Node Render Data");
+
+    // if json does not have max time variable then we are screwed
+    if (JSON.HasMember("Max Time"))
+    {
+        // set typert to have max time value
+        data.member("Max Time").setFloat(JSON["Max Time"].GetFloat());
+        //maxTime = data.member("Max Time").getFloat();
+    }
+    else
+    {
+        throw std::exception("Missing Max Time");
+    }
+
+}
+
+void Timer::serializeSpecialData(typeRT & data, rapidjson::Document & doc)
+{
+    assert(data.getVariableName() == "Node Render Data");
+
+    float max_time = data.member("Max Time").getFloat();
+
+    if (doc.HasMember("Max Time"))
+    {
+        doc["Max Time"].SetFloat(max_time);
+    }
+    else
+    {
+        doc.AddMember("Max Time", max_time, doc.GetAllocator());
+    }
+}
+
+void Timer::updateFromFile(const rapidjson::Value & value)
+{
+    maxTime = value["Max Time"].GetFloat();
 }
 
 void Timer::Init()
 {
+#ifdef DEBUGGING_NODES
+    printDebug(DEBUG_MESSAGE_TYPE::INIT);
+#endif
+
     // do not call decorator's init, since we do not give task to child immediately
-    
+
     // reset timer
-    timer = 2.0f;
+    GetBlackboard().setValue<float>("currentTime", 0);
 
     // call update next frame
     GetTask()->SetPhase(BehaviorPhase::PROGRESSING);
@@ -28,11 +79,16 @@ void Timer::Init()
 
 void Timer::Update(float dt)
 {
-    // update timer
-    timer -= dt;
+#ifdef DEBUGGING_NODES
+    printDebug(DEBUG_MESSAGE_TYPE::UPDATE);
+#endif
+
+    float currentTime = GetBlackboard().getValue<float>("currentTime");
+    currentTime += dt;
+    GetBlackboard().setValue<float>("currentTime", currentTime);
 
     // if timer finished then activate child node
-    if (timer <= 0)
+    if (currentTime >= this->maxTime)
     {
         // we will be done when the child hands back the task to us
         GetTask()->SetPhase(BehaviorPhase::DONE);
@@ -40,11 +96,6 @@ void Timer::Update(float dt)
         // send task to child so child can take care of it
         GiveToChild(GetTask());
     }
-}
-
-void Timer::Exit()
-{
-    Decorator::Exit();
 }
 
 #endif

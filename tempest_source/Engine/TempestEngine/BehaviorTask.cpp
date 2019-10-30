@@ -12,9 +12,9 @@
 
 #include "../Nodes/Behaviors/Behavior.hpp"
 
-bool BehaviorTask::WorkingWithTree()
+bool BehaviorTask::NoHistory()
 {
-    return !history.empty();
+    return history.empty();
 }
 
 void BehaviorTask::Push_State(BehaviorState state)
@@ -59,16 +59,6 @@ BehaviorPhase BehaviorTask::GetPhase()
     return history.top().phase;
 }
 
-GameObjectPtr BehaviorTask::GetActor()
-{
-    return actor;
-}
-
-void BehaviorTask::SetActor(GameObjectPtr actor_)
-{
-    actor = actor_;
-}
-
 void BehaviorTask::SetChildBehavior(Behavior* b)
 {
     childBehavior = b;
@@ -99,14 +89,9 @@ Behavior* BehaviorTask::GetCurrentBehavior()
     return currentBehavior;
 }
 
-void BehaviorTask::SetTreePtr(BehaviorTreePtr t)
+std::string BehaviorTask::GetTreeName()
 {
-    this->tree = t;
-}
-
-BehaviorTreePtr BehaviorTask::GetTree()
-{
-    return tree;
+    return treeName;
 }
 
 void BehaviorTask::ClearHistory()

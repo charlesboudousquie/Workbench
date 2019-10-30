@@ -15,7 +15,6 @@ class gameObject;
 typedef std::shared_ptr<gameObject> GameObjectPtr;
 
 class Behavior;
-class BehaviorTree;
 
 typedef int ChildIndex;
 typedef int BehaviorID;
@@ -37,7 +36,7 @@ class BehaviorTask
 {
 public:
 
-    typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
+    //typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;
 
     // NOTE:
     // We want multiple agents to use the exact same tree. 
@@ -63,7 +62,7 @@ public:
 
     // Tells user whether or not this task
     // is currently working with a tree or not
-    bool WorkingWithTree();
+    bool NoHistory();
 
     // pushes a new state onto the history stack
     void Push_State(BehaviorState);
@@ -83,9 +82,6 @@ public:
     void SetPhase(BehaviorPhase);
     BehaviorPhase GetPhase();
 
-    GameObjectPtr GetActor();
-    void SetActor(GameObjectPtr);
-
     void SetChildBehavior(Behavior*);
     Behavior* GetChildBehavior();
 
@@ -95,8 +91,9 @@ public:
     void SetCurrentBehavior(Behavior*);
     Behavior* GetCurrentBehavior();
 
-    void SetTreePtr(BehaviorTreePtr);
-    BehaviorTreePtr GetTree();
+    //void SetTreePtr(BehaviorTreePtr);
+    //BehaviorTreePtr GetTree();
+    std::string GetTreeName();
 
     // clears all history accumulated
     void ClearHistory();
@@ -105,6 +102,9 @@ public:
     void RegisterNewNode(int id);
 
 private:
+
+    std::string treeName;
+
     // parent node that we go to when 
     // done (potentially null if we are at the root).
     Behavior* parentBehavior;
@@ -115,12 +115,6 @@ private:
     // The child of the current Node we are working
     // with (potentially null if we are a leaf node).
     Behavior* childBehavior;
-
-    // The agent we will be working with
-    GameObjectPtr actor;
-
-    // the tree this task is working in
-    BehaviorTreePtr tree;
 
     // last known result of operation
     BehaviorResult result;

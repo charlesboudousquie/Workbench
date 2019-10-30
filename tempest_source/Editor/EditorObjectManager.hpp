@@ -38,8 +38,6 @@ namespace Editor
 
      std::map<objID, EditorObject *> getEditorObjectsOfType(EditorObjectType p_object_type);
 
-     void updateAllEditorObjectsThatNeedUpdateFromEngine();
-
      void updateEditorObjectFromEngine(objID p_object_id, const typeRT & p_data);
 
      void sendDirtyObjectDataToEngine(objID p_object_id);

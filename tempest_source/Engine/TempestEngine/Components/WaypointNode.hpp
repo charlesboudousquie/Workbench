@@ -13,24 +13,10 @@
 #include "../EngineInterfaces/Public/IComponentRepository.hpp"
 //======== 3rd Party Includes ==========================================================//
 #include <string>
+//======== Types =======================================================================//
+//======== Defines =====================================================================//
 //======== Forward Declarations=========================================================//
 class nodeSet;
-class waypointNode;
-
-//======== Types =======================================================================//
-struct connectedNode
-{
-	connectedNode(componentHandle<waypointNode> node_, float cost_, bool sharesObjectParameter_);
-
-	//!<The node itself
-	componentHandle<waypointNode> node;
-	//!<The distance from the node to the connected node
-	float cost;
-	//!<If the node is on the same object parameter as this one
-	bool sharesObjectParameter;
-};
-
-//======== Defines =====================================================================//
 
 /*!***************************************************************************************
 \par class: waypointNode
@@ -39,11 +25,10 @@ struct connectedNode
 class waypointNode : public componentCRTP<waypointNode>
 {
 	public:
-		//!<Readable name for debugging
 		std::string debugName = "Waypoint Node";
 
 		//!<The connections to other nodes - The nodes, and the "cost"
-		std::vector<connectedNode> connections;
+		std::vector<std::pair<componentHandle<waypointNode>, float>> connections;
 
 		/*!***************************************************************************************
 		\brief  componentType getter

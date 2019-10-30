@@ -30,13 +30,13 @@ void Inverter::Update(float dt)
     if (childResult == BehaviorResult::SUCCESS)
     {
         task->SetResult(BehaviorResult::FAILURE);
-        GiveToParent(task);
+        task->SetPhase(BehaviorPhase::DONE);
     }
     // child failed so return success
     else if(childResult == BehaviorResult::FAILURE)
     {
         task->SetResult(BehaviorResult::SUCCESS);
-        GiveToParent(task);
+        task->SetPhase(BehaviorPhase::DONE);
     }
 }
 

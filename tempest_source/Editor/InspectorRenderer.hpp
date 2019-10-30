@@ -22,10 +22,9 @@
 class typeRT;
 
 typedef unsigned long objID;
-
 namespace Editor
 {
-  //======== Forward Declarations=======================================================//
+	//======== Forward Declarations=======================================================//
 	class editorWindow;
 	class engineController;
 	class styleKeeper;

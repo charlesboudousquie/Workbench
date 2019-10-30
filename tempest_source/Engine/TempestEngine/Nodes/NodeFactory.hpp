@@ -18,12 +18,16 @@ class NodeFactory
 {
 public:
   static typeRT getNodeTypeRT(const std::pair<std::string, std::string> & p_node_type);
+  
+  /*static typeRT getNodeTypeRTFromJSON(const std::pair<std::string, std::string> & p_node_type,
+      const rapidjson::Value & json_data);*/
 
   static void parseNodesDefinitions();
 
   static std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> getNodeDefinitions();
 
 private:
+
   //List of types of nodes and their names
   //Key = behavior tree, script, shader, etc. pair = class name, friendly name (can be the same)
   static std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> m_node_factory_list;

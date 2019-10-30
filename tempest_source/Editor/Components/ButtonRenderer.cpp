@@ -38,7 +38,6 @@ Editor::buttonRenderer::buttonRenderer(editorWindow* p_parent_window)
 bool Editor::buttonRenderer::onRender(typeRT & /* p_type_data */, objID p_editor_object_id)
 {
   auto l_selection = getSelectionKeeper();
-  bool l_modified = false;
   
   if (ImGui::RadioButton("Set Right Neighbor", m_rightButton))
   {
@@ -117,8 +116,6 @@ bool Editor::buttonRenderer::onRender(typeRT & /* p_type_data */, objID p_editor
         if(l_neighbor_object != nullptr)
         {
           l_neighbor_object->setData(l_neighbor_new_data);
-
-          l_modified = true;
         }
 
       }
@@ -139,15 +136,14 @@ bool Editor::buttonRenderer::onRender(typeRT & /* p_type_data */, objID p_editor
         if (l_neighbor_object != nullptr)
         {
           l_neighbor_object->setData(l_neighbor_new_data);
-
-          l_modified = true;
         }
       }
     }
 
+    return false;
   }
 
-  return l_modified;
+  return true;
 }
 
 void Editor::buttonRenderer::setButtons(bool & p_buttonToBeTrue)

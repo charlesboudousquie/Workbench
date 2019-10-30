@@ -10,24 +10,48 @@
 #include "BehaviorTree.hpp"
 #include "Agent.hpp"
 
+#include "BehaviorTreeDataBase.hpp"
+
+void Behavior::printDebug(DEBUG_MESSAGE_TYPE type)
+{
+    std::string message("[DEBUG] ");
+
+    switch (type)
+    {
+    case DEBUG_MESSAGE_TYPE::INIT:
+        message += "Initing ";
+        break;
+    case DEBUG_MESSAGE_TYPE::UPDATE:
+        message += "Updating ";
+        break;
+    case DEBUG_MESSAGE_TYPE::EXIT:
+        message += "Exiting ";
+        break;
+    default:
+        throw std::exception("Debugging unknown behavior");
+    }
+
+    message += "Behavior " + std::to_string(this->getId()) + ": " + this->getName();
+
+    BehaviorLogger::GetInstance().addMessage(message, this->getActor()->getName());
+}
+
 void Behavior::Exit()
 {
     // when exiting a node, the state related to said node is removed, (except the result of that behavior)
     Behavior::GiveToParent(GetTask());
+
+#ifdef DEBUGGING_NODES
+    //"[ERROR] Unable to find object with given id: %lu \n"
+    printDebug(DEBUG_MESSAGE_TYPE::EXIT);
+#endif
+
 }
 
 BehaviorTaskPtr Behavior::GetTask()
 {
     // actual task is stored in tree so we get it from there
-    return this->parentTree->GetTask();
-}
-
-void Behavior::SetResultTypeRT(typeRT & p_data)
-{
-    //if()
-    // TODO
-    //p_data.member("NodeResult").setInt((int)this->result);
-    //p_data.member("nodeID").setInt(this->getId());
+    return this->getActor()->getComponent<Agent>()->GetTask();
 }
 
 Behavior::Behavior()
@@ -56,17 +80,15 @@ void Behavior::tick(float dt)
         this->Exit();
     }
 
-    // set result information in type rt for later use
-    this->SetResultTypeRT(data);
 }
 
 void Behavior::updateFromTypeRT(typeRT & p_data)
 {
+    throw std::exception("Do not use update from type rt");
 }
 
-void Behavior::setParentTree(BehaviorTree *pt)
+void Behavior::updateFromFile(const rapidjson::Value &)
 {
-    parentTree = pt;
 }
 
 void Behavior::setParent(BehaviorPtr parent_)
@@ -81,7 +103,12 @@ BehaviorPtr Behavior::getParent()
 
 std::shared_ptr<gameObject> Behavior::getActor()
 {
-    return parentTree->GetTask()->GetActor();
+    return ActorDatabase::GetInstance().GetCurrentActor();
+}
+
+Blackboard& Behavior::GetBlackboard()
+{
+    return getActor()->getComponent<Agent>()->GetBlackboard();
 }
 
 void Behavior::TakeTask(BehaviorTaskPtr t)

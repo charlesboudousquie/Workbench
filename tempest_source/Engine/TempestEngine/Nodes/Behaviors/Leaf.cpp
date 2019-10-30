@@ -63,11 +63,17 @@ void Leaf::addChild(BehaviorPtr)
 
 void Leaf::Init()
 {
+#ifdef DEBUGGING_NODES
+    printDebug(DEBUG_MESSAGE_TYPE::INIT);
+
+    //BehaviorLogger::GetInstance().addMessage("[DEBUG] Initing Behavior: " + this->getName());
+#endif
+
     // initialize phase to progressing by default
     GetTask()->SetPhase(BehaviorPhase::PROGRESSING);
 }
 
-void Leaf::Exit()
-{
-    Behavior::Exit();
-}
+//void Leaf::Exit()
+//{
+//    Behavior::Exit();
+//}

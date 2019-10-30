@@ -1,5 +1,5 @@
 /*!***************************************************************************************
-\file       EditorNode.hpp
+\file       Node.hpp
 \author     Ryan Booth
 \date       9/12/2019
 \copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
@@ -39,9 +39,9 @@ class EditorNode
 {
   friend class NodeManager;
 public:
-  EditorNode();
+    EditorNode();
 
-  void render(bool p_engine_Active, const ImVec2 & p_render_position);
+  bool render(bool p_engine_Active);
 
   std::pair<bool, std::string> validate();
 
@@ -58,18 +58,16 @@ public:
 
   ImVec2 getPosition() const { return m_position; }
   ImVec2 getScale() const { return m_scale; }
-  float getZoomScale() const { return m_zoom_scalar; }
   ImVec4 getColor() const { return m_color; }
-  ImVec2 getScaleAfterZoom() const { return ImVec2(m_scale.x * m_zoom_scalar, m_scale.y * m_zoom_scalar); }
 
   void setPosition(ImVec2 p_position) { m_position = p_position; }
   void setScale(ImVec2 p_scale) { m_scale = p_scale; }
-  void setZoomScale(float p_zoom_scalar) { m_zoom_scalar = p_zoom_scalar; }
 
   ImVec2 GetInputSlotPos(int slot_no) const;
   ImVec2 GetOutputSlotPos(int slot_no) const;
 
   bool getActive() const { return m_active; }
+  void setActive(bool p_active) { m_active = p_active; }
 
   std::vector<NodeLink> getNodeLinks() { return m_node_links; }
 
@@ -78,6 +76,7 @@ public:
   const std::string & getClassName() const { return m_class_name; }
 
 protected:
+  void onRender() const;
   void setName(const std::string & p_name) { m_name = p_name; }
   void setTypeName(const std::string & p_type_name) { m_type_name = p_type_name; }
 
@@ -88,7 +87,6 @@ protected:
 
   void setId(int p_id) { m_id = p_id; }
 
-  void setActive(bool p_active) { m_active = p_active; }
 
   void setRenderData(const typeRT & p_render_data);
 
@@ -99,8 +97,6 @@ protected:
   void setDepth(int p_depth) { m_depth = p_depth; }
 
   void setClassName(const std::string & p_class_name) { m_class_name = p_class_name; }
-
-  void setScaleBasedOnData();
 
 private:
   int m_id;
@@ -117,7 +113,6 @@ private:
 
   ImVec2 m_position;
   ImVec2 m_scale;
-  float m_zoom_scalar;
 
   ImVec4 m_color; //CMYK
 

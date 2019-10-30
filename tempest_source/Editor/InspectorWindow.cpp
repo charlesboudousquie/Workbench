@@ -124,7 +124,7 @@ void Editor::inspectorWindow::onRender()
 					{
             //record object state before change
             std::shared_ptr<Command> newCommand = std::make_shared<ObjectDataChangeCommand>();
-            newCommand->Init(&getEngineController(), l_editor_object);
+            newCommand->Init(&getEngineController(), getSelectionKeeper().getSelectionId());
 
 						// menu item clicked, request engine to add the component
             l_scene_manipulator->addGameObjectComponent(l_selection_id,

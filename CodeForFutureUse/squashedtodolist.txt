@@ -1,0 +1,156 @@
+pick 780e6316 added decorator
+s 4f274305 starting behavior tree
+s bcaf6667 nothing
+s 90b3aac6 working on behavior trees
+s 10892d8d wrote more skeleton
+s d4ea1f6f mostly done on core behavior nodes
+s f51e51bd Started behavior tree framework
+s e18a9db5 no change
+s c5206cba working on behavior trees
+s c6cf78a2 behavior tree now compiles
+s 20c7dee8 behavior tree skeleton done
+s f10756c2 working on getting agent component in inspector
+s 097c8c01 fixed wrong node inheritance nightmare
+s 69e8a047 merging with NodeGraphEditor
+s 34483db4 nothing
+s f753ba81 fixing merge conflicts
+s e2cc61c3 fixed merge errors
+s 8c0aa36a working on gam
+s 52f7282b fixed imgui bug in NodeGraph window
+s 51501a8f Started implementation of NodeGraph window in the editor.
+s 2d5bfeaa added decorator
+s 44efa079 Started moving over nodes into tempest engine from editor. This will most likely crash upon startup.
+s 06914cb0 starting behavior tree
+s 848675c4 nothing
+s b32f8a3f working on behavior trees
+s b5820ff0 wrote more skeleton
+s 505a89a3 mostly done on core behavior nodes
+s 1c555a9c Started behavior tree framework
+s 625babb1 no change
+s 80da23ff working on behavior trees
+s 732d223d behavior tree now compiles
+s 8603e718 Started working on serializeNodes
+s 2bccab3d behavior tree skeleton done
+s 72d2f87c working on getting agent component in inspector
+s 19ae038c Serialize and de-serialize functions started (using  rapidjson)
+s c9e8c6b4 Finished serialization and de-serialization of the node graph
+s f1570fcd fixed wrong node inheritance nightmare
+s 064f502c merging with NodeGraphEditor
+s a8148b9a nothing
+s 47ec0aac fixing merge conflicts
+s a01b1937 fixed merge errors
+s 604d4f32 working on gam
+s ae3c1031 fixed imgui bug in NodeGraph window
+s 7c44f9b7 split up node code
+s ed3cd2c8 fixed linker errors
+s 6a63750d fixed linker errors again
+s 9572af0f fixed imgui crash again
+s 02d7d6c5 no major changes
+s 0c2c4632 Started implementation of NodeGraph window in the editor.
+s 837beafb Further implementation of node graph window.
+s b84b0e9d Started implementing base classes and the node manager.
+s 014b24ed Further implementation of node rendering, node validation, node class hierarchy and virtual functions.
+s 8257d335 Started working on node factory that will be replaced eventually
+s 888400d0 Node Rendering and node creation complete.
+s 28f884ea added decorator
+s 3d38ea81 Changed tabs to spaces
+s 1d1fec87 Started moving over nodes into tempest engine from editor. This will most likely crash upon startup.
+s e2b3f19a starting behavior tree
+s 0b5714c6 nothing
+s 8ab0deea Refactored Node Managing again. Compiles but still probably doesnt run.
+s a8b68bea working on behavior trees
+s 282af566 wrote more skeleton
+s 9e0b4608 mostly done on core behavior nodes
+s 6b69e616 Nodes can be created in editor.
+s 93f6c413 Started behavior tree framework
+s 4b0dcea7 Started node color rendering and node link rendering
+s 38a65c01 Working on linking nodes.
+s 39ed0ae6 no change
+s 52f20874 Node Link rendering and functionality done. Still needs depth value updates
+s 165b2e13 working on behavior trees
+s bfa8b01f behavior tree now compiles
+s 18105dfd Started working on serializeNodes
+s 6d13217a behavior tree skeleton done
+s a534271e working on getting agent component in inspector
+s 01c84904 Serialize and de-serialize functions started (using  rapidjson)
+s 06baa08a Finished serialization and de-serialization of the node graph
+s 6ecb9c56 fixed wrong node inheritance nightmare
+s 2342820b merging with NodeGraphEditor
+s 65ab8407 nothing
+s 5c804ff5 fixing merge conflicts
+s 90bcd45a fixed merge errors
+s 9a7ff0e1 working on gam
+s a4139c38 fixed imgui bug in NodeGraph window
+s c6971e3f split up node code
+s 4512111f fixed linker errors
+s 7ba0e465 added decorator
+s 81ef4b14 starting behavior tree
+s 5bf5a942 nothing
+s 08ef218d working on behavior trees
+s 805df8c1 wrote more skeleton
+s ae0970d0 mostly done on core behavior nodes
+s cf564474 Started behavior tree framework
+s b5cea67a no change
+s 1ff8c686 working on behavior trees
+s 96b6fcdc behavior tree now compiles
+s 3ef39708 behavior tree skeleton done
+s b6012ccf working on getting agent component in inspector
+s 50d7878a fixed wrong node inheritance nightmare
+s 0aa003a6 merging with NodeGraphEditor
+s 14411151 nothing
+s 76db2aee fixing merge conflicts
+s e1a7887d fixed merge errors
+s a0b1174d working on gam
+s 15adcf84 fixed imgui bug in NodeGraph window
+s 620ef5c3 fixed linker errors again
+s a30b77ad fixed imgui crash again
+s 23b15ccd no major changes
+s a0a1c792 rebased with master and added behavior code
+s 8da73ccb active node is glowing but need to figure out why BTManager is not updating
+s 045c663d fixed linker errors for behaviors
+s 6701278d got graph nodes to glow when active, now I need to work with Ryan to fix a graph saving bug
+s 861b54ba minor change to timer.cpp
+s 90b5f53c minor change to behavior.cpp
+s 024440a1 fixed onRender functions for all Behaviors
+s 782295e1 fixed errors
+s 6c4cbba8 trying to scale behavior trees
+s d449059b making some progress with trees
+s a61b9685 getting closer to releasing behavior trees
+s d2ee22ac getting closer to finishing trees
+s ec658d18 still getting closer to finishing behavior trees
+s 1b63d223 BTM has run into problem of checking whether or not GOs exist
+s e6bf0533 finally got to testing trees
+s 179ba250 just need to refine specific behaviors now
+s 21bce5e3 behavior trees can be created, loaded and tested
+s 1d0f1c77 had to do janky work arounds to link nodes from NGE to BTM
+s edf86f6c fixed btm system with simpler actor iterations
+s e47828ba minor changes
+s 9bee893f fixed saving data to files for behaviors, will talk to cody tomorrow on how to use node graph editor
+s f56343b8 fixed another bug where file saving for behaviors was not working
+s 75fe113d minor change to composite
+
+# Rebase a602f8ed..75fe113d onto a602f8ed (130 commands)
+#
+# Commands:
+# p, pick <commit> = use commit
+# r, reword <commit> = use commit, but edit the commit message
+# e, edit <commit> = use commit, but stop for amending
+# s, squash <commit> = use commit, but meld into previous commit
+# f, fixup <commit> = like "squash", but discard this commit's log message
+# x, exec <command> = run command (the rest of the line) using shell
+# d, drop <commit> = remove commit
+# l, label <label> = label current HEAD with a name
+# t, reset <label> = reset HEAD to a label
+# m, merge [-C <commit> | -c <commit>] <label> [# <oneline>]
+# .       create a merge commit using the original merge commit's
+# .       message (or the oneline, if no original merge commit was
+# .       specified). Use -c <commit> to reword the commit message.
+#
+# These lines can be re-ordered; they are executed from top to bottom.
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+#
+#	However, if you remove everything, the rebase will be aborted.
+#
+#	
+# Note that empty commits are commented out

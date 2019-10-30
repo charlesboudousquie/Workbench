@@ -13,21 +13,13 @@
 #include "Nodes/Behaviors/Behavior.hpp"
 
 // given a task and a tree, introduce the task to the tree
-void IntroduceTaskToTree(GameObjectPtr parent, BehaviorTreePtr tree, BehaviorTaskPtr task)
+void IntroduceTaskToTree(BehaviorTreePtr tree, BehaviorTaskPtr task)
 {
     // clear task of any state
     task->ClearHistory();
 
     // push new state onto task
     task->RegisterNewNode(tree->GetRoot()->getId());
-
-    task->SetActor(parent);
-
-    // set new tree
-    task->SetTreePtr(tree);
-
-    // set task pointer for all behaviors to acess
-    tree->SetTask(task);
 
     // allow root of tree to take task first
     tree->GetRoot()->TakeTask(task);
@@ -44,6 +36,11 @@ Agent::Agent()
     task_ = std::make_shared<BehaviorTask>();
 }
 
+Blackboard & Agent::GetBlackboard()
+{
+    return blackboard;
+}
+
 BehaviorTaskPtr Agent::GetTask()
 {
     return task_;
@@ -51,18 +48,14 @@ BehaviorTaskPtr Agent::GetTask()
 
 void Agent::Update(float dt, BehaviorTreePtr tree)
 {
-    GameObjectPtr parentObject = this->getGameObject().lock();
 
     // if first time using tree
-    if (task_->GetTree() != tree || !task_->WorkingWithTree())
+    if (task_->NoHistory())
     {
-        IntroduceTaskToTree(parentObject, tree, task_);
+        IntroduceTaskToTree(tree, task_);
     }
-    else
-    {
-        // otherwise merely tick tree
-        task_->GetCurrentBehavior()->tick(dt);
-    }
+
+    task_->GetCurrentBehavior()->tick(dt);
 }
 
 componentType const Agent::type() const

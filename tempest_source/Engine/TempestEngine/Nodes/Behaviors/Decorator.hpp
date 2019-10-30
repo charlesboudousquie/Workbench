@@ -29,8 +29,6 @@ protected:
     // and sends task to child
     void Init() override;
 
-    virtual void Exit() override;
-
     BehaviorPtr child = nullptr;
 };
 

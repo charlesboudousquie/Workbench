@@ -16,7 +16,13 @@ typeRT JumpUp::onRender()
 
 void JumpUp::Update(float)
 {
-    auto actor = GetTask()->GetActor();
+#ifdef DEBUGGING_NODES
+    printDebug(DEBUG_MESSAGE_TYPE::UPDATE);
+
+    //BehaviorLogger::GetInstance().addMessage("[DEBUG] Updating Behavior: " + this->getName());
+#endif
+
+    auto actor = getActor();
     auto rigid = actor->getComponent<rigidBody>();
 
     // if no rigidbody then something went horribly wrong
@@ -26,8 +32,10 @@ void JumpUp::Update(float)
         throw std::exception(message.c_str());
     }
 
-    rigid->setVelocity({ 0,10,0 });
+    rigid->applyImpulse({ 0,500,0 });
+   // rigid->applyForce({ 0,10000,0 });
+    //rigid->setVelocity({ 0,600,0 });
 
     GetTask()->SetResult(BehaviorResult::SUCCESS);
-    GiveToParent(GetTask());
+    GetTask()->SetPhase(BehaviorPhase::DONE);
 }

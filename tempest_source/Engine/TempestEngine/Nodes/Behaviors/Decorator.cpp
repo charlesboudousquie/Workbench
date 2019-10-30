@@ -76,16 +76,22 @@ void Decorator::addChild(BehaviorPtr newChild)
 
 void Decorator::Init()
 {
+#ifdef DEBUGGING_NODES
+    printDebug(DEBUG_MESSAGE_TYPE::INIT);
+
+    //BehaviorLogger::GetInstance().addMessage("[DEBUG] Initing Behavior: " + this->getName());
+#endif
+
     assert(child != nullptr);
 
     GetTask()->SetPhase(BehaviorPhase::PROGRESSING);
     Behavior::GiveToChild(this->GetTask());
 }
 
-void Decorator::Exit()
-{
-    Behavior::Exit();
-}
+//void Decorator::Exit()
+//{
+//    Behavior::Exit();
+//}
 
 
 

@@ -20,7 +20,7 @@ void Selector::Update(float dt)
     if (childResult == BehaviorResult::SUCCESS)
     {
         task->SetResult(BehaviorResult::SUCCESS);
-        GiveToParent(task);
+        task->SetPhase(BehaviorPhase::DONE);
     }
     if (childResult == BehaviorResult::FAILURE)
     {
@@ -31,7 +31,7 @@ void Selector::Update(float dt)
         if (task->GetChildIndex() == childNodes.size())
         {
             task->SetResult(BehaviorResult::FAILURE);
-            GiveToParent(task);
+            task->SetPhase(BehaviorPhase::DONE);
         }
     }
 }

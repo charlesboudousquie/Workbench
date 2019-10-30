@@ -19,15 +19,15 @@ TemplateNode::~TemplateNode()
 
 }
 
-typeRT TemplateNode::toTypeRT() const
-{
-  return getTypeRT();
-}
-
-void TemplateNode::updateFromTypeRT(const typeRT& p_data)
-{
-  updateData(p_data);
-}
+//typeRT TemplateNode::toTypeRT() const
+//{
+//  return getTypeRT();
+//}
+//
+//void TemplateNode::updateFromTypeRT(const typeRT& p_data)
+//{
+//  updateData(p_data);
+//}
 
 std::pair<bool, std::string> TemplateNode::validate()
 {
