@@ -15,6 +15,11 @@ places you have to edit when adding a new node
 
 
 
+when saving files remember to copy over:
+Editor folder
+Engine Folder
+Samples folder // espescially nodes.def
+
 
 
 tasks:

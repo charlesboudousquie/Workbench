@@ -1,0 +1,52 @@
+{
+    "graph": [
+        {
+            "type name": "NODE",
+            "class name": "Sequencer",
+            "name": "Sequencer",
+            "id": 0,
+            "position": [
+                121.0,
+                121.0
+            ],
+            "node links": [
+                [
+                    1,
+                    0,
+                    0,
+                    0
+                ]
+            ]
+        },
+        {
+            "type name": "NODE",
+            "class name": "Timer",
+            "name": "Timer",
+            "id": 1,
+            "position": [
+                248.0,
+                334.0
+            ],
+            "node links": [
+                [
+                    2,
+                    0,
+                    1,
+                    0
+                ]
+            ],
+            "Max Time": 4.0
+        },
+        {
+            "type name": "NODE",
+            "class name": "JumpUp",
+            "name": "JumpUp",
+            "id": 2,
+            "position": [
+                270.0,
+                530.0
+            ],
+            "node links": []
+        }
+    ]
+}
