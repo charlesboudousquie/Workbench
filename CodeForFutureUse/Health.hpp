@@ -1,24 +1,29 @@
 /*!***************************************************************************************
-\file       EnemyWithinRange.hpp
+\file       Health.hpp
 \author     Charles Boudousquie
 \date       10/30/19
 \copyright  All content � 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
-\brief      Decorator/Conditional that checks if enemy is within a certain predetermined 
-            distance.
+\brief      Health component for npc or player.
 *****************************************************************************************/
 #pragma once
-#include "Decorator.hpp"
+#include "Component.hpp"
+#include "QueryableInterface.hpp"
 
-class EnemyWithinRange : public Decorator
+class Health : public componentCRTP<Agent>, public queryableInterface
 {
+  int health;
   
   public:
-    void Init() override;
+  
+    void DecreaseHealth(int amount);
+    void IncreaseHealth(int amount);
     
-    void Update() override;
+    int GetHealth();
+    int SetHealth();
+    
+    bool IsDead();
+
 
 };
-
-
 
