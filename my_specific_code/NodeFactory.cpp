@@ -15,50 +15,50 @@
 #include <unordered_map>
 #include <fstream>
 
-//Nodes
-#include "Nodes/BaseNode1.hpp"
-#include "Nodes/BaseNode2.hpp"
+// //Nodes
+// #include "Nodes/BaseNode1.hpp"
+// #include "Nodes/BaseNode2.hpp"
 
-// leaves
-#include "Nodes/Behaviors/DefaultLeaf.hpp"
-#include "Nodes/Behaviors/JumpUp.hpp"
+// // leaves
+// #include "Nodes/Behaviors/DefaultLeaf.hpp"
+// #include "Nodes/Behaviors/JumpUp.hpp"
 
-// decorators
-#include "Nodes/Behaviors/Inverter.hpp"
-#include "Nodes/Behaviors/Repeater.hpp"
-#include "Nodes/Behaviors/RepeatUntilN.hpp"
-#include "Nodes/Behaviors/RepeatUntilFailure.hpp"
-#include "Nodes/Behaviors/RepeatUntilSuccess.hpp"
-#include "Nodes/Behaviors/ReturnTrue.hpp"
-#include "Nodes/Behaviors/Timer.hpp"
+// // decorators
+// #include "Nodes/Behaviors/Inverter.hpp"
+// #include "Nodes/Behaviors/Repeater.hpp"
+// #include "Nodes/Behaviors/RepeatUntilN.hpp"
+// #include "Nodes/Behaviors/RepeatUntilFailure.hpp"
+// #include "Nodes/Behaviors/RepeatUntilSuccess.hpp"
+// #include "Nodes/Behaviors/ReturnTrue.hpp"
+// #include "Nodes/Behaviors/Timer.hpp"
 
-//composites
-#include "Nodes/Behaviors/Selector.hpp"
-#include "Nodes/Behaviors/Sequencer.hpp"
+// //composites
+// #include "Nodes/Behaviors/Selector.hpp"
+// #include "Nodes/Behaviors/Sequencer.hpp"
 
 const std::string l_fileName("../../Samples/Assets/Nodes.def");
 
 std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> NodeFactory::m_node_factory_list;
 
-static std::map<std::string, std::function<typeRT()>> staticTypes
-{
-//// leaves
-//{"DefaultLeaf", DefaultLeaf::onRender},
-//{"JumpUp", JumpUp::onRender},
-//
-//// composites
-//{"Selector", Selector::onRender},
-//{"Sequencer", Sequencer::onRender},
-//
-//// decorators
-//{"Inverter",Inverter::onRender},
-//{"Repeater", Repeater::onRender},
-//{"RepeatUntilN", RepeatUntilN::onRender},
-//{"RepeatUntilFailure",RepeatUntilFailure::onRender},
-//{"RepeatUntilSuccess", RepeatUntilSuccess::onRender},
-//{"ReturnTrue", ReturnTrue::onRender},
-////{"Timer", Timer::getStaticData},
-};
+// static std::map<std::string, std::function<typert()>> statictypes
+// {
+// //// leaves
+// //{"defaultleaf", defaultleaf::onrender},
+// //{"jumpup", jumpup::onrender},
+// //
+// //// composites
+// //{"selector", selector::onrender},
+// //{"sequencer", sequencer::onrender},
+// //
+// //// decorators
+// //{"inverter",inverter::onrender},
+// //{"repeater", repeater::onrender},
+// //{"repeatuntiln", repeatuntiln::onrender},
+// //{"repeatuntilfailure",repeatuntilfailure::onrender},
+// //{"repeatuntilsuccess", repeatuntilsuccess::onrender},
+// //{"returntrue", returntrue::onrender},
+// ////{"timer", timer::getstaticdata},
+// };
 
 //static std::map<std::string, std::function<typeRT(const rapidjson::Value &)>> jsonTypes
 //{
@@ -66,17 +66,17 @@ static std::map<std::string, std::function<typeRT()>> staticTypes
 //};
 
 // function obsolete
-typeRT NodeFactory::getNodeTypeRT(const std::pair<std::string, std::string> & p_node_type)
-{
-    // if type is known in map
-    if (staticTypes.find(p_node_type.first) != staticTypes.end())
-    {
-        return staticTypes[p_node_type.first]();
-    }
+// typeRT NodeFactory::getNodeTypeRT(const std::pair<std::string, std::string> & p_node_type)
+// {
+    // // if type is known in map
+    // if (staticTypes.find(p_node_type.first) != staticTypes.end())
+    // {
+        // return staticTypes[p_node_type.first]();
+    // }
 
-    // return nothing
-    throw std::exception("Node Factory creating node that has no getStaticData function");
-}
+    // // return nothing
+    // throw std::exception("Node Factory creating node that has no getStaticData function");
+// }
 
 //typeRT NodeFactory::getNodeTypeRTFromJSON(const std::pair<std::string, 
 //    std::string>& p_node_type, const rapidjson::Value & json_data)
