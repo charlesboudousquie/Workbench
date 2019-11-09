@@ -15,13 +15,14 @@ public:
 
     std::vector<BehaviorPtr> GetChildren() override;
 
+    static typeRT decoratorOnRender();
+
 protected:
 
     BehaviorType GetType() override;
 
     BehaviorPtr getCurrentChild() override;
 
-    static typeRT decoratorOnRender();
 
     virtual void addChild(BehaviorPtr newChild) override;
 

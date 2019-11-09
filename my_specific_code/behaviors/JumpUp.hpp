@@ -13,8 +13,6 @@ class JumpUp : public Leaf
 {
 public:
 
-    static typeRT onRender();
-
     void Update(float) override;
 
 };

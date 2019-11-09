@@ -9,6 +9,7 @@
 #include "BehaviorTreeBuilder.hpp"
 #include "BehaviorTree.hpp"
 #include <stack>
+#include <fstream>
 
 #include <rapidjson.h>
 #include "document.h"
@@ -18,22 +19,7 @@
 #include "istreamwrapper.h"
 #include "filereadstream.h"
 
-// leaves
-#include "../Nodes/Behaviors/DefaultLeaf.hpp"
-
-// decorators
-#include "../Nodes/Behaviors/Inverter.hpp"
-#include "../Nodes/Behaviors/Repeater.hpp"
-#include "../Nodes/Behaviors/RepeatUntilN.hpp"
-#include "../Nodes/Behaviors/RepeatUntilFailure.hpp"
-#include "../Nodes/Behaviors/RepeatUntilSuccess.hpp"
-#include "../Nodes/Behaviors/ReturnTrue.hpp"
-#include "../Nodes/Behaviors/Timer.hpp"
-#include "../Nodes/Behaviors/JumpUp.hpp"
-
-// composites
-#include "../Nodes/Behaviors/Selector.hpp"
-#include "../Nodes/Behaviors/Sequencer.hpp"
+#include "../Nodes/Behaviors/AllBehaviorsInclude.hpp"
 
 #include "AssetManager.hpp"
 #include "GeneralizedFileLoader.hpp"
@@ -45,19 +31,51 @@ void CreateNodes(const rapidjson::Value & l_graph, std::map<int, std::vector<int
 
 typedef int NodeID;
 
+BehaviorPtr GetRootFromTable(const std::map<NodeID, BehaviorPtr>& table)
+{
+    int counter = 0;
+    BehaviorPtr root = nullptr;
+    
+    for (auto entry : table)
+    {
+        if (entry.second->getParent() == nullptr)
+        {
+            root = entry.second;
+            counter++;
+        }
+    }
+
+    // It is impossible to have more than 1 root
+    assert(counter == 1);
+
+    return root;
+}
+
+
 BehaviorTreeBuilder::BehaviorTreeBuilder()
 {
+    // leaves
+    nodeMap["AttackClosestEnemy"] = []() {return std::make_shared < AttackClosestEnemy>(); };
+    nodeMap["DefaultLeaf"] = []() {return std::make_shared<DefaultLeaf>(); };
+    nodeMap["GoToEnemy"] = []() {return std::make_shared<GoToEnemy>(); };
+    nodeMap["JumpUp"] = []() {return std::make_shared<JumpUp>(); };
+    nodeMap["ReturnToLeader"] = []() {return std::make_shared<ReturnToLeader>(); };
+
     // decorators
+    nodeMap["EnemyWithinRange"] = []() {return std::make_shared<EnemyWithinRange>(); };
+    nodeMap["EnemySpotted"] = []() {return std::make_shared<EnemySpotted>(); };
+    
     nodeMap["Inverter"] = []() { return std::make_shared< Inverter>(); };
+    nodeMap["IsDead"] = []() {return std::make_shared<IsDead>(); };
+    nodeMap["IsLowHealth"] = []() {return std::make_shared<IsLowHealth>(); };
+
+    nodeMap["Timer"] = []() {return std::make_shared<Timer>(); };
+    
     nodeMap["Repeater"] = []() {return std::make_shared< Repeater>(); };
     nodeMap["RepeatUntilN"] = []() {return std::make_shared< RepeatUntilN>(); };
     nodeMap["RepeatUntilFailure"] = []() {return std::make_shared< RepeatUntilFailure>(); };
     nodeMap["RepeatUntilSuccess"] = []() {return std::make_shared< RepeatUntilSuccess>(); };
     nodeMap["ReturnTrue"] = []() {return std::make_shared< ReturnTrue>(); };
-    nodeMap["Timer"] = []() {return std::make_shared<Timer>(); };
-    // leaves
-    nodeMap["DefaultLeaf"] = []() {return std::make_shared<DefaultLeaf>(); };
-    nodeMap["JumpUp"] = []() {return std::make_shared<JumpUp>(); };
 
     // composites
     nodeMap["Selector"] = []() {return std::make_shared< Selector>(); };
@@ -107,7 +125,11 @@ std::shared_ptr<BehaviorTree> BehaviorTreeBuilder::CreateTree(const std::string 
         }
 
         tree->SetName(fileName);
-        tree->SetUpTree(behaviors.begin()->second, behaviors);
+
+        auto root = GetRootFromTable(behaviors);
+
+        tree->SetUpTree(root);
+        tree->SetManager(manager);
 
     }
     else
@@ -149,7 +171,7 @@ void CreateNodes(const rapidjson::Value & l_graph, std::map<int, std::vector<int
             }
             else
             {
-                throw std::exception("MISSING ID for a node in behavior tree!");
+                throw std::runtime_error("MISSING ID for a node in behavior tree!");
             }
 
             // create Behavior based on name

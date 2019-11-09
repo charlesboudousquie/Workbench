@@ -27,7 +27,6 @@ add_library(TempestEngine STATIC
     Precompiled.cpp # this MUST be the first entry in the files list (for cotire)
     Precompiled.h
     Application.hpp Application.cpp
-    Blackboard.hpp Blackboard.cpp
     DLLControl.hpp
     Engine.hpp Engine.cpp
     FilterBase.h
@@ -49,7 +48,6 @@ add_library(TempestEngine STATIC
     SystemTask.hpp SystemTask.cpp
     TransformTestScript.hpp TransformTestScript.cpp
 
-    ../../EngineInterfaces/Public/IComponentRepository.hpp ../../ComponentRepository/Private/ComponentRepository.cpp
     Actions/Action.hpp Actions/Action.cpp
     Actions/ActionSystem.hpp Actions/ActionSystem.cpp
     Actions/DelayAction.hpp Actions/DelayAction.cpp
@@ -58,11 +56,14 @@ add_library(TempestEngine STATIC
     Audio/AudioComponent.hpp Audio/AudioComponent.cpp
     Audio/AudioSystem.h Audio/AudioSystem.cpp
 
-    Components/Agent.hpp Components/Agent.cpp
     Components/AnimatorComponent.hpp Components/AnimatorComponent.cpp
+    Components/Agent.hpp Components/Agent.cpp
     Components/Button.hpp Components/Button.cpp
     Components/Camera.hpp Components/Camera.cpp
     Components/FBXFileComponent.h Components/FBXFileComponent.cpp
+    Components/Health.hpp Components/Health.cpp
+    Components/Allegiance.hpp Components/Allegiance.cpp
+
     Components/InputComponent.hpp Components/InputComponent.cpp
     Components/Light.hpp Components/Light.cpp
     Components/ParticleEmitter.hpp Components/ParticleEmitter.cpp
@@ -82,6 +83,9 @@ add_library(TempestEngine STATIC
 
     External/AssetManipulator.hpp External/AssetManipulator.cpp
     External/AssetManipulatorInterface.hpp
+
+    External/BehaviorTreeManipulator.hpp External/BehaviorTreeManipulator.cpp
+
     External/bundleManipulator.hpp External/bundleManipulator.cpp
     External/bundleManipulatorInterface.hpp
     External/CameraManipulator.hpp External/CameraManipulator.cpp
@@ -95,7 +99,6 @@ add_library(TempestEngine STATIC
     External/SceneEntityReference.hpp External/SceneEntityReference.cpp
     External/SceneManipulator.hpp External/SceneManipulator.cpp
     External/SceneManipulatorInterface.hpp
-    External/BehaviorTreeManipulator.hpp External/BehaviorTreeManipulator.cpp
 
     GameObjectFiltering/ComponentTypeSet.hpp GameObjectFiltering/ComponentTypeSet.cpp
     GameObjectFiltering/GameObjectFilter.hpp GameObjectFiltering/GameObjectFilter.cpp
@@ -134,33 +137,44 @@ add_library(TempestEngine STATIC
 
     Messaging/Message.hpp
 
-    # Behavior Tree Section
-
-    BehaviorEnums.hpp
-    BehaviorTree.hpp BehaviorTree.cpp
-    BehaviorTreeManager.hpp BehaviorTreeManager.cpp
-    BehaviorTreeBuilder.hpp BehaviorTreeBuilder.cpp
-    BehaviorTreeDataBase.hpp BehaviorTreeDataBase.cpp
-    BehaviorTask.hpp BehaviorTask.cpp
-    #BehaviorTaskProxy.hpp BehaviorTaskProxy.cpp
-
-    BehaviorVisitor.hpp BehaviorVisitor.cpp
-    Nodes/Behaviors/Behavior.hpp Nodes/Behaviors/Behavior.cpp
     Nodes/Node.hpp Nodes/Node.cpp
     Nodes/NodeFactory.hpp Nodes/NodeFactory.cpp
-    Nodes/TemplateNode.hpp Nodes/TemplateNode.cpp
-    Nodes/BaseNode1.hpp Nodes/BaseNode1.cpp
-    Nodes/BaseNode2.hpp Nodes/BaseNode2.cpp
+
+    # Behavior Tree Section
+    BehaviorSystem/Blackboard.hpp BehaviorSystem/Blackboard.cpp
+    BehaviorSystem/BehaviorEnums.hpp
+    BehaviorSystem/BehaviorTree.hpp BehaviorSystem/BehaviorTree.cpp
+    BehaviorSystem/BehaviorTreeManager.hpp BehaviorSystem/BehaviorTreeManager.cpp
+    BehaviorSystem/BehaviorTreeBuilder.hpp BehaviorSystem/BehaviorTreeBuilder.cpp
+    BehaviorSystem/BehaviorTreeDataBase.hpp BehaviorSystem/BehaviorTreeDataBase.cpp
+    BehaviorSystem/BehaviorTask.hpp BehaviorSystem/BehaviorTask.cpp
+    BehaviorSystem/BehaviorInterpreter.hpp BehaviorSystem/BehaviorInterpreter.cpp
+
+    Nodes/Behaviors/AllBehaviorsInclude.hpp
+    BehaviorSystem/BehaviorSpecialData.hpp
+    BehaviorSystem/BehaviorHelpers.hpp BehaviorSystem/BehaviorHelpers.cpp
+
+    # base nodes
+    Nodes/Behaviors/Behavior.hpp Nodes/Behaviors/Behavior.cpp
+    Nodes/Node.hpp Nodes/Node.cpp
     # leaves
     Nodes/Behaviors/Leaf.hpp Nodes/Behaviors/Leaf.cpp 
+    Nodes/Behaviors/AttackClosestEnemy.hpp Nodes/Behaviors/AttackClosestEnemy.cpp
     Nodes/Behaviors/DefaultLeaf.hpp Nodes/Behaviors/DefaultLeaf.cpp
-    Nodes/Behaviors/Repeater.hpp Nodes/Behaviors/Repeater.cpp
+    Nodes/Behaviors/GoToEnemy.hpp Nodes/Behaviors/GoToEnemy.cpp
     Nodes/Behaviors/JumpUp.hpp Nodes/Behaviors/JumpUp.cpp
+    Nodes/Behaviors/Repeater.hpp Nodes/Behaviors/Repeater.cpp
+    Nodes/Behaviors/ReturnToLeader.hpp Nodes/Behaviors/ReturnToLeader.cpp
 
     #Decorators
-    Nodes/Behaviors/Timer.hpp Nodes/Behaviors/Timer.cpp
-    Nodes/Behaviors/Inverter.hpp Nodes/Behaviors/Inverter.cpp
     Nodes/Behaviors/Decorator.hpp Nodes/Behaviors/Decorator.cpp
+    Nodes/Behaviors/EnemyWithinRange.hpp Nodes/Behaviors/EnemyWithinRange.cpp
+    Nodes/Behaviors/EnemySpotted.hpp Nodes/Behaviors/EnemySpotted.cpp
+
+    Nodes/Behaviors/Inverter.hpp Nodes/Behaviors/Inverter.cpp
+    Nodes/Behaviors/IsDead.hpp Nodes/Behaviors/IsDead.cpp
+    Nodes/Behaviors/IsLowHealth.hpp Nodes/Behaviors/IsLowHealth.cpp
+    Nodes/Behaviors/Timer.hpp Nodes/Behaviors/Timer.cpp
     Nodes/Behaviors/ReturnTrue.hpp Nodes/Behaviors/ReturnTrue.cpp
     Nodes/Behaviors/RepeatUntilN.hpp Nodes/Behaviors/RepeatUntilN.cpp
     Nodes/Behaviors/RepeatUntilFailure.hpp Nodes/Behaviors/RepeatUntilFailure.cpp
@@ -170,9 +184,9 @@ add_library(TempestEngine STATIC
     Nodes/Behaviors/Composite.hpp Nodes/Behaviors/Composite.cpp
     Nodes/Behaviors/Selector.hpp Nodes/Behaviors/Selector.cpp
     Nodes/Behaviors/Sequencer.hpp Nodes/Behaviors/Sequencer.cpp
+    # end of Behavior Tree Section
 
 
-    # End of Behavior Tree Section
 
     Physics/PhysicsSystem.hpp Physics/PhysicsSystem.cpp
 

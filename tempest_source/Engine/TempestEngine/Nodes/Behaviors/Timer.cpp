@@ -10,56 +10,62 @@
 #include "Timer.hpp"
 #ifndef TESTING_NODES
 
-typeRT Timer::getRenderData()
+const char maxTimeStr[] = "Max Time";
+
+const SpecialData Timer::specialData=
 {
-    // get default data
-    auto defaultRenderData = Decorator::decoratorOnRender();
+    {SpecialData::Entry{DATA_TYPE::FLOAT, "Max Time", -1.0f}}
+};
 
-    // add specialized data
-    typeRT l_max_time("Max Time", float(-1));
-    defaultRenderData.member("Node Render Data").insertMember(l_max_time);
-
-    // return combined typeRT data
-    return defaultRenderData;
-}
-
-void Timer::fillSpecialRenderData(const rapidjson::Value & JSON, typeRT &data)
-{
-    assert(data.getVariableName() == "Node Render Data");
-
-    // if json does not have max time variable then we are screwed
-    if (JSON.HasMember("Max Time"))
-    {
-        // set typert to have max time value
-        data.member("Max Time").setFloat(JSON["Max Time"].GetFloat());
-        //maxTime = data.member("Max Time").getFloat();
-    }
-    else
-    {
-        throw std::exception("Missing Max Time");
-    }
-
-}
-
-void Timer::serializeSpecialData(typeRT & data, rapidjson::Document & doc)
-{
-    assert(data.getVariableName() == "Node Render Data");
-
-    float max_time = data.member("Max Time").getFloat();
-
-    if (doc.HasMember("Max Time"))
-    {
-        doc["Max Time"].SetFloat(max_time);
-    }
-    else
-    {
-        doc.AddMember("Max Time", max_time, doc.GetAllocator());
-    }
-}
+//typeRT Timer::getRenderData()
+//{
+//    // get default data
+//    auto defaultRenderData = Decorator::decoratorOnRender();
+//
+//    // add specialized data
+//    typeRT l_max_time(maxTimeStr, float(-1));
+//    defaultRenderData.member("Node Render Data").insertMember(l_max_time);
+//
+//    // return combined typeRT data
+//    return defaultRenderData;
+//}
+//
+//void Timer::fillSpecialRenderData(const rapidjson::Value & JSON, typeRT &data)
+//{
+//    assert(data.getVariableName() == "Node Render Data");
+//
+//    // if json does not have max time variable then we are screwed
+//    if (JSON.HasMember(maxTimeStr))
+//    {
+//        // set typert to have max time value
+//        data.member(maxTimeStr).setFloat(JSON[maxTimeStr].GetFloat());
+//    }
+//    else
+//    {
+//        throw std::runtime_error("Missing Max Time");
+//    }
+//
+//}
+//
+//void Timer::serializeSpecialData(typeRT & data, rapidjson::Document & doc)
+//{
+//    assert(data.getVariableName() == "Node Render Data");
+//
+//    float max_time = data.member(maxTimeStr).getFloat();
+//
+//    if (doc.HasMember(maxTimeStr))
+//    {
+//        doc[maxTimeStr].SetFloat(max_time);
+//    }
+//    else
+//    {
+//        doc.AddMember(maxTimeStr, max_time, doc.GetAllocator()); 
+//    }
+//}
 
 void Timer::updateFromFile(const rapidjson::Value & value)
 {
-    maxTime = value["Max Time"].GetFloat();
+    this->maxTime = value[maxTimeStr].GetFloat();
 }
 
 void Timer::Init()

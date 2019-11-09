@@ -734,8 +734,7 @@ TEST(Matrix4x4, ArrayConversion)
 	};
 
 	matrix4x4 l_mat(l_elements);
-	float l_ptr[16] = { 0 };
-	l_mat.toFloatPtr();
+	float * l_ptr = l_mat.toFloatPtr();
 	for(int i = 0; i < 16; ++i)
 	{
 		EXPECT_EQ(l_elements[i], l_ptr[i]);

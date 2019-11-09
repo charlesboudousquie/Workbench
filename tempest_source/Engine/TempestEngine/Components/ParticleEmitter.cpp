@@ -1,8 +1,8 @@
 /*!***************************************************************************************
 \file       ParticleEmitter.cpp
-\author     Cody Cannell
+\author     Cody Cannell, Seraphina Kim
 \date       7/31/18
-\copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
+\copyright  All content 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
 \brief
 *****************************************************************************************/
@@ -21,12 +21,24 @@ typeRT particleEmitter::toTypeRT() const
 	typeRT direction = ::toTypeRT(m_data.m_direction);
 	direction.setVariableName("direction");
 	members.push_back(direction);
-
+/*
 	std::vector<typeRT> colorMinMaxMember;
 	colorMinMaxMember.push_back(::toTypeRT(m_data.m_colorMin));
 	colorMinMaxMember.push_back(::toTypeRT(m_data.m_colorMax));
-	typeRT colorRange = typeRT("colorRange", colorMinMaxMember);
-	members.push_back(colorRange);
+	typeRT colorRange = typeRT("colorRange", "colorMinMax",colorMinMaxMember);
+	members.push_back(colorRange);*/
+
+	std::vector<typeRT> startColorRange;
+	startColorRange.push_back(::toTypeRT(m_data.m_startColRange));
+	startColorRange.push_back(::toTypeRT(m_data.m_startColRange2));
+	typeRT startColorRanges = typeRT("colorRange", "startColorRange", startColorRange);
+	members.push_back(startColorRanges);
+
+	std::vector<typeRT> endColorRange;
+	endColorRange.push_back(::toTypeRT(m_data.m_endColRange));
+	endColorRange.push_back(::toTypeRT(m_data.m_endColRange2));
+	typeRT endColorRanges = typeRT("colorRange", "endColorRange", endColorRange);
+	members.push_back(endColorRanges);
 
 	std::vector<typeRT> sizeMinMax;
 	sizeMinMax.push_back(typeRT("sizeMin",m_data.m_sizeMin));
@@ -73,6 +85,12 @@ typeRT particleEmitter::toTypeRT() const
 	typeRT on("on", static_cast<bool>(m_data.m_on));
 	members.push_back(on);
 
+	typeRT shape("emitterShape", static_cast<int>(m_data.m_shape));
+	members.push_back(shape);
+
+	typeRT type("emitterType", static_cast<int>(m_data.m_Type));
+	members.push_back(type);
+
 
 	for (auto i_member : members)
 	{
@@ -100,12 +118,26 @@ void particleEmitter::updateFromTypeRT(typeRT & p_type)
 	{
 		m_data.m_direction = ::toVector4(p_type.member("direction"));
 	}
-	if (l_members.find("colorRange") != l_members.end())
+	/*if (l_members.find("colorMinMax") != l_members.end())
 	{
-		typeRT colorRange = p_type.member("colorRange");
+		typeRT colorRange = p_type.member("colorMinMax");
 		std::vector<typeRT> members = colorRange.array();
 		m_data.m_colorMin = ::toColor4(members[0]);
 		m_data.m_colorMax = ::toColor4(members[1]);
+	}*/
+	if (l_members.find("startColorRange") != l_members.end())
+	{
+		typeRT startColorRange = p_type.member("startColorRange");
+		std::vector<typeRT> members = startColorRange.array();
+		m_data.m_startColRange = ::toColor4(members[0]);
+		m_data.m_startColRange2 = ::toColor4(members[1]);
+	}
+	if (l_members.find("endColorRange") != l_members.end())
+	{
+		typeRT endColorRange = p_type.member("endColorRange");
+		std::vector<typeRT> members = endColorRange.array();
+		m_data.m_endColRange = ::toColor4(members[0]);
+		m_data.m_endColRange2 = ::toColor4(members[1]);
 	}
 	if (l_members.find("sizeRange") != l_members.end())
 	{
@@ -162,41 +194,41 @@ void particleEmitter::updateFromTypeRT(typeRT & p_type)
 	{
 		m_data.m_on = p_type.member("on").getBool();
 	}
+	if (l_members.find("emitterShape") != l_members.end())
+	{
+		m_data.m_shape = static_cast<emitterShape>(p_type.member("emitterShape").getInt());
+	}
+	if (l_members.find("emitterType") != l_members.end())
+	{
+		m_data.m_Type = static_cast<emitterType>(p_type.member("emitterType").getInt());
+	}
 }
 
 particleEmitter::particleEmitter(typeRT& p_type)
 {
 
 	m_data.m_direction = ::toVector4(p_type.member("direction"));
-	typeRT colorRange = p_type.member("colorRange");
+	/*typeRT colorRange = p_type.member("colorMinMax");
 	std::vector<typeRT> members = colorRange.array();
 	m_data.m_colorMin = ::toColor4(members[0]);
-	m_data.m_colorMax = ::toColor4(members[1]);
+	m_data.m_colorMax = ::toColor4(members[1]);*/
 
-	/*typeRT angleRange = p_type.member("angleRange");
-	std::vector<typeRT> members = angleRange.array();
-	m_data.m_minAcceleration = (members[0].getFloat());
-	m_data.m_maxAcceleration = (members[1]).getFloat();*/
+	typeRT startColorRange = p_type.member("startColorRange");
+	std::vector<typeRT> startmembers = startColorRange.array();
+	m_data.m_startColRange = ::toColor4(startmembers[0]);
+	m_data.m_startColRange2 = ::toColor4(startmembers[1]);
+
+	typeRT endColorRange = p_type.member("endColorRange");
+	std::vector<typeRT> endmembers = endColorRange.array();
+	m_data.m_endColRange = ::toColor4(endmembers[0]);
+	m_data.m_endColRange2 = ::toColor4(endmembers[1]);
+
+
 	typeRT sizeRange = p_type.member("sizeRange");
-	/*std::vector<typeRT> members = sizeRange.array();
-	m_data.m_sizeMin = (members[0]).getFloat();
-	m_data.m_sizeMax = (members[1].getFloat());*/
 	typeRT forceRange = p_type.member("forceRange");
-	/*std::vector<typeRT> members = forceRange.array();
-	m_data.m_minForce = (members[0]).getFloat();
-	m_data.m_maxForce = (members[1].getFloat());*/
 	typeRT accelerationRange = p_type.member("accelerationRange");
-	/*std::vector<typeRT> members = accelerationRange.array();
-	m_data.m_minAcceleration = (members[0]).getFloat();
-	m_data.m_maxAcceleration = (members[1].getFloat());*/
 	typeRT glowRange = p_type.member("glowRange");
-	/*std::vector<typeRT> members = glowRange.array();
-	m_data.m_glowMin = (members[0]).getFloat();
-	m_data.m_glowMax = (members[1].getFloat());*/
 	typeRT lifeRange = p_type.member("lifeRange");
-	/*std::vector<typeRT> members = lifeRange.array();
-	m_data.m_minLife = (members[0].getFloat());
-	m_data.m_maxLife = (members[1].getFloat());*/
 
 	m_data.m_maxParticles = p_type.member("maxParticles").getInt();
 	m_data.m_batchSize = p_type.member("batchSize").getInt();
@@ -204,4 +236,6 @@ particleEmitter::particleEmitter(typeRT& p_type)
 	m_data.m_interval = p_type.member("interval").getInt();
 	m_data.m_on = p_type.member("on").getBool();
 
+	m_data.m_shape = static_cast<emitterShape>(p_type.member("emitterShape").getInt());
+	m_data.m_Type = static_cast<emitterType>(p_type.member("emitterType").getInt());
 }

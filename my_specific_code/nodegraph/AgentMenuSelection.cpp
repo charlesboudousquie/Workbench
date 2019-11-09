@@ -8,7 +8,8 @@
 *****************************************************************************************/
 #include "AgentMenuSelection.hpp"
 #include "../EngineController.hpp"
-#include "GameObject.hpp"
+#include "../SceneManagement/GameObject.hpp"
+#include "BehaviorTreeManipulatorInterface.hpp"
 #include <EngineRunner.hpp>
 #include <Engine.hpp>
 #include "Agent.hpp"

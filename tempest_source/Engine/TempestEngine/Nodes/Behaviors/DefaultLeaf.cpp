@@ -8,11 +8,6 @@
 *****************************************************************************************/
 #include "DefaultLeaf.hpp"
 
-typeRT DefaultLeaf::onRender()
-{
-    return Leaf::leafOnRender();
-}
-
 void DefaultLeaf::Update(float dt)
 {
     this->GetTask()->SetPhase(BehaviorPhase::DONE);

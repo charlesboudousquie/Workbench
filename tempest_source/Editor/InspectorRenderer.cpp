@@ -22,6 +22,7 @@
 #include "Components/RendererRenderer.hpp"
 #include "Components/InputRenderer.hpp"
 #include "Components/AgentRenderer.hpp"
+#include "Components/AllegianceRenderer.hpp"
 #include <Color4.hpp>
 #include <Color4Serialization.hpp>
 #include <EngineRunner.hpp>
@@ -46,6 +47,7 @@ Editor::inspectorRenderer::inspectorRenderer(editorWindow * p_parent_window)
   m_component_renderers["class renderer"] = new rendererRenderer(p_parent_window);
   m_component_renderers["class inputComponent"] = new inputRenderer(p_parent_window);
   m_component_renderers["class Agent"] = new agentRenderer(p_parent_window);
+  m_component_renderers["class Allegiance"] = new allegianceRenderer(p_parent_window);
 }
 
 Editor::inspectorRenderer::~inspectorRenderer()
@@ -77,21 +79,24 @@ void Editor::inspectorRenderer::setRemoveHandler(std::function<void(std::string)
 bool Editor::inspectorRenderer::renderGameObject(typeRT & p_type_data, objID p_editor_object_id)
 {
   EditorLogger & l_log = getLogger();
+
   EditorObjectManager & l_editor_object_manager = getTopWindow()->getSceneWindow().getEditorObjectManager();
   EditorObject * l_editor_object = l_editor_object_manager.getEditorObject(p_editor_object_id);
+
   if (getSelectionKeeper().isGameObjectSelected())
   {
     std::string l_name(getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->getObjectName(getSelectionKeeper().getSelectionId()));
     //Max length for gameObjectName
     l_name.reserve(40);
 
-    // create command for undo redo operations
-    CommandPtr command = std::make_shared<ObjectDataChangeCommand>();
-    command->Init(&getEngineController(), getSelectionKeeper().getSelectionId());
-
     if (ImGui::InputText("<- Name", &l_name, ImGuiInputTextFlags_EnterReturnsTrue))
     {
+      // create command for undo redo operations
+      CommandPtr command = std::make_shared<ObjectDataChangeCommand>();
+      command->Init(&getEngineController(), l_editor_object);
+
       auto l_selection_keeper = getSelectionKeeper();
+
       l_log.AddLog("[EDITOR] Game Object: %s name changed to: %s.\n", getSelectionKeeper().getSelectionName().c_str(), l_name.c_str());
       getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock()->setGameObjectName(l_selection_keeper.getSelectionId(), std::string(l_name.c_str()));
 
@@ -106,20 +111,16 @@ bool Editor::inspectorRenderer::renderGameObject(typeRT & p_type_data, objID p_e
 
     // create command to record change done to object inside inspector
     CommandPtr command2 = std::make_shared<ObjectDataChangeCommand>();
-    command2->Init(&getEngineController(), getSelectionKeeper().getSelectionId());
-
-    // reset watch dog to watch for future changes
-    UndoRedoWatchdog::Get().Reset();
-
-    bool RenderResult = render("*", p_type_data, p_editor_object_id);
+    command2->Init(&getEngineController(), l_editor_object);
+    bool ObjectChanged = render("*", p_type_data, p_editor_object_id);
     // if object changed and it is actually 
-    if (UndoRedoWatchdog::Get().sawChange() && getSelectionKeeper().isGameObjectSelected())
+    if (ObjectChanged == true && getSelectionKeeper().isGameObjectSelected())
     {
         command2->Record();
         UndoRedoManager::GetInstance().RecordState(command2, &getEngineController());
     }
 
-    return RenderResult;
+    return ObjectChanged;
 
   }
 
@@ -161,11 +162,6 @@ void Editor::inspectorRenderer::endStyle(const std::string& p_current_component_
 bool Editor::inspectorRenderer::render(const std::string & p_current_component_type, typeRT & p_type_data, objID p_editor_object)
 {
 	bool l_changed = false;
-    // notify watchdog and obviously l_changed will be true as well
-    auto MarkChange = [ &l_changed]() 
-    {
-        UndoRedoWatchdog::Get().Notify(); l_changed = true; 
-    };
   Editor::EditorLogger & l_log = getLogger();
 
   auto l_scene_manipulator = getEngineController().getEngineRunner()->getEngine()->getSceneManipulator().lock();
@@ -181,8 +177,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_value != p_type_data.getBool())
 		{
 			p_type_data.setBool(l_value);
-            MarkChange();
-			//l_changed = true;
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -194,8 +189,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_value != p_type_data.getChar())
 		{
 			p_type_data.setChar(l_value);
-			//l_changed = true;
-            MarkChange();
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -207,8 +201,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_value != p_type_data.getInt())
 		{
 			p_type_data.setInt(l_value);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -221,8 +214,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
     if (l_unsigned_value != p_type_data.getUInt())
     {
       p_type_data.setUInt(l_unsigned_value);
-      //l_changed = true;
-      MarkChange();
+      l_changed = true;
     }
     endStyle(p_current_component_type, p_type_data.getVariableName());
   }
@@ -234,8 +226,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_value != p_type_data.getFloat())
 		{
 			p_type_data.setFloat(l_value);
-			//l_changed = true;
-            MarkChange();
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -247,8 +238,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_value != p_type_data.getDouble())
 		{
 			p_type_data.setDouble(l_value);
-			//l_changed = true;
-            MarkChange();
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -263,8 +253,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		{
 		  std::string l_test(buffer);
 			p_type_data.setString(l_test);
-			//l_changed = true;
-            MarkChange();
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -276,8 +265,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_value != p_type_data.getULong())
 		{
 			p_type_data.setULong(l_value);
-			//l_changed = true;
-            MarkChange();
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -288,7 +276,8 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 			if (render(p_current_component_type, member.second, p_editor_object))
 			{
 				l_changed = true;
-                break;
+
+        break;
 			}
 		}
 	}
@@ -303,20 +292,17 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_items[0] != p_type_data.member("x").getFloat())
 		{
 			p_type_data.member("x").setFloat(l_items[0]);
-            MarkChange();
-			//l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[1] != p_type_data.member("y").getFloat())
 		{
 			p_type_data.member("y").setFloat(l_items[1]);
-            MarkChange();
-			//l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[2] != p_type_data.member("z").getFloat())
 		{
 			p_type_data.member("z").setFloat(l_items[2]);
-            MarkChange();
-			//l_changed = true;
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -339,26 +325,22 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_items[0] != p_type_data.member("x").getFloat())
 		{
 			p_type_data.member("x").setFloat(l_items[0]);
-            MarkChange();
-			//l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[1] != p_type_data.member("y").getFloat())
 		{
 			p_type_data.member("y").setFloat(l_items[1]);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[2] != p_type_data.member("z").getFloat())
 		{
 			p_type_data.member("z").setFloat(l_items[2]);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[3] != p_type_data.member("w").getFloat())
 		{
 			p_type_data.member("w").setFloat(l_items[3]);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 	}
@@ -374,14 +356,14 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		float color_max[4] = {max.x, max.y, max.z};
 
 
+		std::string uniqueId = p_type_data.getVariableName();
 		//ImGui::ColorPicker4("MyColor##4", &l_items[0], ImGuiColorEditFlags_PickerHueBar, NULL);
-		if (ImGui::ColorDrawHorizontalHSV("HSV", &color_min[0], &color_max[0]))
+		if (ImGui::ColorDrawHorizontalHSV(uniqueId.c_str(), &color_min[0], &color_max[0]))
 		{
 
 			members[0] = ::toTypeRT(color4(color_min[0], color_min[1], color_min[2]));
 			members[1] = ::toTypeRT(color4(color_max[0], color_max[1], color_max[2]));
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 
 		}
 		
@@ -402,8 +384,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		{
 			members[0].setFloat(min);
 			members[1].setFloat(max);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 
 		}
 
@@ -422,26 +403,22 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		if (l_items[0] != p_type_data.member("x").getFloat())
 		{
 			p_type_data.member("x").setFloat(l_items[0]);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[1] != p_type_data.member("y").getFloat())
 		{
 			p_type_data.member("y").setFloat(l_items[1]);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[2] != p_type_data.member("z").getFloat())
 		{
 			p_type_data.member("z").setFloat(l_items[2]);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		if (l_items[3] != p_type_data.member("w").getFloat())
 		{
 			p_type_data.member("w").setFloat(l_items[3]);
-            MarkChange();
-            //l_changed = true;
+			l_changed = true;
 		}
 		endStyle(p_current_component_type, p_type_data.getVariableName());
 }
@@ -456,8 +433,8 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 		{
 			if (render(p_current_component_type, l_component, p_editor_object))
 			{
-               l_changed = true;
-               break;
+        l_changed = true;
+        break;
 			}
 		}
 
@@ -473,8 +450,8 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 
       if (l_parent_id != 0)
       {
-          auto newCommand = std::make_shared<ObjectAddParentCommand>();
-          newCommand->Init(&getEngineController(), getSelectionKeeper().getSelectionId());
+        auto newCommand = std::make_shared<ObjectAddParentCommand>();
+        newCommand->Init(&getEngineController(), l_editor_object);
         newCommand->SetParentID(l_parent_id);
 
         l_scene_manipulator->addParentToGameObject(l_parent_id, l_myID);
@@ -485,7 +462,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 
         l_parent_object->setData(l_new_data);
 
-          UndoRedoManager::GetInstance().RecordState(newCommand, &getEngineController());
+        UndoRedoManager::GetInstance().RecordState(newCommand, &getEngineController());
       }
       else
       {
@@ -499,13 +476,13 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
       objID l_parent_id = l_scene_manipulator->getParentID(getSelectionKeeper().getSelectionId());
 
       if (l_parent_id != 0)
-        {
-            auto newCommand = std::make_shared<ObjectRemoveParentCommand>();
-            newCommand->Init(&getEngineController(), getSelectionKeeper().getSelectionId());
-            // make sure parent ID is recorded
+      {
+        auto newCommand = std::make_shared<ObjectRemoveParentCommand>();
+        newCommand->Init(&getEngineController(), l_editor_object);
+        // make sure parent ID is recorded
         newCommand->SetParentID(l_scene_manipulator->getParentID(getSelectionKeeper().getSelectionId()));
 
-            l_log.AddLog("[EDITOR] Removed parent from object: %s.\n", getSelectionKeeper().getSelectionName().c_str());
+        l_log.AddLog("[EDITOR] Removed parent from object: %s.\n", getSelectionKeeper().getSelectionName().c_str());
         l_scene_manipulator->removeParent(getSelectionKeeper().getSelectionId());
 
         //Ask for typeRT from engine to override parents new typeRT (now missing the child)
@@ -514,8 +491,8 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 
         l_parent_object->setData(l_new_data);
 
-            UndoRedoManager::GetInstance().RecordState(newCommand, &getEngineController());
-        }
+        UndoRedoManager::GetInstance().RecordState(newCommand, &getEngineController());
+      }
     }
 
     //Move Space code
@@ -525,21 +502,21 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 
     if (ImGui::InputText("Move to Space", &l_space, ImGuiInputTextFlags_EnterReturnsTrue))
     {
-        auto moveCommand = std::make_shared<ObjectMoveToSpaceCommand>();
-        moveCommand->Init(&getEngineController(), getSelectionKeeper().getSelectionId());
+      auto moveCommand = std::make_shared<ObjectMoveToSpaceCommand>();
+      moveCommand->Init(&getEngineController(), l_editor_object);
 
-        //get old space id
+      //get old space id
       objID l_old_space_id = l_scene_manipulator->getSpaceIDForObject(getSelectionKeeper().getSelectionId());
       moveCommand->SetOldSpace(l_old_space_id);
 
-        // get new space id
+      // get new space id
       objID l_new_space_id = l_scene_manipulator->getSpaceIDFromName(l_space);
 
       if (l_new_space_id != 0)
-        {
+      {
         moveCommand->SetNewSpace(l_new_space_id);
 
-            //sceneManip->moveObjectToSpace(m_selection->getSelectionId(), std::string(l_space.c_str()));
+        //sceneManip->moveObjectToSpace(m_selection->getSelectionId(), std::string(l_space.c_str()));
         l_scene_manipulator->moveObjectToSpace(getSelectionKeeper().getSelectionId(), l_new_space_id);
 
         //Need to ask engine for two new typeRTs, one for the old and one for the new space
@@ -552,8 +529,8 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
         l_old_space_object->setData(l_old_space_data);
         l_new_space_object->setData(l_new_space_data);
 
-            UndoRedoManager::GetInstance().RecordState(moveCommand, &getEngineController());
-        }
+        UndoRedoManager::GetInstance().RecordState(moveCommand, &getEngineController());
+      }
     }
 
     //Delete GameObject code
@@ -561,8 +538,9 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
     {
       auto l_selection_keeper = getSelectionKeeper();
       objID l_object_id = l_selection_keeper.getSelectionId();
-        auto deleteCommand = std::make_shared<ObjectDeleteCommand>();
-      deleteCommand->Init(&getEngineController(), l_object_id);
+
+      auto deleteCommand = std::make_shared<ObjectDeleteCommand>();
+      deleteCommand->Init(&getEngineController(), l_editor_object);
       deleteCommand->SetObjectSelector(&l_selection_keeper);
       objID l_space_id = l_scene_manipulator->getSpaceIDForObject(l_object_id);
       deleteCommand->SetSpace(l_space_id);
@@ -570,6 +548,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
       l_log.AddLog("[EDITOR] Deleted Game Object: %s.\n", l_selection_keeper.getSelectionName().c_str());
       l_scene_manipulator->removeGameObject(l_object_id);
       getSelectionKeeper().clearSelection();
+
       //Need to delete EditorObject of the same id
       l_editor_object_manager.removeEditorObject(l_object_id);
 
@@ -585,7 +564,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 	}
 	else if (p_type_data.getTypeName() == p_type_data.getVariableName() && p_type_data.getTypeName() != "") // assume it is a component
 	{
-	bool l_removed = false;
+	  bool l_removed = false;
 		if (ImGui::TreeNode(p_type_data.getTypeName().c_str()))
 		{
 			if (p_type_data.getVariableName() == "class transform")
@@ -632,6 +611,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 				// engine will tell us if the component type is removable (if engine doesn't know, then we don't allow removal)
 				bool l_removable = l_engine_runner.lock()->hasComponentType(p_type_data.getTypeName())
 					&& l_engine_runner.lock()->getComponentType(p_type_data.getTypeName()).allowEditorRemove;
+
 				if (l_removable)
 				{
 					if (ImGui::Button("Remove"))
@@ -683,6 +663,7 @@ bool Editor::inspectorRenderer::render(const std::string & p_current_component_t
 
         //Need to delete associated Editor Object (us)
         l_editor_object_manager.removeEditorObject(l_editor_object->getObjectID());
+
         return false;
       }
 

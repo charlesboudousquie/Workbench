@@ -13,8 +13,6 @@ class Sequencer : public Composite
 {
   public:
 
-      static typeRT onRender();
-
       void Update(float)override;
 
 };

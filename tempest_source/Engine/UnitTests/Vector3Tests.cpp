@@ -315,7 +315,7 @@ TEST(Vector3, Normalize)
 {
 	vector3 l_vec(12, 23, 34);
 
-	l_vec.normalize();
+	l_vec.normalized();
 	ASSERT_FLOAT_EQ(l_vec[0], 0.280591424126f);
 	ASSERT_FLOAT_EQ(l_vec[1], 0.537800229576f);
 	ASSERT_FLOAT_EQ(l_vec[2], 0.795009035026f);

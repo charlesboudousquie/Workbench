@@ -14,8 +14,6 @@ class RepeatUntilFailure : public Decorator
 {
 public:
 
-    static typeRT onRender();
-
     void Update(float)override;
 };
 

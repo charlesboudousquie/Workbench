@@ -14,10 +14,6 @@ class Inverter : public Decorator
 {
   public:
 
-      //void handleResult(BehaviorResult) override;
-
-      static typeRT onRender();
-
       void Init()override;
       void Update(float)override;
 };

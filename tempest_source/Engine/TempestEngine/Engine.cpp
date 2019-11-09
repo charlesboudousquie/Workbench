@@ -38,9 +38,8 @@
 #include "Audio/AudioSystem.h"
 #include "Telemetry/TelemetrySystem.hpp"
 #include "Rendering/CameraSystem.hpp"
-#include "BehaviorTreeManager.hpp"
 #include "DynamicWaypoints/DynamicWaypointGraph.hpp"
-#include "BehaviorTreeManipulator.hpp"
+#include "DynamicWaypoints/WaypointGraphPathfinder.hpp"
 
 #include "SystemManagement/SystemManagerSTA.hpp"
 #include "GameScripts/LightTestScript.hpp"
@@ -72,6 +71,10 @@
 #include "Systems/FBXLoader.hpp"
 #include "Utility/NavMeshGenerator.hpp"
 #include "External/AssetManipulator.hpp"
+
+#include "BehaviorSystem/BehaviorTreeManager.hpp"
+
+#include "External/BehaviorTreeManipulator.hpp"
 #include <RenderContextInterface.hpp>
 
 //========Types=========================================================================//
@@ -120,7 +123,7 @@ void engine::initialize(configuration p_config)
 {
 	// 4. initial asset manager
 // ------------------------
-	assetManager::init(p_config.asset_path.string());
+	assetManager::init(p_config.asset_path.generic_string());
 
 	// save the configuration
 	m_config = p_config;
@@ -221,12 +224,16 @@ void engine::initialize(configuration p_config)
 			std::make_pair(cameraSystem::getName(), new cameraSystem())
 		});
 
-    // charles code
-    systemBundle* l_behavior_bundle = new systemBundle(BehaviorTreeManager::getName(),
+	systemBundle* l_ai_bundle = new systemBundle("AI Bundle",
 		{
+			std::make_pair(dynamicWaypointGraph::getName(), new dynamicWaypointGraph()),
+			std::make_pair(waypointGraphPathfinder::getName(), new waypointGraphPathfinder())
+		});
+
+    systemBundle* l_behavior_bundle = new systemBundle("Behavior System",
+    {
             std::make_pair(BehaviorTreeManager::getName(), new BehaviorTreeManager())
-        }
-        );
+    });
 
 
 	// systemBundle* l_gamepad_bundle = new systemBundle(gamepadSystem::getName(),
@@ -250,7 +257,8 @@ void engine::initialize(configuration p_config)
 			l_ui_bundle,
 			l_particle_bundle,
 			l_camera_bundle,
-		    l_behavior_bundle,
+			l_ai_bundle,
+            l_behavior_bundle
 		});
 
 	const std::vector<std::string> l_system_bundle_names
@@ -267,7 +275,8 @@ void engine::initialize(configuration p_config)
 		l_ui_bundle->name(),
 		 l_particle_bundle->name(),
 		l_camera_bundle->name(),
-	    l_behavior_bundle->name(),
+		l_ai_bundle->name(),
+        l_behavior_bundle->name()
 	};
 
 	// 3. initialize the bundles
@@ -286,7 +295,7 @@ void engine::initialize(configuration p_config)
   {
     getPersistenceManipulator();
   }
-  m_persistence_manipulator_ptr->setPersistenceLocation(p_config.data_path.string());
+  m_persistence_manipulator_ptr->setPersistenceLocation(p_config.data_path.generic_string());
 
 	if (!p_config.no_initial_scene)
 	{
@@ -316,19 +325,6 @@ void engine::shutdown()
 	// delete m_gamepadInputAdapater;
 }
 
-std::weak_ptr<behaviorTreeManipulatorInterface> engine::getBehaviorManipulator()
-{
-    if (m_behavior_tree_manipulator_ptr == nullptr)
-    {
-        if (m_system_manager != nullptr)
-        {
-            m_behavior_tree_manipulator_ptr = std::make_shared<BehaviorTreeManipulator>(m_system_manager);
-        }
-    }
-
-    return m_behavior_tree_manipulator_ptr;
-}
-
 void engine::requestQuit()
 {
 	m_is_quit_requested = true;
@@ -340,8 +336,7 @@ std::weak_ptr<sceneManipulatorInterface> engine::getSceneManipulator()
 	{
 		if (m_system_manager != nullptr)
 		{
-            m_scene_manipulator_ptr = std::make_shared<sceneManipulator>(this, m_system_manager, m_go_filter);
-			//m_scene_manipulator_ptr = std::shared_ptr<sceneManipulatorInterface>(new sceneManipulator(this, m_system_manager, m_go_filter));
+			m_scene_manipulator_ptr = std::shared_ptr<sceneManipulatorInterface>(new sceneManipulator(this, m_system_manager, m_go_filter));
 		}
 	}
 
@@ -354,8 +349,7 @@ std::weak_ptr<bundleManipulatorInterface> engine::getBundleManipulator()
 	{
 		if (m_system_manager != nullptr)
 		{
-            //m_bundle_manipulator_ptr = std::shared_ptr<bundleManipulatorInterface>(new bundleManipulator(m_system_manager));
-            m_bundle_manipulator_ptr = std::make_shared<bundleManipulator>(m_system_manager);
+			m_bundle_manipulator_ptr = std::shared_ptr<bundleManipulatorInterface>(new bundleManipulator(m_system_manager));
 		}
 	}
 	return m_bundle_manipulator_ptr;
@@ -367,8 +361,7 @@ std::weak_ptr<persistenceManipulatorInterface> engine::getPersistenceManipulator
 	{
 		if (m_system_manager != nullptr)
 		{
-            //m_persistence_manipulator_ptr = std::shared_ptr<persistenceManipulator>(new persistenceManipulator(m_system_manager));
-            m_persistence_manipulator_ptr = std::make_shared<persistenceManipulator>(m_system_manager);
+			m_persistence_manipulator_ptr = std::shared_ptr<persistenceManipulator>(new persistenceManipulator(m_system_manager));
 		}
 	}
 	return m_persistence_manipulator_ptr;
@@ -378,8 +371,7 @@ std::weak_ptr<engineMetadataManipulatorInterface> engine::getEngineMetadataManip
 {
 	if (m_engine_metadata_manipulator_ptr == nullptr)
 	{
-        //m_engine_metadata_manipulator_ptr = std::shared_ptr<engineMetadataManipulator>(new engineMetadataManipulator());
-        m_engine_metadata_manipulator_ptr = std::make_shared<engineMetadataManipulator>();
+		m_engine_metadata_manipulator_ptr = std::shared_ptr<engineMetadataManipulator>(new engineMetadataManipulator());
 	}
 	return m_engine_metadata_manipulator_ptr;
 }
@@ -390,8 +382,7 @@ std::weak_ptr<cameraManipulatorInterface> engine::getCameraManipulator()
 	{
 		if (m_system_manager != nullptr)
 		{
-            //m_camera_manipulator_ptr = std::shared_ptr<cameraManipulatorInterface>(new cameraManipulator(m_system_manager));
-            m_camera_manipulator_ptr = std::make_shared<cameraManipulator>(m_system_manager);
+			m_camera_manipulator_ptr = std::shared_ptr<cameraManipulatorInterface>(new cameraManipulator(m_system_manager));
 		}
 	}
 	return m_camera_manipulator_ptr;
@@ -403,8 +394,7 @@ std::weak_ptr<assetManipulatorInterface> engine::getAssetManipulator()
     {
         if (m_system_manager != nullptr)
         {
-            //m_asset_manipulator_ptr = std::shared_ptr<assetManipulatorInterface>(new assetManipulator());
-            m_asset_manipulator_ptr = std::make_shared<assetManipulator>();
+            m_asset_manipulator_ptr = std::shared_ptr<assetManipulatorInterface>(new assetManipulator());
         }
     }
     return m_asset_manipulator_ptr;
@@ -416,8 +406,7 @@ std::weak_ptr<nodeManipulatorInterface> engine::getNodeManipulator()
   {
     if (m_system_manager != nullptr)
     {
-        //m_node_manipulator_ptr = std::shared_ptr<nodeManipulatorInterface>(new nodeManipulator(this, m_system_manager));
-        m_node_manipulator_ptr = std::make_shared<nodeManipulator>(this, m_system_manager);
+      m_node_manipulator_ptr = std::shared_ptr<nodeManipulatorInterface>(new nodeManipulator(this, m_system_manager));
     }
   }
 
@@ -435,6 +424,19 @@ std::weak_ptr<graphicsManipulatorInterface> engine::getGraphicsManipulator()
 	}
 
 	return m_graphics_manipulator_ptr;
+}
+
+std::weak_ptr<behaviorTreeManipulatorInterface> engine::getBehaviorManipulator()
+{
+    if (m_behavior_manipulator == nullptr)
+    {
+        if (m_system_manager != nullptr)
+        {
+            m_behavior_manipulator = std::make_shared<BehaviorTreeManipulator>(m_system_manager);
+        }
+    }
+
+    return m_behavior_manipulator;
 }
 
 

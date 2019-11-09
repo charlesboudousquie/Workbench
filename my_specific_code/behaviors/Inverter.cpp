@@ -10,11 +10,6 @@
 #include "Inverter.hpp"
 #ifndef TESTING_NODES
 
-typeRT Inverter::onRender()
-{
-    return Decorator::decoratorOnRender();
-}
-
 void Inverter::Init()
 {
     // sends task to child

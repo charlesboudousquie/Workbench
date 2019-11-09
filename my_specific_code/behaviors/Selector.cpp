@@ -26,19 +26,18 @@ void Selector::Update(float dt)
     {
         // if failed then go to next child
         task->IncrementChildIndex();
-
+        
         // if no more child nodes left to try
         if (task->GetChildIndex() == childNodes.size())
         {
             task->SetResult(BehaviorResult::FAILURE);
             task->SetPhase(BehaviorPhase::DONE);
         }
+        else
+        {
+            GiveToChild(task);
+        }
     }
-}
-
-typeRT Selector::onRender()
-{
-    return Composite::compositeOnRender();
 }
 
 void Selector::Init()

@@ -8,17 +8,10 @@
 *****************************************************************************************/
 #include "Sequencer.hpp"
 
-typeRT Sequencer::onRender()
-{
-    return Composite::compositeOnRender();
-}
-
 void Sequencer::Update(float dt)
 {
 #ifdef DEBUGGING_NODES
     printDebug(DEBUG_MESSAGE_TYPE::UPDATE);
-
-    //BehaviorLogger::GetInstance().addMessage("[DEBUG] Updating Behavior: " + this->getName());
 #endif
 
     auto task = GetTask();

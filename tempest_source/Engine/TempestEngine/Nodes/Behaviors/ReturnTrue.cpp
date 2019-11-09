@@ -9,11 +9,6 @@
 #include "ReturnTrue.hpp"
 #ifndef TESTING_NODES
 
-typeRT ReturnTrue::onRender()
-{
-    return Decorator::decoratorOnRender();
-}
-
 void ReturnTrue::Update(float dt)
 {
     // child is done at this point

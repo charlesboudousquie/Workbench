@@ -36,11 +36,6 @@ void Selector::Update(float dt)
     }
 }
 
-typeRT Selector::onRender()
-{
-    return Composite::compositeOnRender();
-}
-
 void Selector::Init()
 {
     // set ourselves to being ready and progressing, child nodes

@@ -52,9 +52,8 @@ void groundPoundScript::onUpdate()
 		  //damage
 		  i_object->getComponent<enemyAIScript>()->setActivationState(false);
 	  }
-      vector3 direction = position - my_position;
-      direction.normalize();
-      direction = direction * m_poundStrength;
+      const vector3 direction = (position - my_position).normalize();
+      const vector3 force = direction * m_poundStrength;
       i_object->getComponent<rigidBody>()->applyForce(direction * m_scaleFactor);
     }
 

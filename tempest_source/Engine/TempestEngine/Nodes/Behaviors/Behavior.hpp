@@ -9,10 +9,10 @@
 #pragma once
 
 #include "Nodes/Node.hpp"
-#include "BehaviorEnums.hpp"
-#include "BehaviorTask.hpp"
-#include "GameObject.hpp"
-#include "Blackboard.hpp"
+#include "../BehaviorSystem/BehaviorEnums.hpp"
+#include "../BehaviorSystem/BehaviorTask.hpp"
+#include "../SceneManagement/GameObject.hpp"
+#include "../BehaviorSystem/Blackboard.hpp"
 
 #include <rapidjson.h>
 #include "document.h"
@@ -28,13 +28,14 @@ enum class DEBUG_MESSAGE_TYPE{INIT, UPDATE, EXIT};
 #endif
 
 class Behavior;
+class BehaviorTree;
 
 typedef std::shared_ptr<Behavior> BehaviorPtr;
 typedef std::shared_ptr<BehaviorTask> BehaviorTaskPtr;
 
 class Behavior : public Node
 {
-
+    //BehaviorType b_type;
 protected:
 
     // printing functions
@@ -42,6 +43,9 @@ protected:
 
     // what node owns us
     BehaviorPtr parent;
+
+    // behavior tree that owns this particular behavior
+    BehaviorTree* behaviorTreeOwner;
 
     // can be overriden
     virtual void Init() = 0;
@@ -51,7 +55,7 @@ protected:
     virtual void Exit();
 
     // actual type of node
-    virtual BehaviorType GetType() = 0;
+    //virtual BehaviorType GetType() = 0;
 
     // shorthand to get task, it
     // is essentially a helper function to get 
@@ -61,6 +65,9 @@ protected:
     // this function gets the actor/npc that is
     // currently working with this node
     std::shared_ptr<gameObject> getActor();
+
+    // game container of game objects
+    gameObjectGatherer* getObjectGatherer();
 
     // get reference to local knowledge base
     Blackboard& GetBlackboard();
@@ -72,6 +79,10 @@ public:
     void GiveToChild(BehaviorTaskPtr);
     void GiveToParent(BehaviorTaskPtr);
 
+    typeRT toTypeRT() const override;
+
+    virtual BehaviorType GetType() = 0;
+
     Behavior(); // default constructor
 
     // get currently active child of said node
@@ -80,7 +91,7 @@ public:
     // get all child nodes
     virtual std::vector<BehaviorPtr> GetChildren() = 0;
 
-    //void setParentTree(BehaviorTree*);
+    void setParentTree(BehaviorTree*);
 
     // sets parent of behavior
     void setParent(BehaviorPtr);

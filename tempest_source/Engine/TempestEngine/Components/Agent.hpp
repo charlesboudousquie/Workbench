@@ -10,7 +10,7 @@
 #include "Component.hpp"
 #include "QueryableInterface.hpp"
 
-#include <Blackboard.hpp>
+#include "../BehaviorSystem/Blackboard.hpp"
 
 class BehaviorTree;
 typedef std::shared_ptr<BehaviorTree> BehaviorTreePtr;

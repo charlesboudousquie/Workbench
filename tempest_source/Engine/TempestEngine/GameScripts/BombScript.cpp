@@ -76,10 +76,9 @@ void bombScript::explode()
 		}
 		if (x_distance <= m_radius && y_distance <= m_radius)
 		{
-			vector3 direction = position - my_position;
-			direction.normalize();
-			direction = direction * m_strength;
-			i_object->getComponent<rigidBody>()->applyForce(direction * m_scaleFactor);
+			vector3 direction = (position - my_position).normalize();
+			vector3 force = direction * m_strength;
+			i_object->getComponent<rigidBody>()->applyForce(force * m_scaleFactor);
 		}
 	}
 }

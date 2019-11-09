@@ -11,11 +11,6 @@
 #include "Repeater.hpp"
 #ifndef TESTING_NODES
 
-typeRT Repeater::onRender()
-{
-    return Decorator::decoratorOnRender();
-}
-
 void Repeater::Init()
 {
     // set phase to ready for child

@@ -53,20 +53,17 @@ typeRT Leaf::leafOnRender()
 std::vector<BehaviorPtr> Leaf::GetChildren()
 {
     return {}; // no children
-    //throw std::exception("Leaf Node has no child nodes, who is calling this?");
 }
 
 void Leaf::addChild(BehaviorPtr)
 {
-    throw std::exception("Tried to add child to leaf node. Not allowed.");
+    throw std::runtime_error("Tried to add child to leaf node. Not allowed.");
 }
 
 void Leaf::Init()
 {
 #ifdef DEBUGGING_NODES
     printDebug(DEBUG_MESSAGE_TYPE::INIT);
-
-    //BehaviorLogger::GetInstance().addMessage("[DEBUG] Initing Behavior: " + this->getName());
 #endif
 
     // initialize phase to progressing by default

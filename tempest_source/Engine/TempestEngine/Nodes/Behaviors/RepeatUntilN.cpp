@@ -9,54 +9,63 @@
 #include "RepeatUntilN.hpp"
 #ifndef TESTING_NODES
 
-typeRT RepeatUntilN::getRenderData()
+const char maxSuccessStr[] = "maximumSuccesses";
+const char runCounterStr[] = "RUN_counter";
+
+const SpecialData RepeatUntilN::specialData =
 {
-    // get default data
-    auto defaultRenderData = Decorator::decoratorOnRender();
+    {{DATA_TYPE::INT, "maximumSuccesses", 0},
+    {DATA_TYPE::UNSIGNED_INT, "RUN_counter", 0}}
+};
 
-    // add specialized data
-    typeRT l_max_time("maximumSuccesses", int(1));
-    defaultRenderData.member("Node Render Data").insertMember(l_max_time);
-
-    // return combined typeRT data
-    return defaultRenderData;
-}
-
-void RepeatUntilN::fillSpecialRenderData(const rapidjson::Value & JSON, typeRT &data)
-{
-    assert(data.getVariableName() == "Node Render Data");
-
-    // if json does not have max success count then something is wrong
-    if (JSON.HasMember("maximumSuccesses"))
-    {
-        data.member("maximumSuccesses").setInt(JSON["maximumSuccesses"].GetInt());
-    }
-    else
-    {
-        throw std::exception("Missing maximumSuccesses in repeatuntiln.cpp");
-    }
-
-}
-
-void RepeatUntilN::serializeSpecialData(typeRT & data, rapidjson::Document & doc)
-{
-    assert(data.getVariableName() == "Node Render Data");
-
-    int max_Successes = data.member("maximumSuccesses").getInt();
-
-    if (doc.HasMember("maximumSuccesses"))
-    {
-        doc["maximumSuccesses"].SetInt(max_Successes);
-    }
-    else
-    {
-        doc.AddMember("maximumSuccesses", max_Successes, doc.GetAllocator());
-    }
-}
+//typeRT RepeatUntilN::getRenderData()
+//{
+//    // get default data
+//    auto defaultRenderData = Decorator::decoratorOnRender();
+//
+//    // add specialized data
+//    typeRT l_max_successes(maxSuccessStr, int(1));
+//    defaultRenderData.member("Node Render Data").insertMember(l_max_successes);
+//
+//    // return combined typeRT data
+//    return defaultRenderData;
+//}
+//
+//void RepeatUntilN::fillSpecialRenderData(const rapidjson::Value & JSON, typeRT &data)
+//{
+//    assert(data.getVariableName() == "Node Render Data");
+//
+//    // if json does not have max success count then something is wrong
+//    if (JSON.HasMember(maxSuccessStr))
+//    {
+//        data.member(maxSuccessStr).setInt(JSON[maxSuccessStr].GetInt());
+//    }
+//    else
+//    {
+//        throw std::runtime_error("Missing maximumSuccesses in repeatuntiln.cpp");
+//    }
+//
+//}
+//
+//void RepeatUntilN::serializeSpecialData(typeRT & data, rapidjson::Document & doc)
+//{
+//    assert(data.getVariableName() == "Node Render Data");
+//
+//    int max_Successes = data.member(maxSuccessStr).getInt();
+//
+//    if (doc.HasMember(maxSuccessStr))
+//    {
+//        doc[maxSuccessStr].SetInt(max_Successes);
+//    }
+//    else
+//    {
+//        doc.AddMember(maxSuccessStr, max_Successes, doc.GetAllocator());
+//    }
+//}
 
 void RepeatUntilN::updateFromFile(const rapidjson::Value & value)
 {
-    maximumSuccesses = value["maximumSuccesses"].GetInt();
+    maximumSuccesses = value[maxSuccessStr].GetInt();
 }
 
 void RepeatUntilN::Init()
@@ -64,13 +73,13 @@ void RepeatUntilN::Init()
     // progressing and running, child is ready
     Decorator::Init();
 
-    GetBlackboard().setValue<int>("RUN_counter", 0);
+    GetBlackboard().setValue<int>(runCounterStr, 0);
 }
 
 void RepeatUntilN::Update(float dt)
 {
     auto task = GetTask();
-    int counter = GetBlackboard().getValue<int>("RUN_counter");
+    int counter = GetBlackboard().getValue<int>(runCounterStr);
 
 
     // activate child behavior
@@ -80,7 +89,7 @@ void RepeatUntilN::Update(float dt)
     if (childResult == BehaviorResult::SUCCESS)
     {
         counter++;
-        GetBlackboard().setValue<int>("RUN_counter", counter);
+        GetBlackboard().setValue<int>(runCounterStr, counter);
         if (counter == this->maximumSuccesses)
         {
             task->SetResult(BehaviorResult::SUCCESS);

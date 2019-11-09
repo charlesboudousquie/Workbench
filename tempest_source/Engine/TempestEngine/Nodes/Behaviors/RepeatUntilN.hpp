@@ -10,22 +10,16 @@
 
 #ifndef TESTING_NODES
 
-#include "rapidjson.h"
-#include "document.h"
+#include "BehaviorSystem/BehaviorSpecialData.hpp"
 
 class RepeatUntilN : public Decorator
 {
 private:
-    //int counter;
-    int maximumSuccesses;
+
+    unsigned int maximumSuccesses;
 public:
 
-    // returns default render data
-    static typeRT getRenderData();
-    static void fillSpecialRenderData(const rapidjson::Value &JSON, typeRT&);
-
-    // serialization
-    static void serializeSpecialData(typeRT& data, rapidjson::Document& doc);
+    const static SpecialData specialData;
 
     void updateFromFile(const rapidjson::Value &) override;
 

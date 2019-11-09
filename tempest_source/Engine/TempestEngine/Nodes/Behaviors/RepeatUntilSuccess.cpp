@@ -10,11 +10,6 @@
 #include "RepeatUntilSuccess.hpp"
 #ifndef TESTING_NODES
 
-typeRT RepeatUntilSuccess::onRender()
-{
-    return Decorator::decoratorOnRender();
-}
-
 void RepeatUntilSuccess::Update(float dt)
 {
     auto task = GetTask();

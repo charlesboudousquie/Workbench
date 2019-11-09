@@ -66,11 +66,10 @@ void Decorator::addChild(BehaviorPtr newChild)
     if (child == nullptr)
     {
         child = newChild;
-        //child->setParent(this);
     }
     else
     {
-        throw std::exception("Tried to add more than 1 child to a decorator node.");
+        throw std::runtime_error("Tried to add more than 1 child to a decorator node.");
     }
 }
 

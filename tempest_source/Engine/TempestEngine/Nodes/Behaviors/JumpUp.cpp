@@ -9,17 +9,10 @@
 #include "JumpUp.hpp"
 #include "RigidBody.hpp"
 
-typeRT JumpUp::onRender()
-{
-    return leafOnRender();
-}
-
 void JumpUp::Update(float)
 {
 #ifdef DEBUGGING_NODES
     printDebug(DEBUG_MESSAGE_TYPE::UPDATE);
-
-    //BehaviorLogger::GetInstance().addMessage("[DEBUG] Updating Behavior: " + this->getName());
 #endif
 
     auto actor = getActor();
@@ -29,7 +22,7 @@ void JumpUp::Update(float)
     if (rigid.isNullptr())
     {
         std::string message = "Error object: " + actor->getName() + " HAS NO rigidbody";
-        throw std::exception(message.c_str());
+        throw std::runtime_error(message);
     }
 
     rigid->applyImpulse({ 0,500,0 });

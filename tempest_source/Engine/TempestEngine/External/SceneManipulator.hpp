@@ -87,6 +87,7 @@ public:
   void dynamicWaypointGraphStitchPaths() override;
   void dynamicWaypointGraphClear() override;
   void dynamicWaypointGraphDeleteRandomNodeSet() override;
+  void dynamicWaypointGraphTestFunction() override;
 
 private:
 	engine * m_engine;

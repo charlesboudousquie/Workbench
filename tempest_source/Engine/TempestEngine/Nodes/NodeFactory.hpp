@@ -17,10 +17,6 @@
 class NodeFactory
 {
 public:
-  static typeRT getNodeTypeRT(const std::pair<std::string, std::string> & p_node_type);
-  
-  /*static typeRT getNodeTypeRTFromJSON(const std::pair<std::string, std::string> & p_node_type,
-      const rapidjson::Value & json_data);*/
 
   static void parseNodesDefinitions();
 

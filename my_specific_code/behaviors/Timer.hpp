@@ -8,12 +8,10 @@
             timer hits 0.
 *****************************************************************************************/
 #pragma once
-
 #include "Decorator.hpp"
 #ifndef TESTING_NODES
 
-#include "rapidjson.h"
-#include "document.h"
+#include "BehaviorSystem/BehaviorSpecialData.hpp"
 
 class Timer : public Decorator
 {
@@ -22,12 +20,7 @@ class Timer : public Decorator
 
 public:
 
-    // returns default render data
-    static typeRT getRenderData();
-    static void fillSpecialRenderData(const rapidjson::Value &JSON, typeRT&);
-
-    // serialization
-    static void serializeSpecialData(typeRT& data, rapidjson::Document& doc);
+    const static SpecialData specialData;
 
     // when reading from file this function will be called
     // to set maxTime

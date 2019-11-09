@@ -15,8 +15,6 @@ class Repeater : public Decorator
 {
 public:
 
-    static typeRT onRender();
-
     // reprocesses its child every time it returns a result
     void Init() override;
     void Update(float dt) override;

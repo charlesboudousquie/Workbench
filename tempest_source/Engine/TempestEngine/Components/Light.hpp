@@ -75,8 +75,8 @@ private:
 	lighttype m_lightType = lighttype::enm_directional;
 	float m_intensity = 2.0f;
 	float m_radius = 10.0f;
-	float m_innerAngle = c_Pi / 12.0f;//15 degree
-	float m_outerAngle = c_Pi / 6.0f;//30 degree
+	float m_innerAngle = math::c_Pi / 12.0f;//15 degree
+	float m_outerAngle = math::c_Pi / 6.0f;//30 degree
 	float m_spotFalloff = 2.0f;
 
 	//distance attenuation will only be set when this is true.

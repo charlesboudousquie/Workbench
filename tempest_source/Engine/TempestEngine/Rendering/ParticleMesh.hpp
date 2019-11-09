@@ -2,7 +2,7 @@
 \file       ParticleMesh.hpp
 \author     Cody Cannell
 \date       7/31/18
-\copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
+\copyright  All content ï¿½ 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
 \brief
 *****************************************************************************************/
@@ -22,6 +22,9 @@ public:
         //==============================================================================//
         vector4 m_position = { 0,0,0,0 };       //!< layout(location = 0) position and size of the particle
         color m_color = { 0,0,0 };            //!< layout(location = 1) color of the particle
+		//color m_startColor = { 1,0,0 };       //!< start colorRange for fire particle
+		//color m_endColor = { 0,0,1 };         //!< end colorRange for fore particle
+		//float t;
 
         /*!*******************************************************************************
         \brief  constructor(default)
@@ -32,7 +35,7 @@ public:
         \brief  parameterized constructor
         \param  p_position - the model position of the vertex
         *********************************************************************************/
-        gpu_particle(vector4 const& p_position, color p_color) : m_position(p_position), m_color(p_color) {}
+        gpu_particle(vector4 const& p_position, color p_color) : m_position(p_position), m_color(p_color){}
 
     };
 
@@ -59,18 +62,4 @@ public:
    \return the size of the vertex struct
    *****************************************************************************************/
     size_t getParticleSize() const;
-
-  
-
-   
-
-    
-
-    
-
-    
-
-
-    
-
 };

@@ -191,7 +191,7 @@ void triangleMesh::preprocess()
 
 
 			// accumulate adjacent normals
-			l_normal.normalize();
+			l_normal.normalized();
 			m_vertices[m_faces[i].a].m_normal += l_normal;
 			m_vertices[m_faces[i].b].m_normal += l_normal;
 			m_vertices[m_faces[i].c].m_normal += l_normal;
@@ -203,8 +203,7 @@ void triangleMesh::preprocess()
 		// normalize all the Vertex normals
 		for (auto& i : m_vertices)
 		{
-			i.m_normal.normalize();
-
+			i.m_normal.normalized();
 		}
 
 		// Normalize all the triangle normals

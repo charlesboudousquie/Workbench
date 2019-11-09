@@ -7,10 +7,11 @@
 \brief      This node is the base class to represent decorative nodes with 1 child.
 *****************************************************************************************/
 #include "Behavior.hpp"
-#include "BehaviorTree.hpp"
+#include "../BehaviorSystem/BehaviorTree.hpp"
+#include "BehaviorSystem/BehaviorTreeManager.hpp"
 #include "Agent.hpp"
 
-#include "BehaviorTreeDataBase.hpp"
+#include "../BehaviorSystem/BehaviorTreeDataBase.hpp"
 
 void Behavior::printDebug(DEBUG_MESSAGE_TYPE type)
 {
@@ -28,7 +29,7 @@ void Behavior::printDebug(DEBUG_MESSAGE_TYPE type)
         message += "Exiting ";
         break;
     default:
-        throw std::exception("Debugging unknown behavior");
+        throw std::runtime_error("Debugging unknown behavior");
     }
 
     message += "Behavior " + std::to_string(this->getId()) + ": " + this->getName();
@@ -53,6 +54,17 @@ BehaviorTaskPtr Behavior::GetTask()
     // actual task is stored in tree so we get it from there
     return this->getActor()->getComponent<Agent>()->GetTask();
 }
+
+gameObjectGatherer * Behavior::getObjectGatherer()
+{
+    return this->behaviorTreeOwner->GetManager()->getGO_Gatherer();
+}
+
+space* Behavior::getCurrentSpace()
+{
+    return this->getActor()->getSpace();
+}
+
 
 Behavior::Behavior()
 {
@@ -84,7 +96,7 @@ void Behavior::tick(float dt)
 
 void Behavior::updateFromTypeRT(typeRT & p_data)
 {
-    throw std::exception("Do not use update from type rt");
+    throw std::runtime_error("Do not use update from type rt");
 }
 
 void Behavior::updateFromFile(const rapidjson::Value &)
@@ -94,6 +106,11 @@ void Behavior::updateFromFile(const rapidjson::Value &)
 void Behavior::setParent(BehaviorPtr parent_)
 {
     this->parent = parent_;
+}
+
+void Behavior::setParentTree(BehaviorTree* pt)
+{
+    this->behaviorTreeOwner = pt;
 }
 
 BehaviorPtr Behavior::getParent()
@@ -139,3 +156,22 @@ void Behavior::GiveToParent(BehaviorTaskPtr t)
     }
 }
 
+typeRT Behavior::toTypeRT() const
+{
+    return typeRT();
+}
+//
+//void SetSpecialRenderData(const rapidjson::Value & JSON, typeRT & data, const char* member_name)
+//{
+//    // if json does not have attack damage variable then we are screwed
+//    if (JSON.HasMember(member_name))
+//    {
+//        // set typert to have max time value
+//        data.member(member_name).setFloat(JSON[member_name].GetFloat());
+//        data.member("").set
+//    }
+//    else
+//    {
+//        throw std::runtime_error("Missing " + std::string(member_name));
+//    }
+//}

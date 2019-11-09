@@ -8,8 +8,12 @@
 *****************************************************************************************/
 #include "Agent.hpp"
 #include "BehaviorTreeManipulator.hpp"
-#include "BehaviorTreeManager.hpp"
+#include "../BehaviorSystem/BehaviorTreeManager.hpp"
 #include "SystemManager.hpp"
+#include "Allegiance.hpp"
+#include "GameObject.hpp"
+#include "Transform.hpp"
+#include "GameObjectGatherer.hpp"
 
 BehaviorTreeManipulator::BehaviorTreeManipulator(systemManagerInterface * manager_) : m_system_manager(manager_)
 {}
@@ -39,3 +43,4 @@ void BehaviorTreeManipulator::markTreeChanged(const std::string& treeName)
     auto btManager = m_system_manager->getSystem<BehaviorTreeManager>();
     btManager->MarkTreeAsChanged(treeName);
 }
+

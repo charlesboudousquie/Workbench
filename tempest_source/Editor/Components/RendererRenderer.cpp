@@ -84,6 +84,7 @@ Editor::rendererRenderer::rendererRenderer(editorWindow* p_parent_window)
 //If you don't use type data then leave this commented out
 bool Editor::rendererRenderer::onRender(typeRT&  p_type_data, objID /* p_editor_object_id */)
 {
+  bool l_modified = false;
     // =============================== //
     //   show List of all Model Files  //
     // =============================== //
@@ -112,17 +113,23 @@ bool Editor::rendererRenderer::onRender(typeRT&  p_type_data, objID /* p_editor_
             {
                 bool is_selected = (l_fileList[l_listName][n] == m_selectedItem);
                 if (ImGui::Selectable(l_fileList[l_listName][n], is_selected))
-                    m_item_current = l_fileList[l_listName][n];
+                {
+                  m_item_current = l_fileList[l_listName][n];
+                  l_modified = true;
+                }
+
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
             }
             ImGui::EndCombo();
         }
 
+      if(l_modified)
+      {
         p_type_data.member(l_listOrder[i].second).setString(m_item_current);
+      }
     }
 
-    //If you touched the typeRT then return true, OR if you did nothing this render frame, return true by default
-    return true;
+    return l_modified;
 }
 

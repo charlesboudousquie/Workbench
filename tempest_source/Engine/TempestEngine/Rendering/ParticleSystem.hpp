@@ -2,7 +2,7 @@
 \file       ParticleSystem.hpp
 \author     Cody Cannell
 \date       7/31/18
-\copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
+\copyright  All content ï¿½ 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
 \brief  
 *****************************************************************************************/
@@ -36,7 +36,10 @@ struct cpu_particle
     vector4 m_velocity{ 0,0,0,0 };
     vector4 m_acceleration = { 0,0,0,0 };
     color m_color{ 1,0,0 };
+	color m_startColor{ 0,0,0 };
+	color m_endColor{ 0,0,0 };
     float m_size{ 0 };
+	float m_t{ 0 };
 
     
     float m_lifeSpan { 100 };

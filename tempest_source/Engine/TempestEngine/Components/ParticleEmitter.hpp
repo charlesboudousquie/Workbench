@@ -15,6 +15,13 @@
 #include <Vector4.hpp>
 #include <Color4.hpp>
 
+enum class emitterType
+{
+	enm_default = 0,
+	enm_fire = 1,
+};
+
+
 enum class emitterShape
 {
 	enm_cube = 0,
@@ -24,12 +31,20 @@ enum class emitterShape
 	enm_size,
 };
 
+//  particle creation position range/area 2D
+//  color start color range/ end color range
+//  
+
 struct emitterData
 {
     //std::string m_textureName;
     vector4 m_direction = { 0,1,0,0 };
-	color4 m_colorMin = { 1,0,0 };
-	color4 m_colorMax = { 0,0,1 };
+	//color4 m_colorMin = { 1,0,0 };
+	//color4 m_colorMax = { 0,0,1 };
+	color4 m_startColRange = { 1,0,0 };
+	color4 m_startColRange2 = { 1,0,0 };
+	color4 m_endColRange = { 0,0,1 };
+	color4 m_endColRange2 = { 0,0,1 };
 
     unsigned m_maxParticles = 1000;
     unsigned m_batchSize = 3;
@@ -45,8 +60,10 @@ struct emitterData
     float m_glowMax = .6f;
     float m_minLife = 30.0f;
     float m_maxLife = 40.0f;
+	
 
-	emitterShape m_shape = emitterShape::enm_cube;
+	emitterShape m_shape = emitterShape::enm_circle;
+	emitterType m_Type = emitterType::enm_default;
 
     bool m_on = true;
 

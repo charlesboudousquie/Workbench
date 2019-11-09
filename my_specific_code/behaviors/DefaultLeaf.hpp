@@ -9,12 +9,9 @@
 #pragma once
 #include "Leaf.hpp"
 
-
 class DefaultLeaf : public Leaf
 {
   public:
-
-      static typeRT onRender();
 
       void Update(float dt)override;
   

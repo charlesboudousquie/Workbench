@@ -13,9 +13,6 @@
 
 class Selector : public Composite
 {
-public:
-
-    static typeRT onRender();
 
 protected:
 

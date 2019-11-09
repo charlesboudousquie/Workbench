@@ -10,10 +10,6 @@ if(UNIX)
 endif()
 
 add_executable(Editor WIN32
-  
-
-
-    
     AnimatorRenderer.hpp AnimatorRenderer.cpp
     CSVParser.hpp CSVParser.cpp
     DataSelect.hpp DataSelect.cpp
@@ -40,13 +36,14 @@ add_executable(Editor WIN32
     StyleKeeper.hpp StyleKeeper.cpp
     ToolbarRenderer.hpp ToolbarRenderer.cpp
 
+    Components/AgentRenderer.hpp Components/AgentRenderer.cpp
     Components/ButtonRenderer.hpp Components/ButtonRenderer.cpp
     Components/ComponentRenderer.hpp Components/ComponentRenderer.cpp
     Components/InputRenderer.hpp Components/InputRenderer.cpp
     Components/RendererRenderer.hpp Components/RendererRenderer.cpp
     Components/RigidBodyRenderer.h Components/RigidBodyRenderer.cpp
     Components/SampleRenderer.hpp Components/SampleRenderer.cpp
-    Components/AgentRenderer.hpp Components/AgentRenderer.cpp
+    Components/AllegianceRenderer.hpp Components/AllegianceRenderer.cpp
 
     NodeGraph/NodeGraphWindow.hpp NodeGraph/NodeGraphWindow.cpp
     NodeGraph/NodeManager.hpp NodeGraph/NodeManager.cpp
@@ -55,7 +52,6 @@ add_executable(Editor WIN32
     NodeGraph/GraphTypeSelector.hpp NodeGraph/GraphTypeSelector.cpp
     NodeGraph/AgentMenuSelection.hpp NodeGraph/AgentMenuSelection.cpp
     NodeGraph/NGE_Watchdog.hpp NodeGraph/NGE_Watchdog.cpp
-    #NodeGraph/BehaviorJsonReader.hpp NodeGraph/BehaviorJsonReader.cpp
 
     Renderers/GizmoRenderer.hpp Renderers/GizmoRenderer.cpp
     Renderers/ToggleButton.hpp Renderers/ToggleButton.cpp
@@ -72,6 +68,7 @@ add_executable(Editor WIN32
 target_include_directories(Editor
     PRIVATE TempestEngine
     PRIVATE ImGui
+    PRIVATE ${LinuxWinDefs_INCLUDES}
 	PRIVATE ${RapidJSON_INCLUDE_DIRS}
 )
 

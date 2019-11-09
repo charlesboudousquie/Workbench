@@ -2,7 +2,7 @@
 \file       ParticleSystem.cpp
 \author     Cody Cannell
 \date       7/31/18
-\copyright  All content © 2018-2019 DigiPen (USA) Corporation, all rights reserved.
+\copyright  All content Â© 2018-2019 DigiPen (USA) Corporation, all rights reserved.
 \par        Project: Boomerang
 \brief
 *****************************************************************************************/
@@ -28,7 +28,8 @@ void particleSystem::onInitialize()
     std::string l_assetPath = this->getSystemManager()->getConfigurationFunction()().asset_path.generic_string();
 
     // set up particle shaderPrograme
-    m_shaderProgram = std::make_shared<shaderProgram>(assetManager::getAsset(L"shaders/vertex/Particle.vert"), assetManager::getAsset(L"shaders/fragment/Particle.frag"));
+    m_shaderProgram = std::make_shared<shaderProgram>(assetManager::getAsset(L"shaders/vertex/Particle.vert"), 
+													  assetManager::getAsset(L"shaders/fragment/Particle.frag"));
     m_shaderProgram->build();
     m_shaderProgram->bind();
 
@@ -65,6 +66,7 @@ void particleSystem::onUpdate()
     std::shared_ptr<gameObject> l_camera = getMainCamera();
 
     m_shaderProgram->bind();
+	//m_shaderProgram->setUniforms("Texture", m_particleTexture->getBoundSlot());
 
 
     //set up a particle pool
@@ -168,12 +170,18 @@ void particleSystem::update(float p_dt, emitterData p_eData, componentHandle<tra
             if (p.m_life > 0.0f) {
 
                 // Simulate simple physics : gravity only, no collisions
-                p.m_acceleration += vector4(0.0f, -9.81f, 0.0f, 0.0f) * p_dt * 0.5f;
+                p.m_acceleration += vector4(0.0f, 9.81f, 0.0f, 0.0f) * p_dt * 0.5f;
                 p.m_position += p.m_acceleration * p_dt;
 
                  // eugler integration step
                 p.m_velocity += p.m_acceleration * p_dt;
                 p.m_position += p.m_velocity * p_dt;
+
+				// interpolated value =(1-T) * V0 + T * V1;
+				float T = p.m_t;
+				p.m_color.x = (T) * p.m_startColor.x + (1.0f - (T))*p.m_endColor.x;
+				p.m_color.y = (T) * p.m_startColor.y + (1.0f - (T))*p.m_endColor.y;
+				p.m_color.z = (T) * p.m_startColor.z + (1.0f - (T))*p.m_endColor.z;
 
                 vector4 distanceVector = p.m_position - vector4(p_cameraTransform->getGlobalPosition(), 1);
                 p.m_cameraDistance = sqrt(distanceVector.x * distanceVector.x + distanceVector.y * distanceVector.y + distanceVector.z * distanceVector.z);
@@ -185,8 +193,13 @@ void particleSystem::update(float p_dt, emitterData p_eData, componentHandle<tra
                // p.m_position = inverseEmitterMatrix * p.m_position;
 
                 // Fill the GPU buffer
-                m_buffer->addParticle(l_particlesCount, particleMesh::gpu_particle({ p.m_position.x, p.m_position.y, p.m_position.z, p.m_size },
-                                                                 { p.m_color.x,p.m_color.y,p.m_color.z,p.m_color.w }));
+				//color p_startColor = p.m_startColor;
+				color p_color = p.m_color;
+				//changes the color range from start to end 
+				p.m_t -= p_dt * 1.0f;
+				if (p.m_t < 0.0f)
+					p.m_t = 0.0f;
+                m_buffer->addParticle(l_particlesCount, particleMesh::gpu_particle({ p.m_position.x, p.m_position.y, p.m_position.z, 0.5f }, p_color));
             }
             else {
                 // Particles that just died will be put at the end of the buffer in SortParticles();
@@ -259,8 +272,8 @@ void particleSystem::createNewParticle(unsigned p_index, emitterData p_eData, co
     cpu_particle& p = m_particlePool[p_index];
 
     auto l_emitter_matrix = p_emiterTransform->getGlobalMatrix();
-    auto l_emitter_direction = vector4(p_emiterTransform->getForward(), 1);
-		auto l_shape_orientation = p_eData.m_direction;
+    auto l_emitter_direction = vector4(p_eData.m_direction.normalize());
+	auto l_shape_orientation = p_eData.m_direction;
 
     // set up random number gereator
     std::mt19937 rng;
@@ -283,6 +296,7 @@ void particleSystem::createNewParticle(unsigned p_index, emitterData p_eData, co
 		{
 			std::uniform_real_distribution<float> randomLife(p_eData.m_minLife, p_eData.m_maxLife);
 			p.m_life = randomLife(rng);
+
 		}
 
 		if (p_eData.m_minForce <= p_eData.m_maxForce)
@@ -296,6 +310,45 @@ void particleSystem::createNewParticle(unsigned p_index, emitterData p_eData, co
 			std::uniform_real_distribution<float> randomAccel(p_eData.m_minAcceleration, p_eData.m_maxAcceleration);
 			p.m_acceleration = vector4(l_emitter_direction *randomAccel(rng));
 		}
+
+		// particle color
+		/*
+			vector3 validMinMaxR = vector3(std::min(p_eData.m_colorMin.x, p_eData.m_colorMax.x), std::max(p_eData.m_colorMin.x, p_eData.m_colorMax.x), 0);
+			vector3 validMinMaxG = vector3(std::min(p_eData.m_colorMin.y, p_eData.m_colorMax.y), std::max(p_eData.m_colorMin.y, p_eData.m_colorMax.y), 0);
+			vector3 validMinMaxB = vector3(std::min(p_eData.m_colorMin.z, p_eData.m_colorMax.z), std::max(p_eData.m_colorMin.z, p_eData.m_colorMax.z), 0);
+
+			std::uniform_real_distribution<float> randomR(validMinMaxR.x, validMinMaxR.y);
+			std::uniform_real_distribution<float> randomG(validMinMaxG.x, validMinMaxG.y);
+			std::uniform_real_distribution<float> randomB(validMinMaxB.x, validMinMaxB.y);
+
+			p.m_color = color(randomR(rng), randomG(rng), randomB(rng), p_eData.m_colorMax.getW());
+		*/
+
+		// 1. pick a start color randomly from the startColorRange in emitterData
+		// 2. pick a end color randomly from the endColorRange in emitterData
+		// 3. set the t value as 0
+		
+		vector3 validMinMaxR = vector3(std::min(p_eData.m_startColRange.x, p_eData.m_startColRange2.x), std::max(p_eData.m_startColRange.x, p_eData.m_startColRange2.x), 0);
+		vector3 validMinMaxG = vector3(std::min(p_eData.m_startColRange.y, p_eData.m_startColRange2.y), std::max(p_eData.m_startColRange.y, p_eData.m_startColRange2.y), 0);
+		vector3 validMinMaxB = vector3(std::min(p_eData.m_startColRange.z, p_eData.m_startColRange2.z), std::max(p_eData.m_startColRange.z, p_eData.m_startColRange2.z), 0);
+
+		std::uniform_real_distribution<float> randomR(validMinMaxR.x, validMinMaxR.y);
+		std::uniform_real_distribution<float> randomG(validMinMaxG.x, validMinMaxG.y);
+		std::uniform_real_distribution<float> randomB(validMinMaxB.x, validMinMaxB.y);
+
+		p.m_startColor = color(randomR(rng), randomG(rng), randomB(rng), p_eData.m_startColRange.getW());
+
+		vector3 _validMinMaxR = vector3(std::min(p_eData.m_endColRange.x, p_eData.m_endColRange2.x), std::max(p_eData.m_endColRange.x, p_eData.m_endColRange2.x), 0);
+		vector3 _validMinMaxG = vector3(std::min(p_eData.m_endColRange.y, p_eData.m_endColRange2.y), std::max(p_eData.m_endColRange.y, p_eData.m_endColRange2.y), 0);
+		vector3 _validMinMaxB = vector3(std::min(p_eData.m_endColRange.z, p_eData.m_endColRange2.z), std::max(p_eData.m_endColRange.z, p_eData.m_endColRange2.z), 0);
+
+		std::uniform_real_distribution<float> randomEndR(_validMinMaxR.x, _validMinMaxR.y);
+		std::uniform_real_distribution<float> randomEndG(_validMinMaxG.x, _validMinMaxG.y);
+		std::uniform_real_distribution<float> randomEndB(_validMinMaxB.x, _validMinMaxB.y);
+		p.m_t = 1.0f;
+
+		p.m_endColor = color(randomEndR(rng), randomEndG(rng), randomEndB(rng), p_eData.m_endColRange.getW());
+
 
 
     vector4 distanceVector = p.m_position - vector4(p_cameraTransform->getGlobalPosition(), 1);
@@ -385,29 +438,3 @@ bool particleSystem::isInsideTorus(float p_x, float p_y, float p_z)
 
 }
 
-//const uint8_t HSVlights[61] =
-//{ 0, 4, 8, 13, 17, 21, 25, 30, 34, 38, 42, 47, 51, 55, 59, 64, 68, 72, 76,
-//81, 85, 89, 93, 98, 102, 106, 110, 115, 119, 123, 127, 132, 136, 140, 144,
-//149, 153, 157, 161, 166, 170, 174, 178, 183, 187, 191, 195, 200, 204, 208,
-//212, 217, 221, 225, 229, 234, 238, 242, 246, 251, 255 };
-
-//// the real HSV rainbow
-//void trueHSV(byte LED, int angle)
-//{
-//    byte red, green, blue;
-//
-//    if (angle < 60) { red = 255; green = HSVlights[angle]; blue = 0; }
-//    else
-//        if (angle < 120) { red = HSVlights[120 - angle]; green = 255; blue = 0; }
-//        else
-//            if (angle < 180) { red = 0, green = 255; blue = HSVlights[angle - 120]; }
-//            else
-//                if (angle < 240) { red = 0, green = HSVlights[240 - angle]; blue = 255; }
-//                else
-//                    if (angle < 300) { red = HSVlights[angle - 240], green = 0; blue = 255; }
-//                    else
-//                    {
-//                        red = 255, green = 0; blue = HSVlights[360 - angle];
-//                    }
-//    setRGBpoint(LED, red, green, blue);
-//}

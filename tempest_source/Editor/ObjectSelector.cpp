@@ -54,10 +54,10 @@ bool objectSelector::isSelected(ImVec2 winpos)
 					ray_eye.z = -1.0f;
 					ray_eye.w = 0.0f;
 
-			ray_eye.normalize();
+			ray_eye.normalized();
 
 			vector3 origin_of_ray = vector3(_camera.lock()->getCameraPosX(), _camera.lock()->getCameraPosY(), _camera.lock()->getCameraPosZ());
-			vector3 ray_world = (view_mat.inverse() * ray_eye).toVector3().normalized();
+			vector3 ray_world = (view_mat.inverse() * ray_eye).toVector3().normalize();
 			vector3 endpoint = origin_of_ray + 1000 * ray_world;
 
 			btVector3 outNormal;
@@ -135,10 +135,10 @@ bool objectSelector::mousePickingIntersectionTest(int layer, vector3 & intersect
 		ray_eye.z = -1.0f;
 		ray_eye.w = 0.0f;
 
-		ray_eye.normalize();
+		ray_eye.normalized();
 
 		vector3 origin_of_ray = vector3(_camera.lock()->getCameraPosX(), _camera.lock()->getCameraPosY(), _camera.lock()->getCameraPosZ());
-		vector3 ray_world = (view_mat.inverse() * ray_eye).toVector3().normalized();
+		vector3 ray_world = (view_mat.inverse() * ray_eye).toVector3().normalize();
 		vector3 endpoint = origin_of_ray + 1000 * ray_world;
 
 		btVector3 outNormal;

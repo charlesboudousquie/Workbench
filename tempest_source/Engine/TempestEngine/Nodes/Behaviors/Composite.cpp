@@ -96,7 +96,8 @@ void Composite::addChild(BehaviorPtr newChild)
 
 void Composite::removeChild(BehaviorPtr child)
 {
-    std::remove(childNodes.begin(), childNodes.end(), child);
+    auto it = std::find(childNodes.begin(), childNodes.end(), child);
+    childNodes.erase(it);
 }
 
 void Composite::clearChildren()

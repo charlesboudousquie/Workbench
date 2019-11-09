@@ -9,7 +9,6 @@
 #pragma once
 #include <vector>
 
-#include "BehaviorAgent.hpp"
 #include "Behavior.hpp"
 
 class Composite : public Behavior
@@ -20,7 +19,6 @@ protected:
 
     BehaviorPtr getCurrentChild()override;
 
-    static typeRT compositeOnRender();
 
     void Init() override;
 
@@ -31,6 +29,8 @@ protected:
     // subclasses like selector or sequencer should be constructed instead.
     Composite();
 public:
+
+    static typeRT compositeOnRender();
 
     std::vector<BehaviorPtr> GetChildren() override;
 

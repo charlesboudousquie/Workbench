@@ -10,6 +10,7 @@
 #include "../Components/RigidBody.hpp"
 #include "PlayerControllerScript.hpp"
 #include <Vector3.hpp>
+#include <Vector2.hpp>
 
 
 enemyAIScript::enemyAIScript(typeRT p_data): scriptCPP(p_data)
@@ -35,10 +36,10 @@ void enemyAIScript::onUpdate()
 		{
 			l_targetPosition =  i_target->getComponent<transform>()->getPosition();
 
-			float l_distanceSquared = (l_targetPosition - l_myPosition).distance();
-			if(l_distanceSquared < m_shortestDistance)
+			float l_distance = (l_targetPosition - l_myPosition).distance();
+			if(l_distance < m_shortestDistance)
 			{
-				m_shortestDistance = l_distanceSquared;
+				m_shortestDistance = l_distance;
 				m_currentTarget = i_target;
 			}
 		}
@@ -70,13 +71,16 @@ void enemyAIScript::onUpdate()
 		//m_myTransform->setRotation(m_currentDirection);
 		if(m_attackState == false)
 		{
-			m_myRigidBody->applyImpulse((m_currentDirection.normalized()) * m_scaleFactor);
+			m_myRigidBody->applyImpulse((m_currentDirection.normalize()) * m_scaleFactor);
 
-			vector3 l_clampedVel = m_myRigidBody->getVelocity();
-			l_clampedVel.x = std::clamp(m_myRigidBody->getVelocity().x, -m_maxSpeed, m_maxSpeed);
-			l_clampedVel.y = std::clamp(m_myRigidBody->getVelocity().y, -m_maxSpeed, m_maxSpeed),
-			l_clampedVel.z = std::clamp(m_myRigidBody->getVelocity().z, -m_maxSpeed, m_maxSpeed);
-			m_myRigidBody->setVelocity(l_clampedVel);
+			const vector3 vel = m_myRigidBody->getVelocity();
+			const float speed2 = vector2(vel.x, vel.z).distanceSquared();
+			if (speed2 > m_maxSpeed * m_maxSpeed)
+			{
+				const float newSpeed = (m_maxSpeed / std::sqrt(speed2));
+				const vector3 newVelocity = vector3(vel.x * newSpeed, vel.y, vel.z * newSpeed);
+				m_myRigidBody->setVelocity(newVelocity);
+			}
 		}
 }
 

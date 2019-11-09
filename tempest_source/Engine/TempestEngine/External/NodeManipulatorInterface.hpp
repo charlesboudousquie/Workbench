@@ -14,17 +14,10 @@
 #include <unordered_map>
 #include <utility>
 
-//#include <rapidjson.h>
-//#include "document.h"
-
 class nodeManipulatorInterface
 {
 public:
   virtual std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> getNodeDefinitions() = 0;
 
-  //virtual typeRT getStaticData(const std::pair<std::string, std::string> & p_node_type) = 0;
-
-  /*virtual typeRT getJSONData(const std::pair<std::string, std::string> & p_node_type,
-      const rapidjson::Value &) = 0;*/
-
+  virtual typeRT createRenderedNode(const std::pair<std::string, std::string> & p_node_type) = 0;
 };

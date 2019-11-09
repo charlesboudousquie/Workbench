@@ -173,14 +173,8 @@ void assetManager::init(const std::string & p_asset_path)
 	auto l_materialLoader = new materialLoader;
 	m_typeToLoader.emplace(L".mtl", l_materialLoader);
 
-    m_asset_path = p_asset_path;
-
 	loadAssetList(p_asset_path);
-}
-
-void assetManager::reload()
-{
-    loadAssetList(m_asset_path);
+    m_asset_path = p_asset_path;
 }
 
 void assetManager::shutdown()
@@ -235,24 +229,26 @@ const std::vector<std::wstring>& assetManager::assetList()
 	return m_assetNames;
 }
 
-std::vector<std::string> assetManager::assetList(std::string fileExtensionFilter)
+void assetManager::reloadAssetList()
 {
-    std::vector<std::string> list;
+    loadAssetList(m_asset_path);
+}
 
-    // for all asset names
-    for (auto file : m_assetNames)
+std::vector<std::string> assetManager::assetList(const std::string & filter)
+{
+    std::vector<std::string> assetNames;
+
+    for (auto assetName : m_assetNames)
     {
-        // convert it to regular string
-        std::string fileName = stringFromWide(file);
+        std::string assetNameStr = stringFromWide(assetName);
 
-        // check if file extension is actually in string
-        if (fileName.find(fileExtensionFilter) != std::wstring::npos)
+        if (assetNameStr.find(filter) != std::string::npos)
         {
-            list.push_back(fileName);
+            assetNames.push_back(assetNameStr);
         }
     }
 
-    return list;
+    return assetNames;
 }
 
 assetHandle assetManager::getAsset(const std::filesystem::path& p_name)

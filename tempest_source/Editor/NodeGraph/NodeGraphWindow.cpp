@@ -563,7 +563,7 @@ void Editor::nodeGraphWindow::drawNodes(ImDrawList * p_draw_list)
         //EditorNode rendering
         //If Engine is not running, render the data that is saved inside object
         //If Engine is running, render the data that is currently active in engine
-        bool nodeChanged = l_node->render(l_playing);
+        l_node->render(l_playing, l_render_position);
 
         /*if (nodeChanged)
         {

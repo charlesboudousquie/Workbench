@@ -13,8 +13,7 @@
 
 #include "NodeManager.hpp"
 
-#include "BehaviorVisitor.hpp"
-
+#include "../BehaviorSystem/BehaviorInterpreter.hpp"
 #include "../EngineController.hpp"
 #include <EngineRunner.hpp>
 #include <Engine.hpp>
@@ -139,10 +138,7 @@ EditorNode * NodeManager::createEditorNodeFromScratch(const std::string & p_type
     //node manipulator ask for typeRT
     auto Node_Manipulator = m_engine_controller->getEngineRunner()->getEngine()->getNodeManipulator().lock();
     
-
-    typeRT l_data = BehaviorVisitor::GetInstance().GetRenderData(p_node_type_name.first);
-
-    //typeRT l_data = Node_Manipulator->getStaticData(p_node_type_name);
+    typeRT l_data = BehaviorInterpreter::GetInstance().GetDefaultTypeRT(p_node_type_name.first);
     l_new_node->setRenderData(l_data);
 
     return l_new_node;
@@ -166,9 +162,8 @@ EditorNode * NodeManager::createEditorNodeJSON(const std::string & p_type_name,
         //node manipulator ask for typeRT
         auto Node_Manipulator = m_engine_controller->getEngineRunner()->getEngine()->getNodeManipulator().lock();
 
-        typeRT specializedData = BehaviorVisitor::GetInstance().GetRenderData(json_data, p_node_type_name.first);
-        //typeRT specializedData = jsonReader->specializedJsonToTypeRT(p_node_type_name, json_data);
-
+        typeRT specializedData;
+        BehaviorInterpreter::GetInstance().FillTypeRT(specializedData, p_node_type_name.first, json_data);
         l_new_node->setRenderData(specializedData);
 
         return l_new_node;
@@ -460,10 +455,11 @@ void NodeManager::serializeNodes(const std::string & p_path, const std::string &
       l_node.AddMember("node links", l_node_links_array, l_allocator);
 
       // add on specialized data
-      auto visitor = BehaviorVisitor::GetInstance();
-      if (visitor.BehaviorIsSpecialized(i_node->second->getName()))
+      auto interpreter = BehaviorInterpreter::GetInstance();
+      //auto visitor = BehaviorVisitor::GetInstance();
+      if (interpreter.IsSpecialized(i_node->second->getName()))
       {
-        BehaviorVisitor::GetInstance().SaveToFile(i_node->second->getName(), i_node->second->m_render_data, l_node);
+        interpreter.FillJSON( i_node->second->m_render_data.member("Node Render Data"), i_node->second->getName(), l_node);
       }
       // end of specialized data
 
@@ -551,7 +547,7 @@ void NodeManager::readFromFile(const std::string & p_file_name)
           }
 
           EditorNode * l_new_node;
-          if (BehaviorVisitor::GetInstance().BehaviorIsSpecialized(l_name))
+          if (BehaviorInterpreter::GetInstance().IsSpecialized(l_name))
           {
              l_new_node = createEditorNodeJSON(l_type_name,
                   std::pair<std::string, std::string>(l_class_name, l_name), l_node);

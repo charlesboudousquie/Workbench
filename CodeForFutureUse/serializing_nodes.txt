@@ -1,0 +1,131 @@
+
+
+
+
+
+
+
+
+template <typename T>
+void fillBehaviorData(const rapidjson::Value & JSON, typeRT& data, 
+const char* member_name, T value)
+{
+    // if json does not have variable then thats bad
+    if (JSON.HasMember(attackDamageStr))
+    {
+        // set typert to have max time value
+        data.member(member_name).Set<T>(JSON[attackDamageStr].GetFloat());
+    }
+    else
+    {
+        throw std::runtime_error("Missing " + std::string(member_name));
+    }
+}
+
+
+
+
+
+fillSpecialRenderData(const rapidjson::Value &JSON, typeRT& data)
+{
+    assert(data.getVariableName() == "Node Render Data");
+
+    // if json does not have attack damage variable then we are screwed
+    if (JSON.HasMember(attackDamageStr))
+    {
+        // set typert to have max time value
+        data.member(attackDamageStr).setFloat(JSON[attackDamageStr].GetFloat());
+    }
+    else
+    {
+        throw std::runtime_error("Missing attack damage");
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+template <typename T>
+void SerializeSpecialData(typeRT& data, rapidjson::Document& doc, T value, 
+                          const char* member_name)
+{
+  
+  
+    # get appropriate data type from typeRT
+    # data.member(member_name) return a typeRT&
+    # 
+    
+    T typertData = data.member(member_name).
+    
+    
+    # set appropriate data to json doc
+    if (doc.HasMember(member_name))
+    {
+        doc[member_name].Set<T>(typertData);
+    }
+    else
+    {
+        doc.AddMember(member_name, value, doc.GetAllocator());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

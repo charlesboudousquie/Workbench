@@ -8,8 +8,8 @@
 *****************************************************************************************/
 #include "Agent.hpp"
 #include "GameObject.hpp"
-#include "BehaviorTask.hpp"
-#include "BehaviorTree.hpp"
+#include "../BehaviorSystem/BehaviorTask.hpp"
+#include "../BehaviorSystem/BehaviorTree.hpp"
 #include "Nodes/Behaviors/Behavior.hpp"
 
 // given a task and a tree, introduce the task to the tree

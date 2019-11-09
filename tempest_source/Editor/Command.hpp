@@ -12,7 +12,8 @@
 
 namespace Editor
 {
-    class engineController;
+  class EditorObject;
+  class engineController;
     //class typeRT;
     /*!***************************************************************************************
     \par class: Command
@@ -27,7 +28,7 @@ namespace Editor
         \param controller - gives access to engine, useful for object creation/deletion
         \param objectID - id of object, even if object is deleted we still have a reference to it
         *****************************************************************************************/
-        virtual void Init(engineController* controller, unsigned int objectID);
+        virtual void Init(engineController* controller, EditorObject * p_editor_object);
 
         /*!***************************************************************************************
         \brief Undos a change done to the object
@@ -49,6 +50,7 @@ namespace Editor
         std::string originalName;
         std::string newName;
         engineController * eController;
+        EditorObject * m_editor_object;
         typeRT beforeState;
         typeRT afterState;
         unsigned long id; // hopefully objID always stays a unsigned long
