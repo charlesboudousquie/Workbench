@@ -9,8 +9,9 @@
 #include "FormationsManager.hpp"
 #include "GameObject.hpp"
 #include "Allegiance.hpp"
+#include "Factions.hpp"
 
-void CreateSquad(objID unit)
+void FormationsManager::CreateSquad(objID unit)
 {
     
     
@@ -51,11 +52,13 @@ void FormationsManager::JoinSquad(objID unit)
     // find an allied squad
     for(auto & squad : squads)
     {
+        // if allied with squad
         if(faction == squad.GetFaction())
         {
-            bool foundSquad = squad.JoinSquad(unit);
-            if(foundSquad)
+            // if squad has room
+            if(!squad.Full())
             {
+                squad.JoinSquad(unit);
                 break;
             }
                 
@@ -65,12 +68,61 @@ void FormationsManager::JoinSquad(objID unit)
     // if squad was not found then we create our own
     if(!squadFound)
     {
-        
+        // create and append squad to back
+        CreateSquad(unit);
     }
 }
 
 
-void LeaveSquad()
+void FormationsManager::LeaveSquad(objID unit)
 {
+    // get faction of unit
+    auto actor = getSystemManager()->....getGameObjectByID(unit);
     
+    // get faction
+    auto faction = actor->getComponent<Allegiance>()->getFaction();
+    
+    bool squadFound = false;
+    
+    for(auto & squad : squads)
+    {
+        if(faction == squad.GetFaction())
+        {
+            
+            if(squad.HasUnit(unit))
+            {
+                squadFound = true;
+                squad.LeaveSquad(unit);
+                break;
+            }
+                
+        }
+    }
+    
+    // if we tried to leave a squad that we were not a part of then report this error
+    if(!squadFound)
+    {
+        logger log("Formations Manager");
+        
+        auto log_error = log.error();
+        log_error << " Actor: " << actor->getName() << ", With faction: " FactionToName(faction) << std::endl;
+        log_error << " tried to leave his squad, but there was no squad containing him." << std::endl;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

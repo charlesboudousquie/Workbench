@@ -8,6 +8,12 @@
 *****************************************************************************************/
 #pragma once
 
-
 enum class Faction { PLAYER = 0, PLAYER_MINION, ENEMY, NONE, COUNT };
+
+const char* FactionToName();
+
+bool IsAlly(Faction factionA, Faction factionB);
+
+bool FactionExists(const Faction& f);
+
 
