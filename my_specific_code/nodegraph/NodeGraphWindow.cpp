@@ -48,9 +48,16 @@ std::string getFileName(const std::string& name)
 }
 
 Editor::nodeGraphWindow::nodeGraphWindow(editorWindow * p_parent_editor, engineController * p_engine_controller)
-    : windowBase(p_parent_editor), m_editor_window(p_parent_editor), m_draw(true), m_show_grid(true), m_open_context_menu(false), m_first_run(false), m_node_manager(new NodeManager(p_engine_controller, getLogger())),
-    m_node_hovered_in_list(-1), m_node_hovered_in_scene(-1), m_node_slot_radius(4.0f), m_node_window_padding(8.0f, 8.0f), m_graph_name("Unnamed_Graph"), m_open_graph(false)
-    , g_type_selector(new GraphTypeSelector()), agentMenuSelector(new AgentMenuSelection(p_engine_controller))
+    : windowBase(p_parent_editor), 
+    m_editor_window(p_parent_editor), 
+    m_draw(true), m_show_grid(true), 
+    m_open_context_menu(false), m_first_run(false), 
+    m_node_manager(new NodeManager(p_engine_controller, getLogger())),
+    m_node_hovered_in_list(-1), m_node_hovered_in_scene(-1), 
+    m_node_slot_radius(4.0f), m_node_window_padding(8.0f, 8.0f), 
+    m_graph_name("Unnamed_Graph"), m_open_graph(false), 
+    g_type_selector(new GraphTypeSelector()), 
+    agentMenuSelector(new AgentMenuSelection(p_engine_controller))
 {
 }
 
