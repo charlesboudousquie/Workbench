@@ -1,0 +1,55 @@
+THE PLAN
+
+
+
+What A squad has
+{
+    
+    Squad Rings
+    
+}
+
+When Unit is fighting
+{
+    
+    For Enemy and Minions:
+        All units must go into ATTACK MODE.
+        What units to attack and how are up 
+        to the Behavior Trees!
+        
+    For minions:
+        If player commands minions to new target then
+        they MUST rejoinFormation.
+    
+}
+
+
+Enemies
+{
+    Only move squad forward when no unit is engaged.
+    
+    Squad is destroyed if no units are left alive.
+    
+    When Enemy unit encounters a player or minion it will immediately
+    disengage from the squad and attack IF it is in RANGE.
+    
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
